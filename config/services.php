@@ -40,6 +40,9 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
+        'service_account_json' => env('GOOGLE_SERVICE_ACCOUNT_JSON_PATH', 'storage/app/keys/google.json'),
+        'sheet_id' => env('SHEET_ID'),
+        'enabled' => (bool) env('GOOGLE_SHEETS_ENABLED', false),
     ],
 
     'pusher' => [
