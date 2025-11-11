@@ -90,7 +90,20 @@
         params.append(key, value);
       }
       const res = await fetch('{{ url('/provisioner/save') }}',{method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]')?.content}, body:params});
-      alert(res.ok? 'Guardado' : 'Error');
+      let message = res.ok ? 'Guardado' : 'Error';
+      try {
+        const json = await res.json();
+        if (json?.message) {
+          message = json.message;
+        }
+      } catch (error) {
+        // Ignorar error de parseo, usar mensaje por defecto
+      }
+
+      alert(message);
+      if (res.ok) {
+        window.location.reload();
+      }
     });
   </script>
 </body>

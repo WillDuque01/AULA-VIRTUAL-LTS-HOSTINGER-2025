@@ -1,61 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/1%20CMYK/1%20Full%20Color/laravel-logomark-cmyk-red.svg" width="120" alt="Laravel Logo">
 </p>
 
-## About Laravel
+<h1 align="center">Aula Virtual LTS - Hostinger 2025</h1>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+LMS bilingue (ES/EN) con builder drag & drop, player inteligente, notificaciones multicanal y panel de provisionamiento de integraciones listo para Hostinger Cloud Startup.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack principal
 
-## Learning Laravel
+- Laravel 10 + PHP 8.2 + MySQL 8
+- Livewire 3 + Alpine.js + Tailwind CSS 3
+- Spatie Laravel Settings & Permissions
+- Integraciones: Google OAuth/Sheets, Pusher, S3/R2, Vimeo, Cloudflare Stream, MailerLite, GA4, reCAPTCHA v3, Sentry, WhatsApp, Discord, Make
+- CI con GitHub Actions (`.github/workflows/ci.yml`)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Puesta en marcha local
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+cp .env.example .env
+composer install
+npm install
+php artisan key:generate
+php artisan migrate --seed
+npm run dev   # o npm run build
+php artisan serve
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Credenciales seed:
+- Admin: `admin@example.com / password`
+- Profesor: `teacher@example.com / password`
+- Alumno: `student@example.com / password`
 
-## Laravel Sponsors
+## Provisionador de integraciones
+- Ruta: `/es/provisioner`
+- Permiso requerido: `manage-settings`
+- Valida y sanitiza credenciales antes de escribir en `.env`
+- Aplica cambios al vuelo (`config:clear`, `config:cache`, `IntegrationConfigurator::apply()`)
+- Ejecutar `php artisan credentials:check` para ver estados y variables faltantes
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Seguridad
+- Middleware `SecurityHeaders` aplicado a todas las rutas web
+- CSP, HSTS, frame/referrer/permissions policy configurables en `config/security.php`
+- Variables `.env` relevantes:
+  ```
+  SECURITY_HEADERS_ENABLED=true
+  SECURITY_CSP_ENABLED=true
+  SECURITY_HSTS_ENABLED=true
+  ```
 
-### Premium Partners
+## Tests y seeds
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+php artisan test
+php artisan migrate:fresh --seed
+```
 
-## Contributing
+30 pruebas (70 assertions) cubren autenticacion, perfiles, builder/player, provisionamiento y comandos personalizados.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## CI / Build
 
-## Code of Conduct
+Workflow: `.github/workflows/ci.yml`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- Composer + npm install y `npm run build`
+- Migraciones y `php artisan test`
+- Artefactos listos para deploy (`public/build`, caches)
 
-## Security Vulnerabilities
+## Checklist despliegue Hostinger
+1. Clonar repo o sincronizar archivos
+2. `composer install --no-dev` y `npm ci && npm run build`
+3. Configurar `.env` con credenciales reales
+4. `php artisan key:generate`, `php artisan migrate --force`
+5. `php artisan config:cache`, `php artisan route:cache`
+6. Configurar cronjobs y colas en Hostinger
+7. Smoke test en `/es` y `/en` (Builder, Player, Provisioner, Notificaciones)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Documentacion pendiente
+- Guia operativa con credenciales reales + pipeline CI/CD
+- Checklist de smoke test post deploy
 
-## License
+## Contribuir
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. Crear rama `feature/...`
+2. Ejecutar `php artisan test`
+3. Abrir PR con descripcion y checklist de QA
+
+## Licencia
+
+Software propietario para Aula Virtual LTS (2025). Contacto: `academy@letstalkspanish.io`.

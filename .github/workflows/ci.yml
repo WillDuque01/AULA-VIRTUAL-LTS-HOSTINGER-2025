@@ -1,26 +1,106 @@
 name: CI
+
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
 jobs:
-  build:
+  tests:
+    name: Build & Test
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: lms_test
+          MYSQL_USER: lms
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      APP_KEY: base64:8CwjTx6hX0nSl7fmi7b+p0vq9qjca1UHUv/8IZf9lgo=
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: lms_test
+      DB_USERNAME: lms
+      DB_PASSWORD: secret
+      CACHE_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: log
+      BROADCAST_DRIVER: log
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, pdo_mysql, bcmath, intl
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-      - run: composer install --prefer-dist --no-progress --no-interaction
-      - run: cp .env.example .env
-      - run: php artisan key:generate
-      - run: php artisan config:cache
-      - run: php artisan test --colors=always
+          extensions: mbstring, intl, pcntl, pdo_mysql
+          coverage: none
+          tools: composer:v2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env.testing
+          php artisan key:generate --env=testing --ansi
+
+      - name: Install MySQL client
+        run: sudo apt-get update && sudo apt-get install -y mariadb-client
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..15}; do
+            if mysqladmin ping -h127.0.0.1 -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent; then
+              echo "MySQL is ready";
+              break;
+            fi
+            echo "Waiting for MySQL...";
+            sleep 3;
+          done
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
+
+      - name: Run test suite
+        run: php artisan test --env=testing --colors=always
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: |
+            public/build
+            bootstrap/cache
+            storage/framework/views

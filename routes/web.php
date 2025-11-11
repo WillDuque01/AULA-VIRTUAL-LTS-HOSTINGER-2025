@@ -30,8 +30,12 @@ Route::middleware('auth')->group(function () {
     Route::view('/student/notifications','notifications.student');
 
     // Provisioner (Admin)
-    Route::view('/provisioner','provisioner.index')->name('provisioner');
-    Route::post('/provisioner/save', [ProvisionerController::class,'save'])->name('provisioner.save');
+    Route::view('/provisioner','provisioner.index')
+        ->middleware('can:manage-settings')
+        ->name('provisioner');
+    Route::post('/provisioner/save', [ProvisionerController::class,'save'])
+        ->middleware('can:manage-settings')
+        ->name('provisioner.save');
 
     // API progreso de video (usa sesión web)
     Route::post('/api/video/progress', [VideoProgressController::class,'store'])->name('api.video.progress');
