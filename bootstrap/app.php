@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\CredentialsAudit;
 use App\Console\Commands\CredentialsCheck;
 use App\Console\Commands\StorageMigrate;
 use App\Http\Middleware\SecurityHeaders;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         CredentialsCheck::class,
         StorageMigrate::class,
+        CredentialsAudit::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web([
