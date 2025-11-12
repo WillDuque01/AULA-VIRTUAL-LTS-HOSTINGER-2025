@@ -1,17 +1,24 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProvisionerController;
+use App\Http\Controllers\SetupController;
+use App\Http\Controllers\Api\VideoProgressController;
 use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
-use App\Http\Controllers\Api\VideoProgressController;
+use App\Livewire\Admin\GroupManager;
+use App\Livewire\Admin\TierManager;
+use App\Livewire\Catalog\CourseCatalog;
 use Illuminate\Support\Facades\Broadcast;
-use App\Http\Controllers\ProvisionerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/setup', SetupController::class)->name('setup');
+Route::get('/catalog', CourseCatalog::class)->name('catalog');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -25,7 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/courses/{course}/builder', CourseBuilder::class)->name('courses.builder');
     Route::get('/lessons/{lesson}/player', Player::class)->name('lessons.player');
 
-    // Notificaciones básicas (placeholder UI)
+    // Notificaciones basicas (placeholder UI)
     Route::view('/admin/notifications','notifications.index')->middleware('can:manage-settings');
     Route::view('/student/notifications','notifications.student');
 
@@ -37,12 +44,17 @@ Route::middleware('auth')->group(function () {
         ->middleware('can:manage-settings')
         ->name('provisioner.save');
 
-    // API progreso de video (usa sesión web)
+    Route::get('/admin/tiers', TierManager::class)
+        ->middleware('can:manage-settings')
+        ->name('admin.tiers');
+
+    Route::get('/admin/groups', GroupManager::class)
+        ->middleware('can:manage-settings')
+        ->name('admin.groups');
+
     Route::post('/api/video/progress', [VideoProgressController::class,'store'])->name('api.video.progress');
 });
 
-require __DIR__.'/auth.php';
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
-// Socialite Google
-Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
-Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+require __DIR__.'/auth.php';

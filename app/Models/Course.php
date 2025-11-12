@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Course extends Model
 {
@@ -20,6 +21,9 @@ class Course extends Model
     {
         return $this->hasMany(Chapter::class)->orderBy('position');
     }
+
+    public function tiers(): MorphToMany
+    {
+        return $this->morphToMany(Tier::class, 'tierable')->withTimestamps();
+    }
 }
-
-

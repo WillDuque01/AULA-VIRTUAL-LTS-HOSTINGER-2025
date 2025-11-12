@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -13,32 +15,17 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -50,5 +37,47 @@ class User extends Authenticatable
     public function notificationPreferences()
     {
         return $this->hasOne(UserNotificationPreference::class);
+    }
+
+    public function tiers(): BelongsToMany
+    {
+        return $this->belongsToMany(Tier::class)
+            ->withPivot([
+                'status',
+                'source',
+                'assigned_by',
+                'starts_at',
+                'ends_at',
+                'cancelled_at',
+                'metadata',
+            ])
+            ->withTimestamps();
+    }
+
+    public function activeTiers(): BelongsToMany
+    {
+        return $this->tiers()->wherePivot('status', 'active');
+    }
+
+    public function studentGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(StudentGroup::class, 'group_user')
+            ->withPivot([
+                'assigned_by',
+                'joined_at',
+                'left_at',
+                'metadata',
+            ])
+            ->withTimestamps();
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function hasTier(string $slug): bool
+    {
+        return $this->activeTiers()->where('slug', $slug)->exists();
     }
 }
