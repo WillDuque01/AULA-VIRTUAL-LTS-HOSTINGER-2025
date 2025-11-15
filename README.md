@@ -52,9 +52,10 @@ Credenciales seed:
 - **Outbox avanzado**: filtros por destino/estado, vista de payload/errores y acción para ignorar eventos problemáticos sin borrar historial.
 - **CLI + scheduler de integraciones**: `php artisan integration:retry failed --target=make` reencola eventos pendientes/fallidos; además, el scheduler (`daily@02:00`) lanza el comando automáticamente para vaciar el outbox.
 - **Dashboards**:
-  - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
-  - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.
-  - Estudiante: progreso personal, minutos vistos, próximas lecciones y reanudación.
+  - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso y “top momentos de abandono”.
+  - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap granular por lección.
+  - Estudiante: progreso personal, minutos vistos, XP acumulado, racha gamificada y próximas lecciones.
+- **Gamificación + celebraciones**: `LessonCompletionService` detecta finalización (>90%), otorga XP/streak, persiste `gamification_events` y emite `LessonCompleted`; el player lanza confetti (`canvas-confetti`) y toasts con los puntos obtenidos.
 - **Branding Designer** (`/admin/branding`): panel Livewire para ajustar colores, tipografías, logos y modo oscuro, guardando en `BrandingSettings`.
 - **i18n + SEO**: rutas duplicadas `/es` / `/en` con middleware `localized`, switcher en el layout, hreflang/canonical automáticos y `sitemap.xml` multiidioma.
 - **Integraciones externas**: outbox `integration_events` + job `DispatchIntegrationEventJob` con reintentos/HMAC; webhooks Make (`/api/webhooks/make`), despachos a Discord, Google Sheets (service account) y MailerLite cuando hay credenciales.
@@ -80,7 +81,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-61 pruebas (170 assertions) cubren autenticación, perfiles, builder/player, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
+82 pruebas (234 assertions) cubren autenticación, perfiles, builder/player, gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 

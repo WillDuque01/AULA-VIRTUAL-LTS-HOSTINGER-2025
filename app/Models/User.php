@@ -19,6 +19,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'experience_points',
+        'current_streak',
+        'last_completion_at',
     ];
 
     protected $hidden = [
@@ -31,6 +34,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_completion_at' => 'datetime',
         ];
     }
 
@@ -74,6 +78,11 @@ class User extends Authenticatable
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function gamificationEvents(): HasMany
+    {
+        return $this->hasMany(GamificationEvent::class);
     }
 
     public function hasTier(string $slug): bool

@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\VideoProgress;
 use App\Support\Analytics\VideoHeatmapRecorder;
+use App\Support\Gamification\LessonCompletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class VideoProgressController extends Controller
 {
-    public function __construct(private readonly VideoHeatmapRecorder $heatmapRecorder)
-    {
+    public function __construct(
+        private readonly VideoHeatmapRecorder $heatmapRecorder,
+        private readonly LessonCompletionService $completionService
+    ) {
     }
 
     public function store(Request $request)
@@ -35,7 +38,13 @@ class VideoProgressController extends Controller
         );
 
         $this->heatmapRecorder->record($progress, (int) $data['last_second']);
+        $rewards = $this->completionService->handle($progress);
 
-        return response()->json(['ok' => true, 'progress' => $progress]);
+        return response()->json([
+            'ok' => true,
+            'progress' => $progress->fresh(),
+            'celebration' => (bool) $rewards,
+            'rewards' => $rewards,
+        ]);
     }
 }

@@ -14,12 +14,14 @@ class VideoProgress extends Model
         'source',
         'last_second',
         'watched_seconds',
+        'completed_at',
     ];
 
     protected $casts = [
         'last_second' => 'integer',
         'watched_seconds' => 'integer',
         'last_recorded_bucket' => 'integer',
+        'completed_at' => 'datetime',
     ];
 
     public function lesson()

@@ -209,7 +209,7 @@
                         });
                     };
 
-                    const postProgress = (url, payload) => {
+                      const postProgress = (url, payload) => {
                         const token = document.querySelector('meta[name="csrf-token"]')?.content;
                         const body = new URLSearchParams(payload);
                         if (token) {
@@ -222,8 +222,21 @@
                                 'Content-Type': 'application/x-www-form-urlencoded',
                                 'X-Requested-With': 'XMLHttpRequest',
                             },
-                            body,
-                        }).catch(() => null);
+                              body,
+                          })
+                              .then(async (response) => {
+                                  if (! response.ok) {
+                                      return null;
+                                  }
+
+                                  const data = await response.json();
+                                  if (data?.celebration && data?.rewards) {
+                                      window.dispatchEvent(new CustomEvent('gamification:celebrate', { detail: data.rewards }));
+                                  }
+
+                                  return data;
+                              })
+                              .catch(() => null);
                     };
 
                     const toSeconds = (value) => {

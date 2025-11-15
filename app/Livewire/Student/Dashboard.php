@@ -18,6 +18,12 @@ class Dashboard extends Component
         'watch_minutes' => 0,
     ];
 
+    public array $gamification = [
+        'xp' => 0,
+        'streak' => 0,
+        'last_completion' => null,
+    ];
+
     public ?Course $course = null;
 
     public ?Lesson $resumeLesson = null;
@@ -36,6 +42,12 @@ class Dashboard extends Component
         if (! $user) {
             return;
         }
+
+        $this->gamification = [
+            'xp' => $user->experience_points ?? 0,
+            'streak' => $user->current_streak ?? 0,
+            'last_completion' => optional($user->last_completion_at)?->diffForHumans(),
+        ];
 
         $this->course = Course::with('chapters.lessons')
             ->where('published', true)

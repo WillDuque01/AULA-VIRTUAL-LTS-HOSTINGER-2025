@@ -11,14 +11,20 @@
             <p class="text-sm text-slate-500">Registrados en tus sesiones</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Modo de video</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ ucfirst(config('integrations.video_mode', 'youtube')) }}</p>
-            <p class="text-sm text-slate-500">Reanudación automática activa</p>
+            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">XP acumulado</p>
+            <p class="text-3xl font-bold text-slate-900 mt-2">{{ number_format($gamification['xp']) }}</p>
+            <p class="text-sm text-slate-500">Microinteracciones activas</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Próximas lecciones</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ $upcomingLessons->count() }}</p>
-            <p class="text-sm text-slate-500">Listas para continuar</p>
+            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Racha</p>
+            <p class="text-3xl font-bold text-slate-900 mt-2">{{ $gamification['streak'] }} 🔥</p>
+            <p class="text-sm text-slate-500">
+                @if($gamification['last_completion'])
+                    Última: {{ $gamification['last_completion'] }}
+                @else
+                    Completa una lección para iniciar racha
+                @endif
+            </p>
         </div>
     </div>
 
