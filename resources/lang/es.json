@@ -52,6 +52,7 @@
     "whatsapp.assignment.help": "Hola, tengo dudas sobre la tarea \":title\" (estado: :status).",
     "whatsapp.assignment.summary_cta": "Pedir ayuda por WhatsApp",
     "whatsapp.assignment.help_cta": "Necesito ayuda",
+    "whatsapp.assignment.followup_cta": "Abrir WhatsApp",
     "dashboard.assignments.reject_placeholder":  "Motivo del rechazo (opcional)",
     "api.certificates.missing_code":  "El parámetro code es obligatorio.",
     "api.certificates.invalid_signature":  "La firma proporcionada no es válida.",

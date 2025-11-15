@@ -142,6 +142,43 @@ class ProfessorDashboardHeatmapTest extends TestCase
             ->assertSee(__('dashboard.assignments.professor_rejected_chip', ['count' => 1]));
     }
 
+    public function test_dashboard_shows_whatsapp_cta_when_configured(): void
+    {
+        config()->set('services.whatsapp.deeplink', 'https://wa.me/573001112233');
+
+        $teacher = User::factory()->create();
+        $course = Course::create([
+            'slug' => 'assignments-support',
+            'level' => 'c2',
+            'published' => true,
+        ]);
+
+        $chapter = Chapter::create([
+            'course_id' => $course->id,
+            'title' => 'Alertas',
+            'position' => 1,
+        ]);
+
+        $lesson = Lesson::create([
+            'chapter_id' => $chapter->id,
+            'type' => 'assignment',
+            'position' => 1,
+            'config' => [
+                'title' => 'CTA WhatsApp',
+            ],
+        ]);
+
+        Assignment::create([
+            'lesson_id' => $lesson->id,
+            'instructions' => 'Entrega el ensayo.',
+            'due_at' => now()->addDay(),
+        ]);
+
+        Livewire::actingAs($teacher)
+            ->test(Dashboard::class)
+            ->assertSee('https://wa.me/573001112233', false);
+    }
+
     private function createLesson(string $title): Lesson
     {
         $course = Course::create([

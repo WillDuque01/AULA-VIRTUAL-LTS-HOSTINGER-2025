@@ -52,6 +52,7 @@
     "whatsapp.assignment.help": "Hi, I have questions about the assignment \":title\" (status: :status).",
     "whatsapp.assignment.summary_cta": "Ask on WhatsApp",
     "whatsapp.assignment.help_cta": "Contact support",
+    "whatsapp.assignment.followup_cta": "Open WhatsApp",
     "dashboard.assignments.reject_placeholder": "Rejection reason (optional)",
     "api.certificates.missing_code": "The code parameter is required.",
     "api.certificates.invalid_signature": "The signature is invalid.",

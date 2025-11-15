@@ -33,9 +33,20 @@
                         <p class="text-sm font-semibold text-slate-900">{{ $submission['student'] }}</p>
                         <p class="text-xs text-slate-500">{{ ucfirst($submission['status']) }} · {{ $submission['submitted_at'] ?? 'Sin enviar' }}</p>
                         <p class="text-sm text-slate-700 mt-2 line-clamp-2">{{ $submission['body'] }}</p>
-                        @if($submission['attachment_url'])
-                            <a href="{{ $submission['attachment_url'] }}" target="_blank" class="text-xs text-blue-600">Ver adjunto ↗</a>
-                        @endif
+                        <div class="flex flex-wrap items-center gap-2 mt-2">
+                            @if($submission['attachment_url'])
+                                <a href="{{ $submission['attachment_url'] }}" target="_blank" class="text-xs text-blue-600">Ver adjunto ↗</a>
+                            @endif
+                            @php($followUpLink = \App\Support\Integrations\WhatsAppLink::assignment([
+                                'title' => $submission['assignment_title'] ?? 'Tarea',
+                                'status' => $submission['status'] ?? 'pending',
+                            ]))
+                            @if($followUpLink)
+                                <a href="{{ $followUpLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-400">
+                                    {{ __('whatsapp.assignment.followup_cta') }} ↗
+                                </a>
+                            @endif
+                        </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-sm font-semibold text-slate-900">{{ $submission['score'] ? $submission['score'].' pts' : 'Sin puntuar' }}</span>

@@ -134,6 +134,15 @@
                                 <p class="text-[10px] uppercase tracking-wide text-slate-400">
                                     {{ __('builder.assignments.stats.hint') }}
                                 </p>
+                                @php($builderWhatsLink = \App\Support\Integrations\WhatsAppLink::assignment([
+                                    'title' => $lesson['title'] ?? 'Tarea',
+                                    'status' => 'pending',
+                                ]))
+                                @if($builderWhatsLink)
+                                    <a href="{{ $builderWhatsLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-400">
+                                        {{ __('whatsapp.assignment.followup_cta') }} ↗
+                                    </a>
+                                @endif
                             </div>
                         @endif
 

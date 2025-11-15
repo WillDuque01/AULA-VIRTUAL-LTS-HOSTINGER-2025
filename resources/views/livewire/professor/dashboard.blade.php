@@ -174,6 +174,15 @@
                         <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
                             ✅ {{ __('dashboard.assignments.professor_approved_chip', ['count' => $assignment['approved'] ?? 0]) }}
                         </span>
+                        @php($profWhats = \App\Support\Integrations\WhatsAppLink::assignment([
+                            'title' => $assignment['title'],
+                            'status' => ($assignment['pending'] ?? 0) > 0 ? 'pending' : 'approved',
+                        ]))
+                        @if($profWhats)
+                            <a href="{{ $profWhats }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600 hover:border-slate-400">
+                                {{ __('whatsapp.assignment.followup_cta') }} ↗
+                            </a>
+                        @endif
                     </div>
                 </div>
             @empty

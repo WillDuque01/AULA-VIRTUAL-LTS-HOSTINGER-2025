@@ -119,7 +119,7 @@ class AssignmentsManager extends Component
             return;
         }
 
-        $this->submissions = AssignmentSubmission::with('user')
+        $this->submissions = AssignmentSubmission::with(['user', 'assignment.lesson'])
             ->where('assignment_id', $this->selectedAssignmentId)
             ->latest('submitted_at')
             ->get()
@@ -131,6 +131,7 @@ class AssignmentsManager extends Component
                 'submitted_at' => optional($submission->submitted_at)?->diffForHumans(),
                 'body' => $submission->body,
                 'attachment_url' => $submission->attachment_url,
+                'assignment_title' => data_get($submission->assignment?->lesson?->config, 'title', 'Tarea'),
             ])
             ->toArray();
     }
