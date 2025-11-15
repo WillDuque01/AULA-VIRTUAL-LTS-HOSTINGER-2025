@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Student;
 
+use App\Models\Assignment;
 use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Lesson;
@@ -28,6 +29,8 @@ class Dashboard extends Component
 
     public Collection $gamificationFeed;
 
+    public Collection $upcomingAssignments;
+
     public ?Certificate $latestCertificate = null;
 
     public bool $canGenerateCertificate = false;
@@ -44,6 +47,7 @@ class Dashboard extends Component
     {
         $this->upcomingLessons = collect();
         $this->gamificationFeed = collect();
+        $this->upcomingAssignments = collect();
         $this->latestCertificate = null;
         $this->certificateDownloadUrl = null;
         $this->loadProgress();
@@ -135,6 +139,7 @@ class Dashboard extends Component
         $this->upcomingLessons = $pendingLessons->take(4);
 
         $this->refreshCertificateState($user, $percent);
+        $this->loadUpcomingAssignments($user, $lessonIds);
     }
 
     public function generateCertificate(CertificateGenerator $generator): void
@@ -187,5 +192,43 @@ class Dashboard extends Component
         $this->certificateDownloadUrl = $certificate
             ? route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $certificate])
             : null;
+    }
+
+    private function loadUpcomingAssignments($user, $lessonIds): void
+    {
+        if (! $this->course || $lessonIds->isEmpty()) {
+            $this->upcomingAssignments = collect();
+
+            return;
+        }
+
+        $this->upcomingAssignments = Assignment::with([
+            'lesson.chapter.course',
+            'submissions' => fn ($query) => $query
+                ->where('user_id', $user->id)
+                ->latest()
+                ->limit(1),
+        ])
+            ->whereHas('lesson', fn ($query) => $query->whereIn('id', $lessonIds))
+            ->where(function ($query) {
+                $query->whereNull('due_at')
+                    ->orWhere('due_at', '>=', now());
+            })
+            ->orderByRaw('CASE WHEN due_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('due_at')
+            ->take(3)
+            ->get()
+            ->map(function (Assignment $assignment) {
+                $submission = $assignment->submissions->first();
+
+                return [
+                    'title' => data_get($assignment->lesson->config, 'title', 'Tarea'),
+                    'due_at' => $assignment->due_at,
+                    'requires_approval' => $assignment->requires_approval,
+                    'passing_score' => $assignment->passing_score,
+                    'status' => $submission?->status,
+                    'score' => $submission?->score,
+                ];
+            });
     }
 }

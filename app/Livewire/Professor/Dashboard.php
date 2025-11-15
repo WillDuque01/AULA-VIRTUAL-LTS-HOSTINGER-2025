@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Professor;
 
+use App\Models\Assignment;
 use App\Models\Certificate;
 use App\Models\Lesson;
 use App\Models\VideoHeatmapSegment;
@@ -32,12 +33,15 @@ class Dashboard extends Component
 
     public Collection $recentCertificates;
 
+    public Collection $assignmentAlerts;
+
     public function mount(): void
     {
         $this->lessonInsights = collect();
         $this->recentActivity = collect();
         $this->heatmap['bucket_seconds'] = max(1, (int) config('player.heatmap_bucket_seconds', 15));
         $this->recentCertificates = collect();
+        $this->assignmentAlerts = collect();
         $this->loadData();
     }
 
@@ -93,6 +97,14 @@ class Dashboard extends Component
         $this->recentCertificates = Certificate::with(['user', 'course'])
             ->latest('issued_at')
             ->limit(5)
+            ->get();
+
+        $this->assignmentAlerts = Assignment::with(['lesson.chapter.course'])
+            ->withCount(['submissions as pending_submissions' => fn ($query) => $query->where('status', 'submitted')])
+            ->whereNotNull('due_at')
+            ->whereBetween('due_at', [now(), now()->addDays(7)])
+            ->orderBy('due_at')
+            ->take(5)
             ->get();
     }
 

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Livewire\Professor\Dashboard;
+use App\Models\Assignment;
+use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\Lesson;
@@ -39,6 +41,56 @@ class ProfessorDashboardHeatmapTest extends TestCase
             ->assertSet('heatmap.lesson', 'Heatmap Lesson')
             ->assertSet('heatmap.segments.0.bucket', 0)
             ->assertSet('heatmap.segments.1.reach', 3);
+    }
+
+    public function test_dashboard_lists_assignments_due_soon(): void
+    {
+        $teacher = User::factory()->create();
+        $course = Course::create([
+            'slug' => 'assignments-course',
+            'level' => 'c1',
+            'published' => true,
+        ]);
+
+        $chapter = Chapter::create([
+            'course_id' => $course->id,
+            'title' => 'Unidad 2',
+            'position' => 1,
+        ]);
+
+        $lesson = Lesson::create([
+            'chapter_id' => $chapter->id,
+            'type' => 'assignment',
+            'position' => 1,
+            'config' => [
+                'title' => 'Proyecto colaborativo',
+            ],
+        ]);
+
+        $assignment = Assignment::create([
+            'lesson_id' => $lesson->id,
+            'instructions' => 'Sube tu proyecto colaborativo.',
+            'due_at' => now()->addDays(3),
+            'max_points' => 100,
+            'passing_score' => 70,
+            'requires_approval' => true,
+        ]);
+
+        AssignmentSubmission::create([
+            'assignment_id' => $assignment->id,
+            'user_id' => User::factory()->create()->id,
+            'body' => 'Mi entrega',
+            'status' => 'submitted',
+            'max_points' => 100,
+            'submitted_at' => now(),
+        ]);
+
+        app()->setLocale('es');
+
+        Livewire::actingAs($teacher)
+            ->test(Dashboard::class)
+            ->assertSee(__('dashboard.assignments.professor_title'))
+            ->assertSee('Proyecto colaborativo');
     }
 
     private function createLesson(string $title): Lesson

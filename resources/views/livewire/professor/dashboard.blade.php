@@ -133,4 +133,32 @@
             @endforelse
         </div>
     </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.assignments.professor_title') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.assignments.professor_subtitle') }}</h4>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100">
+            @forelse($assignmentAlerts as $assignment)
+                <div class="px-6 py-4 flex items-center justify-between text-sm">
+                    <div>
+                        <p class="font-semibold text-slate-900">{{ data_get($assignment->lesson->config, 'title', 'Tarea') }}</p>
+                        <p class="text-xs text-slate-500">
+                            {{ optional($assignment->due_at)->diffForHumans() }} · {{ $assignment->lesson->chapter?->course?->slug }}
+                        </p>
+                    </div>
+                    <div class="text-right text-xs text-slate-500">
+                        <p>{{ __('dashboard.assignments.professor_pending_label', ['count' => $assignment->pending_submissions]) }}</p>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-sm text-slate-500">
+                    {{ __('dashboard.assignments.empty') }}
+                </div>
+            @endforelse
+        </div>
+    </div>
 </div>

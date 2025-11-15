@@ -65,6 +65,65 @@
         </div>
     </div>
 
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.assignments.student_title') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.assignments.student_subtitle') }}</h4>
+                <p class="text-xs text-slate-500">{{ __('dashboard.assignments.student_hint') }}</p>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100">
+            @forelse($upcomingAssignments as $assignment)
+                @php
+                    $status = $assignment['status'] ?? 'pending';
+                    $statusLabel = match ($status) {
+                        'graded' => __('dashboard.assignments.status.graded'),
+                        'submitted' => __('dashboard.assignments.status.submitted'),
+                        default => __('dashboard.assignments.status.pending'),
+                    };
+                    $badgeClasses = match ($status) {
+                        'graded' => 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+                        'submitted' => 'bg-amber-50 text-amber-700 border border-amber-100',
+                        default => 'bg-slate-50 text-slate-600 border border-slate-100',
+                    };
+                @endphp
+                <div class="px-6 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">{{ $assignment['title'] }}</p>
+                        <p class="text-xs text-slate-500">
+                            @if($assignment['due_at'])
+                                {{ __('dashboard.assignments.due', ['time' => $assignment['due_at']->diffForHumans()]) }}
+                            @else
+                                {{ __('dashboard.assignments.no_due') }}
+                            @endif
+                            @if($assignment['requires_approval'])
+                                · {{ __('dashboard.assignments.requires_approval') }}
+                            @endif
+                        </p>
+                        @if($assignment['requires_approval'])
+                            <p class="text-[11px] text-amber-600 font-semibold">
+                                {{ __('dashboard.assignments.minimum_score', ['score' => $assignment['passing_score']]) }}
+                            </p>
+                        @endif
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClasses }}">
+                            {{ $statusLabel }}
+                            @if($assignment['score'])
+                                · {{ $assignment['score'] }} pts
+                            @endif
+                        </span>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-4 text-center text-sm text-slate-500">
+                    {{ __('dashboard.assignments.empty') }}
+                </div>
+            @endforelse
+        </div>
+    </div>
+
     @if($course)
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
