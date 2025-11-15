@@ -50,7 +50,7 @@ Credenciales seed:
 - **Telemetría de video**: API de progreso alimenta segmentos `video_heatmap_segments`, expuestos como heatmap de abandono en el dashboard de profesores.
 - **Eventos automatizados**: desbloqueos de curso/módulo, ofertas y cambios de tier notifican por correo e ingresan al outbox (`integration_events`) para Make/Discord/Sheets/MailerLite. Panel `/admin/integrations/outbox` permite filtrar y reintentar.
 - **Outbox avanzado**: filtros por destino/estado, vista de payload/errores y acción para ignorar eventos problemáticos sin borrar historial.
-- **CLI de integraciones**: `php artisan integration:retry failed --target=make` reencola eventos pendientes/fallidos para los destinos configurados.
+- **CLI + scheduler de integraciones**: `php artisan integration:retry failed --target=make` reencola eventos pendientes/fallidos; además, el scheduler (`daily@02:00`) lanza el comando automáticamente para vaciar el outbox.
 - **Dashboards**:
   - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
   - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.
