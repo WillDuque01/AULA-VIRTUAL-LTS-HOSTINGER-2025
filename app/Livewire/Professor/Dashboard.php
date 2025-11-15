@@ -99,13 +99,36 @@ class Dashboard extends Component
             ->limit(5)
             ->get();
 
+        $now = now();
+        $upcomingWindow = $now->copy()->addDays(7);
+
         $this->assignmentAlerts = Assignment::with(['lesson.chapter.course'])
-            ->withCount(['submissions as pending_submissions' => fn ($query) => $query->where('status', 'submitted')])
-            ->whereNotNull('due_at')
-            ->whereBetween('due_at', [now(), now()->addDays(7)])
-            ->orderBy('due_at')
-            ->take(5)
-            ->get();
+            ->withCount([
+                'submissions as pending_submissions' => fn ($query) => $query->where('status', 'submitted'),
+                'submissions as rejected_submissions' => fn ($query) => $query->where('status', 'rejected'),
+                'submissions as approved_submissions' => fn ($query) => $query->where('status', 'approved'),
+            ])
+            ->where(function ($query) use ($now, $upcomingWindow) {
+                $query->whereBetween('due_at', [$now, $upcomingWindow])
+                    ->orWhereHas('submissions', fn ($sub) => $sub->whereIn('status', ['submitted', 'rejected']));
+            })
+            ->orderByRaw('CASE WHEN due_at IS NULL THEN 1 ELSE 0 END, due_at ASC')
+            ->take(6)
+            ->get()
+            ->map(function (Assignment $assignment) {
+                $requiresApproval = (bool) data_get($assignment->lesson->config, 'requires_approval', false);
+
+                return [
+                    'id' => $assignment->id,
+                    'title' => data_get($assignment->lesson->config, 'title', 'Tarea'),
+                    'course' => $assignment->lesson->chapter?->course?->slug,
+                    'due_at' => $assignment->due_at,
+                    'pending' => (int) $assignment->pending_submissions,
+                    'rejected' => (int) $assignment->rejected_submissions,
+                    'approved' => (int) $assignment->approved_submissions,
+                    'requires_approval' => $requiresApproval,
+                ];
+            });
     }
 
     private function loadHeatmapData(): void

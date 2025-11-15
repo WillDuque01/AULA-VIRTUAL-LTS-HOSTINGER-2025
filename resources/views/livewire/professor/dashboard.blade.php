@@ -143,15 +143,37 @@
         </div>
         <div class="divide-y divide-slate-100">
             @forelse($assignmentAlerts as $assignment)
-                <div class="px-6 py-4 flex items-center justify-between text-sm">
+                <div class="px-6 py-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="font-semibold text-slate-900">{{ data_get($assignment->lesson->config, 'title', 'Tarea') }}</p>
+                        <div class="flex items-center gap-2">
+                            <p class="font-semibold text-slate-900">{{ $assignment['title'] }}</p>
+                            @if($assignment['requires_approval'])
+                                <span class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                                    🛡️ {{ __('dashboard.assignments.professor_requires_approval') }}
+                                </span>
+                            @endif
+                        </div>
                         <p class="text-xs text-slate-500">
-                            {{ optional($assignment->due_at)->diffForHumans() }} · {{ $assignment->lesson->chapter?->course?->slug }}
+                            @if($assignment['due_at'])
+                                {{ $assignment['due_at']->diffForHumans() }} ·
+                            @endif
+                            {{ $assignment['course'] }}
                         </p>
                     </div>
-                    <div class="text-right text-xs text-slate-500">
-                        <p>{{ __('dashboard.assignments.professor_pending_label', ['count' => $assignment->pending_submissions]) }}</p>
+                    <div class="flex flex-wrap gap-2 text-[11px] font-semibold justify-end">
+                        @if(($assignment['pending'] ?? 0) > 0)
+                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
+                                ⏳ {{ __('dashboard.assignments.professor_pending_chip', ['count' => $assignment['pending']]) }}
+                            </span>
+                        @endif
+                        @if(($assignment['rejected'] ?? 0) > 0)
+                            <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700">
+                                ⚠️ {{ __('dashboard.assignments.professor_rejected_chip', ['count' => $assignment['rejected']]) }}
+                            </span>
+                        @endif
+                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
+                            ✅ {{ __('dashboard.assignments.professor_approved_chip', ['count' => $assignment['approved'] ?? 0]) }}
+                        </span>
                     </div>
                 </div>
             @empty

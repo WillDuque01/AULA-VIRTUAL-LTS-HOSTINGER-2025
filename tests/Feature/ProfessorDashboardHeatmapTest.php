@@ -93,6 +93,55 @@ class ProfessorDashboardHeatmapTest extends TestCase
             ->assertSee('Proyecto colaborativo');
     }
 
+    public function test_dashboard_shows_rejected_chip(): void
+    {
+        $teacher = User::factory()->create();
+        $course = Course::create([
+            'slug' => 'assignments-estado',
+            'level' => 'c2',
+            'published' => true,
+        ]);
+
+        $chapter = Chapter::create([
+            'course_id' => $course->id,
+            'title' => 'Alertas',
+            'position' => 1,
+        ]);
+
+        $lesson = Lesson::create([
+            'chapter_id' => $chapter->id,
+            'type' => 'assignment',
+            'position' => 1,
+            'config' => [
+                'title' => 'Ensayo crítico',
+                'requires_approval' => true,
+            ],
+        ]);
+
+        $assignment = Assignment::create([
+            'lesson_id' => $lesson->id,
+            'instructions' => 'Entrega el ensayo.',
+            'due_at' => now()->subDay(),
+            'requires_approval' => true,
+        ]);
+
+        AssignmentSubmission::create([
+            'assignment_id' => $assignment->id,
+            'user_id' => User::factory()->create()->id,
+            'body' => 'Versión incompleta',
+            'status' => 'rejected',
+            'max_points' => 100,
+            'submitted_at' => now(),
+        ]);
+
+        app()->setLocale('es');
+
+        Livewire::actingAs($teacher)
+            ->test(Dashboard::class)
+            ->assertSee('Ensayo crítico')
+            ->assertSee(__('dashboard.assignments.professor_rejected_chip', ['count' => 1]));
+    }
+
     private function createLesson(string $title): Lesson
     {
         $course = Course::create([
