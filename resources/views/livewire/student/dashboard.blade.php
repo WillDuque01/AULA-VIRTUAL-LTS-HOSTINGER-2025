@@ -73,18 +73,40 @@
                 <p class="text-xs text-slate-500">{{ __('dashboard.assignments.student_hint') }}</p>
             </div>
         </div>
+        @if(array_sum($assignmentSummary) > 0)
+            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.assignments.summary.title') }}</p>
+                <div class="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
+                    <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-700">
+                        ⏳ {{ __('dashboard.assignments.summary.pending', ['count' => $assignmentSummary['pending']]) }}
+                    </span>
+                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
+                        📤 {{ __('dashboard.assignments.summary.submitted', ['count' => $assignmentSummary['submitted']]) }}
+                    </span>
+                    <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
+                        ✅ {{ __('dashboard.assignments.summary.approved', ['count' => $assignmentSummary['approved']]) }}
+                    </span>
+                    <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700">
+                        ⚠️ {{ __('dashboard.assignments.summary.rejected', ['count' => $assignmentSummary['rejected']]) }}
+                    </span>
+                </div>
+            </div>
+        @endif
         <div class="divide-y divide-slate-100">
             @forelse($upcomingAssignments as $assignment)
                 @php
                     $status = $assignment['status'] ?? 'pending';
                     $statusLabel = match ($status) {
+                        'approved' => __('dashboard.assignments.status.approved'),
                         'graded' => __('dashboard.assignments.status.graded'),
                         'submitted' => __('dashboard.assignments.status.submitted'),
+                        'rejected' => __('dashboard.assignments.status.rejected'),
                         default => __('dashboard.assignments.status.pending'),
                     };
                     $badgeClasses = match ($status) {
-                        'graded' => 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+                        'approved', 'graded' => 'bg-emerald-50 text-emerald-700 border border-emerald-100',
                         'submitted' => 'bg-amber-50 text-amber-700 border border-amber-100',
+                        'rejected' => 'bg-rose-50 text-rose-700 border border-rose-100',
                         default => 'bg-slate-50 text-slate-600 border border-slate-100',
                     };
                 @endphp

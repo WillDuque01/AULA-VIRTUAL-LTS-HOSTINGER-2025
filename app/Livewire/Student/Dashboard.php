@@ -43,6 +43,13 @@ class Dashboard extends Component
 
     public Collection $upcomingLessons;
 
+    public array $assignmentSummary = [
+        'pending' => 0,
+        'submitted' => 0,
+        'rejected' => 0,
+        'approved' => 0,
+    ];
+
     public function mount(): void
     {
         $this->upcomingLessons = collect();
@@ -202,7 +209,7 @@ class Dashboard extends Component
             return;
         }
 
-        $this->upcomingAssignments = Assignment::with([
+        $assignments = Assignment::with([
             'lesson.chapter.course',
             'submissions' => fn ($query) => $query
                 ->where('user_id', $user->id)
@@ -216,7 +223,6 @@ class Dashboard extends Component
             })
             ->orderByRaw('CASE WHEN due_at IS NULL THEN 1 ELSE 0 END')
             ->orderBy('due_at')
-            ->take(3)
             ->get()
             ->map(function (Assignment $assignment) {
                 $submission = $assignment->submissions->first();
@@ -231,5 +237,25 @@ class Dashboard extends Component
                     'feedback' => $submission?->feedback,
                 ];
             });
+
+        $this->assignmentSummary = [
+            'pending' => 0,
+            'submitted' => 0,
+            'rejected' => 0,
+            'approved' => 0,
+        ];
+
+        foreach ($assignments as $assignment) {
+            $status = $assignment['status'] ?? null;
+            $key = match ($status) {
+                'submitted' => 'submitted',
+                'rejected' => 'rejected',
+                'approved', 'graded' => 'approved',
+                default => 'pending',
+            };
+            $this->assignmentSummary[$key] = ($this->assignmentSummary[$key] ?? 0) + 1;
+        }
+
+        $this->upcomingAssignments = $assignments->take(3);
     }
 }
