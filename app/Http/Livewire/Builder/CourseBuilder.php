@@ -137,6 +137,10 @@ class CourseBuilder extends Component
             $config['body'] = $lessonData['body'] ?? data_get($config, 'body', '');
         }
 
+        if ($type === 'quiz') {
+            $config['quiz_ref'] = trim((string) ($lessonData['quiz_ref'] ?? data_get($config, 'quiz_ref', '')));
+        }
+
         $config['prerequisite_lesson_id'] = $this->sanitizePrerequisite(
             (int) ($lessonData['prerequisite_lesson_id'] ?? data_get($config, 'prerequisite_lesson_id', 0)),
             $lesson->id
@@ -240,6 +244,7 @@ class CourseBuilder extends Component
                         'cta_url' => data_get($config, 'cta_url'),
                         'release_at' => data_get($config, 'release_at'),
                         'prerequisite_lesson_id' => data_get($config, 'prerequisite_lesson_id'),
+                        'quiz_ref' => data_get($config, 'quiz_ref'),
                     ];
                 })->toArray(),
             ];
@@ -302,6 +307,7 @@ class CourseBuilder extends Component
             ],
             'quiz' => [
                 'title' => 'Nuevo quiz',
+                'quiz_ref' => '',
             ],
             default => [
                 'title' => 'Bloque de contenido',

@@ -45,6 +45,7 @@ Credenciales seed:
 - **Builder drag & drop** (Livewire) para capítulos/lecciones + recursos (video, PDF, iframe, texto, quiz) con prerequisitos, badges, estimaciones de tiempo, CTA y microinteracciones UIX 2030.
 - **Player inteligente** con reanudación exacta, bloqueo best-effort (YouTube) y modo estricto listo para Vimeo/Cloudflare.
 - **Player inteligente** con reanudación exacta, agenda de liberación, prerequisitos y conmutador de modo estricto (Vimeo/Cloudflare) + CTA configurable.
+- **Quiz runner autocalificado**: banco relacional (`quizzes/questions/options`), componente Livewire `QuizRunner`, intentos ilimitados con guardado en `quiz_attempts` y soporte de referencia `quiz_ref` desde el builder.
 - **Centro de mensajes** (admin/estudiante): bandeja Livewire, envío segmentado y plantillas de correo unificadas.
 - **Simulador de pagos** (`/admin/payments/simulator`): asigna tiers, registra `payment_events`, dispara emails y despacha webhooks.
 - **Telemetría de video**: API de progreso alimenta segmentos `video_heatmap_segments`, expuestos como heatmap de abandono en el dashboard de profesores.
@@ -81,7 +82,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-84 pruebas (241 assertions) cubren autenticación, perfiles, builder/player, gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
+85 pruebas (244 assertions) cubren autenticación, perfiles, builder/player, quizzes/gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 

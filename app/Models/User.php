@@ -85,6 +85,11 @@ class User extends Authenticatable
         return $this->hasMany(GamificationEvent::class);
     }
 
+    public function quizAttempts(): HasMany
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
     public function hasTier(string $slug): bool
     {
         return $this->activeTiers()->where('slug', $slug)->exists();

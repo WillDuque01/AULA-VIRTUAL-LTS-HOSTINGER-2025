@@ -131,6 +131,12 @@
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Contenido (Markdown/HTML breve)</label>
                                         <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.body" rows="3" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Escribe el contenido, puedes usar Markdown básico..."></textarea>
                                     </div>
+                                @elseif(($lesson['type'] ?? '') === 'quiz')
+                                    <div class="md:col-span-3">
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Referencia de banco</label>
+                                        <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.quiz_ref" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ej. a1-colores">
+                                        <p class="text-xs text-gray-500 mt-1">Opcional. Usa un slug para enlazar con seeds o plantillas de preguntas.</p>
+                                    </div>
                                 @else
                                     <div class="md:col-span-3">
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Recurso / URL</label>
