@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\VideoProgressController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvisionerController;
 use App\Http\Controllers\SeoController;
@@ -70,6 +71,10 @@ Route::prefix('{locale}')
             Route::get('/admin/assignments', AssignmentsManager::class)
                 ->middleware('can:manage-settings')
                 ->name('admin.assignments');
+
+            Route::get('/certificates/{certificate}', [CertificateController::class, 'show'])
+                ->middleware('auth')
+                ->name('certificates.show');
 
             Route::get('/admin/payments/simulator', PaymentSimulator::class)
                 ->middleware('can:manage-settings')

@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Student;
 
+use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\VideoProgress;
+use App\Support\Certificates\CertificateGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -26,6 +28,12 @@ class Dashboard extends Component
 
     public Collection $gamificationFeed;
 
+    public ?Certificate $latestCertificate = null;
+
+    public bool $canGenerateCertificate = false;
+
+    public ?string $certificateDownloadUrl = null;
+
     public ?Course $course = null;
 
     public ?Lesson $resumeLesson = null;
@@ -36,6 +44,8 @@ class Dashboard extends Component
     {
         $this->upcomingLessons = collect();
         $this->gamificationFeed = collect();
+        $this->latestCertificate = null;
+        $this->certificateDownloadUrl = null;
         $this->loadProgress();
     }
 
@@ -55,6 +65,20 @@ class Dashboard extends Component
             ->latest()
             ->take(5)
             ->get();
+
+        if ($this->course) {
+            $this->latestCertificate = Certificate::where('user_id', $user->id)
+                ->where('course_id', $this->course->id)
+                ->latest()
+                ->first();
+
+            $this->certificateDownloadUrl = $this->latestCertificate
+                ? route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $this->latestCertificate])
+                : null;
+        } else {
+            $this->latestCertificate = null;
+            $this->certificateDownloadUrl = null;
+        }
 
         $this->course = Course::with('chapters.lessons')
             ->where('published', true)
@@ -99,6 +123,8 @@ class Dashboard extends Component
             'watch_minutes' => $watchMinutes,
         ];
 
+        $this->canGenerateCertificate = $this->course && $percent >= 90;
+
         $resumeProgress = $progressMap
             ->sortByDesc(fn ($progress) => $progress->updated_at)
             ->first();
@@ -121,6 +147,23 @@ class Dashboard extends Component
         });
 
         $this->upcomingLessons = $pendingLessons->take(4);
+    }
+
+    public function generateCertificate(CertificateGenerator $generator): void
+    {
+        $user = Auth::user();
+
+        if (! $user || ! $this->course || ! $this->canGenerateCertificate) {
+            return;
+        }
+
+        $certificate = $generator->generate($user, $this->course, [
+            'percent' => $this->stats['percent'],
+        ]);
+
+        $this->latestCertificate = $certificate;
+        $this->certificateDownloadUrl = route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $certificate]);
+        session()->flash('certificate_status', __('Certificado generado correctamente.'));
     }
 
     public function render()

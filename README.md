@@ -83,7 +83,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-87 pruebas (248 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
+88 pruebas (251 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 
