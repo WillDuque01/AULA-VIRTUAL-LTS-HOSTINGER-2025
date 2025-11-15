@@ -148,6 +148,8 @@ class CourseBuilder extends Component
             $config['due_at'] = $this->normalizeDate($lessonData['due_at'] ?? data_get($config, 'due_at'));
             $config['max_points'] = max(1, (int) ($lessonData['max_points'] ?? data_get($config, 'max_points', 100)));
             $config['rubric'] = $this->normalizeRubric($lessonData['rubric'] ?? data_get($config, 'rubric', []));
+            $config['passing_score'] = $this->sanitizePassingScore($lessonData['passing_score'] ?? data_get($config, 'passing_score', 70));
+            $config['requires_approval'] = (bool) ($lessonData['requires_approval'] ?? data_get($config, 'requires_approval', true));
         }
 
         $config['prerequisite_lesson_id'] = $this->sanitizePrerequisite(
@@ -263,6 +265,8 @@ class CourseBuilder extends Component
                         'instructions' => data_get($config, 'instructions'),
                         'due_at' => data_get($config, 'due_at'),
                         'max_points' => data_get($config, 'max_points'),
+                        'passing_score' => data_get($config, 'passing_score', 70),
+                        'requires_approval' => (bool) data_get($config, 'requires_approval', true),
                         'rubric' => is_array(data_get($config, 'rubric'))
                             ? implode(PHP_EOL, data_get($config, 'rubric'))
                             : data_get($config, 'rubric'),
@@ -335,6 +339,8 @@ class CourseBuilder extends Component
                 'instructions' => '',
                 'due_at' => null,
                 'max_points' => 100,
+                'passing_score' => 70,
+                'requires_approval' => true,
                 'rubric' => [],
             ],
             default => [
@@ -363,6 +369,11 @@ class CourseBuilder extends Component
         if (in_array($type, ['audio', 'pdf', 'iframe'], true) && $config['resource_url'] === '') {
             $errors[] = 'Debes indicar la URL del recurso.';
             $this->addError("state.chapters.$chapterIndex.lessons.$lessonIndex.resource_url", 'Requerido');
+        }
+
+        if ($type === 'assignment' && $config['requires_approval'] && ($config['passing_score'] ?? 0) <= 0) {
+            $errors[] = 'Define un puntaje mínimo para aprobar la tarea.';
+            $this->addError("state.chapters.$chapterIndex.lessons.$lessonIndex.passing_score", 'Requerido');
         }
 
         if ($config['cta_url'] && ! filter_var($config['cta_url'], FILTER_VALIDATE_URL)) {
@@ -403,9 +414,18 @@ class CourseBuilder extends Component
                 'instructions' => $config['instructions'] ?? '',
                 'due_at' => $config['due_at'] ?? null,
                 'max_points' => $config['max_points'] ?? 100,
+                'passing_score' => $config['passing_score'] ?? 70,
+                'requires_approval' => $config['requires_approval'] ?? true,
                 'rubric' => $config['rubric'] ?? [],
             ]
         );
+    }
+
+    private function sanitizePassingScore($value): int
+    {
+        $score = (int) $value;
+
+        return max(0, min(100, $score));
     }
 
     private function normalizeRubric($value): array

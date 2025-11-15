@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Http\Livewire\Player;
+use App\Models\Assignment;
+use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\Lesson;
@@ -59,6 +61,74 @@ class PlayerLockTest extends TestCase
         ]);
 
         Livewire::test(Player::class, ['lesson' => $lesson])
+            ->assertSet('isLocked', false);
+    }
+
+    public function test_assignment_prerequisite_requires_teacher_approval(): void
+    {
+        $user = User::factory()->create();
+        $chapter = $this->createChapter();
+
+        $assignmentLesson = Lesson::create([
+            'chapter_id' => $chapter->id,
+            'type' => 'assignment',
+            'position' => 1,
+            'config' => [
+                'title' => 'Tarea clave',
+                'instructions' => 'Sube tu proyecto final.',
+                'max_points' => 100,
+                'passing_score' => 80,
+                'requires_approval' => true,
+            ],
+        ]);
+
+        Assignment::create([
+            'lesson_id' => $assignmentLesson->id,
+            'instructions' => 'Sube tu proyecto final.',
+            'max_points' => 100,
+            'passing_score' => 80,
+            'requires_approval' => true,
+        ]);
+
+        $assignmentLesson->load('assignment');
+
+        $lesson = $this->createLesson($chapter, [
+            'title' => 'Siguiente módulo',
+            'prerequisite_lesson_id' => $assignmentLesson->id,
+        ], ['position' => 2]);
+
+        $this->actingAs($user);
+
+        Livewire::test(Player::class, ['lesson' => $lesson->fresh()])
+            ->assertSet('isLocked', true)
+            ->assertSee('Completa');
+
+        $submission = AssignmentSubmission::create([
+            'assignment_id' => $assignmentLesson->assignment->id,
+            'user_id' => $user->id,
+            'body' => 'Mi entrega',
+            'status' => 'submitted',
+            'max_points' => 100,
+            'submitted_at' => now(),
+        ]);
+
+        Livewire::test(Player::class, ['lesson' => $lesson->fresh()])
+            ->assertSet('isLocked', true);
+
+        $submission->update([
+            'score' => 70,
+            'status' => 'graded',
+            'graded_at' => now(),
+        ]);
+
+        Livewire::test(Player::class, ['lesson' => $lesson->fresh()])
+            ->assertSet('isLocked', true);
+
+        $submission->update([
+            'score' => 90,
+        ]);
+
+        Livewire::test(Player::class, ['lesson' => $lesson->fresh()])
             ->assertSet('isLocked', false);
     }
 

@@ -93,6 +93,8 @@ class AssignmentSubmissionTest extends TestCase
                 'title' => 'Ensayo cultural',
                 'instructions' => 'Escribe un ensayo de 400 palabras sobre tu ciudad.',
                 'max_points' => 100,
+                'passing_score' => 70,
+                'requires_approval' => true,
                 'rubric' => ['Contenido', 'Gramática', 'Vocabulario'],
             ],
         ]);
@@ -101,6 +103,8 @@ class AssignmentSubmissionTest extends TestCase
             'lesson_id' => $lesson->id,
             'instructions' => 'Escribe un ensayo de 400 palabras sobre tu ciudad.',
             'max_points' => 100,
+            'passing_score' => 70,
+            'requires_approval' => true,
             'rubric' => ['Contenido', 'Gramática', 'Vocabulario'],
         ]);
 

@@ -140,8 +140,8 @@
                                 @elseif(($lesson['type'] ?? '') === 'assignment')
                                     <div class="md:col-span-3 space-y-3">
                                         <div>
-                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Instrucciones</label>
-                                        <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.instructions" rows="3" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Describe la tarea y recursos recomendados..."></textarea>
+                                            <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Instrucciones</label>
+                                            <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.instructions" rows="3" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Describe la tarea y recursos recomendados..."></textarea>
                                         </div>
                                         <div class="grid gap-3 md:grid-cols-3">
                                             <div>
@@ -153,9 +153,27 @@
                                                 <input type="number" min="1" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.max_points" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="100">
                                             </div>
                                             <div>
-                                                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Rubrica (1 criterio por línea)</label>
-                                                <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.rubric" rows="2" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Comprensión&#10;Gramática&#10;Pronunciación"></textarea>
+                                                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">% mínimo para aprobar</label>
+                                                <input type="number" min="0" max="100" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.passing_score" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="70">
+                                                <p class="text-[11px] text-slate-500 mt-1">Se aplica si requiere aprobación docente.</p>
+                                                @error("state.chapters.$chapterIndex.lessons.$lessonIndex.passing_score")
+                                                    <span class="text-xs text-red-500">{{ $message }}</span>
+                                                @enderror
                                             </div>
+                                        </div>
+                                        <div class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-2">
+                                            <div>
+                            <p class="text-[11px] uppercase font-semibold text-slate-500">Aprobación docente</p>
+                                                <p class="text-xs text-slate-500">Bloquea el avance hasta que un profesor califique la entrega.</p>
+                                            </div>
+                                            <label class="inline-flex items-center gap-2">
+                                                <input type="checkbox" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.requires_approval" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                                <span class="text-xs font-semibold text-slate-700">Requerir aprobación</span>
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Rúbrica (1 criterio por línea)</label>
+                                            <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.rubric" rows="2" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Comprensión&#10;Gramática&#10;Pronunciación"></textarea>
                                         </div>
                                     </div>
                                 @else

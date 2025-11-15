@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\AssignmentSubmission;
 use App\Models\Lesson;
 use App\Models\VideoProgress;
 use Carbon\Carbon;
@@ -29,6 +30,7 @@ class Player extends Component
     public function mount(Lesson $lesson): void
     {
         $this->lesson = $lesson;
+        $this->lesson->loadMissing('assignment');
         $this->config = $lesson->config ?? [];
         $this->isVideo = $lesson->type === 'video';
         $this->provider = $this->isVideo ? $this->resolveProvider() : 'static';
@@ -169,6 +171,34 @@ class Player extends Component
         $userId = Auth::id();
         if (! $userId) {
             return false;
+        }
+
+        if ($lesson->type === 'assignment') {
+            $assignment = $lesson->assignment;
+            if (! $assignment) {
+                return false;
+            }
+
+            $submission = AssignmentSubmission::where('assignment_id', $assignment->id)
+                ->where('user_id', $userId)
+                ->latest()
+                ->first();
+
+            if (! $submission) {
+                return false;
+            }
+
+            if (! $assignment->requires_approval) {
+                return true;
+            }
+
+            if ($submission->score === null) {
+                return false;
+            }
+
+            $requiredPoints = (int) ceil(($assignment->passing_score ?? 70) / 100 * ($assignment->max_points ?: 100));
+
+            return $submission->score >= max(1, $requiredPoints);
         }
 
         if ($lesson->type !== 'video') {

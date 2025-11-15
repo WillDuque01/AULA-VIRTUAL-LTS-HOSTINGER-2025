@@ -12,6 +12,20 @@
                 @endif
             </div>
         </div>
+        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+            @if($assignment->requires_approval)
+                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-amber-700 font-semibold">
+                    ✅ Requiere aprobación docente
+                </span>
+                <span>
+                    Necesitas al menos {{ $assignment->passing_score }}% ({{ ceil(($assignment->passing_score / 100) * $assignment->max_points) }} pts) para desbloquear la siguiente lección.
+                </span>
+            @else
+                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 font-semibold">
+                    ✨ Se desbloquea al enviar
+                </span>
+            @endif
+        </div>
         @if($assignment->instructions)
             <div class="prose prose-slate max-w-none text-sm text-slate-700">
                 {!! \Illuminate\Support\Str::markdown($assignment->instructions) !!}

@@ -16,11 +16,15 @@ class Assignment extends Model
         'instructions',
         'due_at',
         'max_points',
+        'passing_score',
+        'requires_approval',
         'rubric',
     ];
 
     protected $casts = [
         'due_at' => 'datetime',
+        'passing_score' => 'integer',
+        'requires_approval' => 'boolean',
         'rubric' => 'array',
     ];
 

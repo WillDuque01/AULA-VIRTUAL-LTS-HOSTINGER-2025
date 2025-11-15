@@ -31,6 +31,8 @@ class AssignmentPanel extends Component
                 'instructions' => data_get($lesson->config, 'instructions', ''),
                 'due_at' => data_get($lesson->config, 'due_at'),
                 'max_points' => data_get($lesson->config, 'max_points', 100),
+                'passing_score' => data_get($lesson->config, 'passing_score', 70),
+                'requires_approval' => data_get($lesson->config, 'requires_approval', true),
                 'rubric' => data_get($lesson->config, 'rubric', []),
             ]
         );
