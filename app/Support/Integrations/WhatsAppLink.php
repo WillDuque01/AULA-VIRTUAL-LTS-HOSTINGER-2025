@@ -3,6 +3,8 @@
 namespace App\Support\Integrations;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class WhatsAppLink
@@ -16,8 +18,12 @@ class WhatsAppLink
             || filled(Arr::get($config, 'default_to'));
     }
 
-    public static function assignmentSummary(array $summary, ?string $course = null): ?string
-    {
+    public static function assignmentSummary(
+        array $summary,
+        ?string $course = null,
+        string $context = 'student.dashboard.summary',
+        array $meta = []
+    ): ?string {
         if (! self::isAvailable()) {
             return null;
         }
@@ -30,21 +36,31 @@ class WhatsAppLink
             'rejected' => $summary['rejected'] ?? 0,
         ]);
 
-        return self::buildLink($message);
+        return self::wrapRedirect(self::buildLink($message), $context, array_merge($meta, [
+            'course' => $course,
+            'summary' => $summary,
+        ]));
     }
 
-    public static function assignment(array $context): ?string
-    {
+    public static function assignment(
+        array $contextPayload,
+        string $context = 'student.dashboard.assignment',
+        array $meta = []
+    ): ?string {
         if (! self::isAvailable()) {
             return null;
         }
 
         $message = __('whatsapp.assignment.help', [
-            'title' => $context['title'] ?? 'Tarea',
-            'status' => $context['status'] ?? 'pending',
+            'title' => $contextPayload['title'] ?? 'Tarea',
+            'status' => $contextPayload['status'] ?? 'pending',
         ]);
 
-        return self::buildLink($message);
+        return self::wrapRedirect(
+            self::buildLink($message),
+            $context,
+            array_merge($meta, $contextPayload)
+        );
     }
 
     private static function buildLink(string $message): ?string
@@ -71,6 +87,24 @@ class WhatsAppLink
         }
 
         return sprintf('https://wa.me/%s?text=%s', $digits, urlencode($message));
+    }
+
+    private static function wrapRedirect(?string $target, string $context, array $meta = []): ?string
+    {
+        if (! $target) {
+            return null;
+        }
+
+        $payload = [
+            'target' => Crypt::encryptString($target),
+            'context' => $context,
+        ];
+
+        if (! empty($meta)) {
+            $payload['meta'] = Crypt::encryptString(json_encode($meta));
+        }
+
+        return URL::temporarySignedRoute('whatsapp.redirect', now()->addMinutes(30), $payload);
     }
 }
 

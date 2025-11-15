@@ -74,7 +74,12 @@
             </div>
         </div>
         @php
-            $whatsappSummaryLink = \App\Support\Integrations\WhatsAppLink::assignmentSummary($assignmentSummary, $course?->slug);
+            $whatsappSummaryLink = \App\Support\Integrations\WhatsAppLink::assignmentSummary(
+                $assignmentSummary,
+                $course?->slug,
+                'student.dashboard.summary',
+                ['course' => $course?->slug]
+            );
         @endphp
         @if($whatsappSummaryLink)
             <div class="px-6 py-3 border-b border-slate-100 bg-slate-50/60">
@@ -119,7 +124,14 @@
                         'rejected' => 'bg-rose-50 text-rose-700 border border-rose-100',
                         default => 'bg-slate-50 text-slate-600 border border-slate-100',
                     };
-                    $whatsLink = \App\Support\Integrations\WhatsAppLink::assignment($assignment);
+                    $whatsLink = \App\Support\Integrations\WhatsAppLink::assignment(
+                        [
+                            'title' => $assignment['title'],
+                            'status' => $assignment['status'] ?? 'pending',
+                        ],
+                        'student.dashboard.assignment',
+                        ['assignment' => $assignment['title']]
+                    );
                 @endphp
                 <div class="px-6 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>

@@ -176,7 +176,7 @@ class ProfessorDashboardHeatmapTest extends TestCase
 
         Livewire::actingAs($teacher)
             ->test(Dashboard::class)
-            ->assertSee('https://wa.me/573001112233', false);
+            ->assertSee('/whatsapp/redirect', false);
     }
 
     private function createLesson(string $title): Lesson

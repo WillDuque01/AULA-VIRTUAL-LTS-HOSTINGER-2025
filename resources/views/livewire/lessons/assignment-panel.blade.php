@@ -43,10 +43,15 @@
                 </ul>
             </div>
         @endif
-        @if($link = \App\Support\Integrations\WhatsAppLink::assignment([
-            'title' => data_get($lesson->config, 'title', 'Tarea'),
-            'status' => $submission?->status ?? 'pending',
-        ]))
+        @php($link = \App\Support\Integrations\WhatsAppLink::assignment(
+            [
+                'title' => data_get($lesson->config, 'title', 'Tarea'),
+                'status' => $submission?->status ?? 'pending',
+            ],
+            'lesson.assignment-panel',
+            ['lesson_id' => $lesson->id]
+        ))
+        @if($link)
             <div>
                 <a href="{{ $link }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300">
                     {{ __('whatsapp.assignment.help_cta') }} ↗

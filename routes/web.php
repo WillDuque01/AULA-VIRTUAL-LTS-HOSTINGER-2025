@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvisionerController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SetupController;
+use App\Http\Controllers\WhatsAppRedirectController;
 use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
 use App\Livewire\Admin\AssignmentsManager;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/es');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/certificates/verify/{code}', [CertificateController::class, 'verify'])->name('certificates.verify');
+Route::middleware('auth')->get('/whatsapp/redirect', WhatsAppRedirectController::class)->name('whatsapp.redirect');
 
 Route::prefix('{locale}')
     ->whereIn('locale', ['es', 'en'])

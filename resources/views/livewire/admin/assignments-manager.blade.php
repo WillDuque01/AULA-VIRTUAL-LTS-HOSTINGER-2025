@@ -37,10 +37,14 @@
                             @if($submission['attachment_url'])
                                 <a href="{{ $submission['attachment_url'] }}" target="_blank" class="text-xs text-blue-600">Ver adjunto ↗</a>
                             @endif
-                            @php($followUpLink = \App\Support\Integrations\WhatsAppLink::assignment([
-                                'title' => $submission['assignment_title'] ?? 'Tarea',
-                                'status' => $submission['status'] ?? 'pending',
-                            ]))
+                            @php($followUpLink = \App\Support\Integrations\WhatsAppLink::assignment(
+                                [
+                                    'title' => $submission['assignment_title'] ?? 'Tarea',
+                                    'status' => $submission['status'] ?? 'pending',
+                                ],
+                                'admin.assignments-manager',
+                                ['submission_id' => $submission['id']]
+                            ))
                             @if($followUpLink)
                                 <a href="{{ $followUpLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-400">
                                     {{ __('whatsapp.assignment.followup_cta') }} ↗

@@ -135,7 +135,7 @@ class StudentDashboardAssignmentsTest extends TestCase
             ->assertSet('assignmentSummary.submitted', 1)
             ->assertSet('assignmentSummary.rejected', 1)
             ->assertSet('assignmentSummary.approved', 1)
-            ->assertSee('https://wa.me/573001112233', false);
+            ->assertSee('/whatsapp/redirect', false);
     }
 }
 
