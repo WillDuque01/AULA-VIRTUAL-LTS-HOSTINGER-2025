@@ -6,9 +6,11 @@ use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\VideoProgress;
+use App\Notifications\CertificateIssuedNotification;
 use App\Support\Certificates\CertificateGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -65,20 +67,6 @@ class Dashboard extends Component
             ->latest()
             ->take(5)
             ->get();
-
-        if ($this->course) {
-            $this->latestCertificate = Certificate::where('user_id', $user->id)
-                ->where('course_id', $this->course->id)
-                ->latest()
-                ->first();
-
-            $this->certificateDownloadUrl = $this->latestCertificate
-                ? route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $this->latestCertificate])
-                : null;
-        } else {
-            $this->latestCertificate = null;
-            $this->certificateDownloadUrl = null;
-        }
 
         $this->course = Course::with('chapters.lessons')
             ->where('published', true)
@@ -147,6 +135,8 @@ class Dashboard extends Component
         });
 
         $this->upcomingLessons = $pendingLessons->take(4);
+
+        $this->refreshCertificateState($user, $percent);
     }
 
     public function generateCertificate(CertificateGenerator $generator): void
@@ -161,6 +151,8 @@ class Dashboard extends Component
             'percent' => $this->stats['percent'],
         ]);
 
+        Notification::send($user, new CertificateIssuedNotification($certificate));
+
         $this->latestCertificate = $certificate;
         $this->certificateDownloadUrl = route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $certificate]);
         session()->flash('certificate_status', __('Certificado generado correctamente.'));
@@ -169,5 +161,36 @@ class Dashboard extends Component
     public function render()
     {
         return view('livewire.student.dashboard');
+    }
+
+    private function refreshCertificateState($user, int $percent): void
+    {
+        if (! $this->course) {
+            $this->latestCertificate = null;
+            $this->certificateDownloadUrl = null;
+
+            return;
+        }
+
+        $certificate = Certificate::where('user_id', $user->id)
+            ->where('course_id', $this->course->id)
+            ->latest()
+            ->first();
+
+        if (! $certificate && config('certificates.auto_issue', true)) {
+            $threshold = (int) config('certificates.completion_threshold', 90);
+            if ($percent >= $threshold) {
+                $certificate = app(CertificateGenerator::class)->generate($user, $this->course, [
+                    'percent' => $percent,
+                ]);
+                Notification::send($user, new CertificateIssuedNotification($certificate));
+                session()->flash('certificate_status', __('Tu certificado se emitió automáticamente. 💫'));
+            }
+        }
+
+        $this->latestCertificate = $certificate;
+        $this->certificateDownloadUrl = $certificate
+            ? route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $certificate])
+            : null;
     }
 }

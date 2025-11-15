@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Professor;
 
+use App\Models\Certificate;
 use App\Models\Lesson;
 use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
@@ -29,11 +30,14 @@ class Dashboard extends Component
         'duration' => null,
     ];
 
+    public Collection $recentCertificates;
+
     public function mount(): void
     {
         $this->lessonInsights = collect();
         $this->recentActivity = collect();
         $this->heatmap['bucket_seconds'] = max(1, (int) config('player.heatmap_bucket_seconds', 15));
+        $this->recentCertificates = collect();
         $this->loadData();
     }
 
@@ -86,6 +90,10 @@ class Dashboard extends Component
             ->values();
 
         $this->loadHeatmapData();
+        $this->recentCertificates = Certificate::with(['user', 'course'])
+            ->latest('issued_at')
+            ->limit(5)
+            ->get();
     }
 
     private function loadHeatmapData(): void

@@ -89,6 +89,49 @@
         </div>
     </div>
 
+    <div class="grid gap-6 lg:grid-cols-2">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex flex-col gap-2">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.certificates.title') }}</p>
+                <div class="flex items-center gap-6">
+                    <div>
+                        <p class="text-xs text-slate-500">{{ __('dashboard.certificates.total') }}</p>
+                        <p class="text-3xl font-bold text-slate-900">{{ $certificateStats['total'] }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500">{{ __('dashboard.certificates.last24') }}</p>
+                        <p class="text-3xl font-bold text-emerald-600">{{ $certificateStats['last_24h'] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.certificates.recent') }}</p>
+            </div>
+            <div class="p-6">
+                @if($recentCertificates->isEmpty())
+                    <p class="text-sm text-slate-500">{{ __('dashboard.certificates.empty') }}</p>
+                @else
+                    <ul class="space-y-2 text-sm">
+                        @foreach($recentCertificates as $certificate)
+                            <li class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold text-slate-800">{{ $certificate['student'] }}</p>
+                                    <p class="text-xs text-slate-500">{{ $certificate['course'] }}</p>
+                                </div>
+                                <div class="text-right text-xs text-slate-500">
+                                    <p>{{ $certificate['issued_at'] }}</p>
+                                    <p class="font-mono text-slate-400">{{ $certificate['code'] }}</p>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

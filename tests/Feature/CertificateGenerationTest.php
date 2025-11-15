@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\VideoProgress;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -55,14 +56,15 @@ class CertificateGenerationTest extends TestCase
             'watched_seconds' => 200,
         ]);
 
+        Notification::fake();
+
         Livewire::actingAs($user)
-            ->test(StudentDashboard::class)
-            ->call('generateCertificate')
-            ->assertHasNoErrors();
+            ->test(StudentDashboard::class);
 
         $certificate = Certificate::first();
         $this->assertNotNull($certificate);
         Storage::disk('local')->assertExists($certificate->file_path);
+        Notification::assertSentTo($user, \App\Notifications\CertificateIssuedNotification::class);
     }
 }
 

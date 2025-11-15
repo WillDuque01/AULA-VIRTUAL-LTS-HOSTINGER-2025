@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Certificate;
 use App\Models\IntegrationEvent;
 use App\Models\PaymentEvent;
 use App\Models\Subscription;
@@ -39,6 +40,13 @@ class Dashboard extends Component
 
     public Collection $topStreaks;
 
+    public array $certificateStats = [
+        'total' => 0,
+        'last_24h' => 0,
+    ];
+
+    public Collection $recentCertificates;
+
     public function mount(): void
     {
         $this->revenueTrend = collect();
@@ -46,6 +54,7 @@ class Dashboard extends Component
         $this->abandonmentInsights = collect();
         $this->topXpStudents = collect();
         $this->topStreaks = collect();
+        $this->recentCertificates = collect();
         $this->loadMetrics();
     }
 
@@ -89,6 +98,8 @@ class Dashboard extends Component
         $this->abandonmentInsights = $this->loadAbandonmentInsights();
         $this->topXpStudents = $this->loadTopXpStudents();
         $this->topStreaks = $this->loadTopStreaks();
+        $this->certificateStats = $this->loadCertificateStats();
+        $this->recentCertificates = $this->loadRecentCertificates();
     }
 
     public function render()
@@ -157,6 +168,28 @@ class Dashboard extends Component
             ->map(fn ($user) => [
                 'name' => $user->name,
                 'streak' => $user->current_streak,
+            ]);
+    }
+
+    private function loadCertificateStats(): array
+    {
+        return [
+            'total' => Certificate::count(),
+            'last_24h' => Certificate::where('issued_at', '>=', now()->subDay())->count(),
+        ];
+    }
+
+    private function loadRecentCertificates(): Collection
+    {
+        return Certificate::with(['user', 'course'])
+            ->latest('issued_at')
+            ->limit(5)
+            ->get()
+            ->map(fn ($certificate) => [
+                'student' => $certificate->user?->name,
+                'course' => $certificate->course?->slug,
+                'issued_at' => optional($certificate->issued_at)->diffForHumans(),
+                'code' => $certificate->code,
             ]);
     }
 }

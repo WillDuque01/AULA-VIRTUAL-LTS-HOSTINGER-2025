@@ -105,4 +105,31 @@
             @endforelse
         </div>
     </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.certificates.recent') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.certificates.title') }}</h4>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100">
+            @forelse($recentCertificates as $certificate)
+                <div class="px-6 py-4 flex items-center justify-between text-sm">
+                    <div>
+                        <p class="font-semibold text-slate-900">{{ $certificate->user?->name }}</p>
+                        <p class="text-xs text-slate-500">{{ $certificate->course?->slug }}</p>
+                    </div>
+                    <div class="text-right text-xs text-slate-500">
+                        <p>{{ optional($certificate->issued_at)->diffForHumans() }}</p>
+                        <p class="font-mono text-slate-400">{{ $certificate->code }}</p>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-sm text-slate-500">
+                    {{ __('dashboard.certificates.empty') }}
+                </div>
+            @endforelse
+        </div>
+    </div>
 </div>
