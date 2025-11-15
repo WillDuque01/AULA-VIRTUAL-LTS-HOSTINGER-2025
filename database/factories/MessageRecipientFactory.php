@@ -2,22 +2,22 @@
 
 namespace Database\Factories;
 
+use App\Models\Message;
+use App\Models\MessageRecipient;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MessageRecipient>
- */
 class MessageRecipientFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = MessageRecipient::class;
+
     public function definition(): array
     {
         return [
-            //
+            'message_id' => Message::factory(),
+            'user_id' => User::factory(),
+            'status' => 'unread',
+            'metadata' => ['via' => 'factory'],
         ];
     }
 }

@@ -10,6 +10,7 @@ use App\Http\Livewire\Player;
 use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
+use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
@@ -63,6 +64,10 @@ Route::prefix('{locale}')
             Route::get('/admin/branding', BrandingDesigner::class)
                 ->middleware('can:manage-settings')
                 ->name('admin.branding');
+
+            Route::get('/admin/payments/simulator', PaymentSimulator::class)
+                ->middleware('can:manage-settings')
+                ->name('admin.payments.simulator');
 
             Route::get('/admin/messages', AdminMessageCenter::class)
                 ->middleware('role:teacher_admin|teacher')

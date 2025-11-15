@@ -23,6 +23,9 @@
                         <x-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
                             Integraciones
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.payments.simulator')" :active="request()->routeIs('admin.payments.simulator')">
+                            {{ __('Pagos') }}
+                        </x-nav-link>
                     @endcan
                     @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
                         <x-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
@@ -95,6 +98,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
                     Integraciones
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.payments.simulator')" :active="request()->routeIs('admin.payments.simulator')">
+                    {{ __('Pagos') }}
                 </x-responsive-nav-link>
             @endcan
             @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))

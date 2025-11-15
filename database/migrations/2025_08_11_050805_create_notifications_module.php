@@ -76,7 +76,7 @@ return new class extends Migration
             $t->timestamps();
         });
 
-        Schema::create('messages', function (Blueprint $t) {
+        Schema::create('conversation_messages', function (Blueprint $t) {
             $t->id();
             $t->foreignId('conversation_id')->constrained()->cascadeOnDelete();
             $t->foreignId('sender_id')->constrained('users');
@@ -89,9 +89,9 @@ return new class extends Migration
             $t->timestamps();
         });
 
-        Schema::create('message_reads', function (Blueprint $t) {
+        Schema::create('conversation_message_reads', function (Blueprint $t) {
             $t->id();
-            $t->foreignId('message_id')->constrained()->cascadeOnDelete();
+            $t->foreignId('message_id')->constrained('conversation_messages')->cascadeOnDelete();
             $t->foreignId('user_id')->constrained()->cascadeOnDelete();
             $t->timestamp('read_at')->nullable();
             $t->timestamps();
@@ -103,8 +103,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('message_reads');
-        Schema::dropIfExists('messages');
+        Schema::dropIfExists('conversation_message_reads');
+        Schema::dropIfExists('conversation_messages');
         Schema::dropIfExists('conversation_participants');
         Schema::dropIfExists('conversations');
         Schema::dropIfExists('notification_reads');

@@ -2,22 +2,27 @@
 
 namespace Database\Factories;
 
+use App\Models\Message;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Message>
- */
 class MessageFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Message::class;
+
     public function definition(): array
     {
         return [
-            //
+            'uuid' => (string) Str::uuid(),
+            'sender_id' => User::factory(),
+            'type' => 'direct',
+            'subject' => $this->faker->sentence(),
+            'body' => $this->faker->paragraph(),
+            'locale' => $this->faker->randomElement(['es', 'en']),
+            'notify_email' => true,
+            'metadata' => ['via' => 'factory'],
+            'sent_at' => now(),
         ];
     }
 }
