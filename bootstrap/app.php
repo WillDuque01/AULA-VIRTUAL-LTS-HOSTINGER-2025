@@ -2,6 +2,7 @@
 
 use App\Console\Commands\CredentialsAudit;
 use App\Console\Commands\CredentialsCheck;
+use App\Console\Commands\RetryIntegrationEvents;
 use App\Console\Commands\SimulatePayment;
 use App\Console\Commands\StorageMigrate;
 use App\Http\Middleware\EnsureSetupIsComplete;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         StorageMigrate::class,
         CredentialsAudit::class,
         SimulatePayment::class,
+        RetryIntegrationEvents::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web([
