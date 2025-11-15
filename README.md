@@ -48,6 +48,7 @@ Credenciales seed:
   - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
   - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.
   - Estudiante: progreso personal, minutos vistos, próximas lecciones y reanudación.
+- **Branding Designer** (`/admin/branding`): panel Livewire para ajustar colores, tipografías, logos y modo oscuro, guardando en `BrandingSettings`.
 - **Mensajería y notificaciones**: migraciones, eventos/listeners, campañas por email/push y centros de mensajes para Admin/Alumno.
 - **Tiers / Suscripciones / Pagos simulados**: asociaciones curso-tier, simulador de pagos y listeners que actualizan el acceso.
 - **Panel de seguridad**: headers CSP/HSTS configurables, middleware `SecurityHeaders`.

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+@php($branding = app(\App\Settings\BrandingSettings::class))
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -14,9 +15,21 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
+        <style>
+            :root {
+                --brand-primary: {{ $branding->primary_color }};
+                --brand-secondary: {{ $branding->secondary_color }};
+                --brand-accent: {{ $branding->accent_color }};
+                --brand-radius: {{ $branding->border_radius }};
+                --brand-font: {{ $branding->font_family }};
+            }
+            body {
+                font-family: var(--brand-font), 'Figtree', sans-serif;
+            }
+        </style>
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+    <body class="font-sans antialiased {{ $branding->dark_mode ? 'dark' : '' }}">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
             @include('layouts.navigation')
 
             <!-- Page Heading -->

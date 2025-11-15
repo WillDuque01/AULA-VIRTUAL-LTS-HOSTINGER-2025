@@ -9,6 +9,7 @@ use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\TierManager;
+use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Catalog\CourseCatalog;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/groups', GroupManager::class)
         ->middleware('can:manage-settings')
         ->name('admin.groups');
+
+    Route::get('/admin/branding', BrandingDesigner::class)
+        ->middleware('can:manage-settings')
+        ->name('admin.branding');
 
     Route::post('/api/video/progress', [VideoProgressController::class,'store'])->name('api.video.progress');
 });

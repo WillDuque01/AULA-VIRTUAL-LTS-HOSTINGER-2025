@@ -15,6 +15,14 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @can('manage-settings')
+                        <x-nav-link :href="route('admin.branding')" :active="request()->routeIs('admin.branding')">
+                            Branding
+                        </x-nav-link>
+                        <x-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
+                            Integraciones
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -70,6 +78,14 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @can('manage-settings')
+                <x-responsive-nav-link :href="route('admin.branding')" :active="request()->routeIs('admin.branding')">
+                    Branding
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
+                    Integraciones
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- Responsive Settings Options -->
