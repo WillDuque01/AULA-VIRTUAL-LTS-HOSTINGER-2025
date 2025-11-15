@@ -73,5 +73,21 @@ class IntegrationOutboxTest extends TestCase
             ->assertSee('offer.launched')
             ->assertDontSee('course.unlocked');
     }
+
+    public function test_admin_can_ignore_event(): void
+    {
+        $user = User::factory()->create();
+        $event = IntegrationEvent::factory()->create(['status' => 'failed']);
+
+        Livewire::actingAs($user)
+            ->test(IntegrationOutbox::class)
+            ->call('ignore', $event->id);
+
+        $this->assertDatabaseHas('integration_events', [
+            'id' => $event->id,
+            'status' => 'ignored',
+            'last_error' => null,
+        ]);
+    }
 }
 

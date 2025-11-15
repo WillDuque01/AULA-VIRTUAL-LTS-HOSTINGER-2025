@@ -63,15 +63,23 @@
                                     <span class="text-xs text-slate-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <button wire:click="retry({{ $event->id }})"
-                                        class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-blue-300 hover:text-blue-700">
-                                    <span aria-hidden="true">⟳</span> {{ __('outbox.actions.retry') }}
-                            </button>
-                            <button wire:click="toggleDetails({{ $event->id }})"
-                                    class="mt-2 inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-amber-300 hover:text-amber-700">
-                                <span aria-hidden="true">🔎</span> {{ $expandedEventId === $event->id ? __('Cerrar') : __('Detalle') }}
-                                </button>
+                            <td class="px-4 py-3 text-right space-y-2">
+                                <div class="flex flex-wrap justify-end gap-2">
+                                    @if(in_array($event->status, ['pending', 'failed'], true))
+                                        <button wire:click="retry({{ $event->id }})"
+                                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-blue-300 hover:text-blue-700">
+                                            <span aria-hidden="true">⟳</span> {{ __('outbox.actions.retry') }}
+                                        </button>
+                                        <button wire:click="ignore({{ $event->id }})"
+                                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-rose-300 hover:text-rose-700">
+                                            <span aria-hidden="true">✕</span> {{ __('outbox.actions.ignore') }}
+                                        </button>
+                                    @endif
+                                    <button wire:click="toggleDetails({{ $event->id }})"
+                                            class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-amber-300 hover:text-amber-700">
+                                        <span aria-hidden="true">🔎</span> {{ $expandedEventId === $event->id ? __('outbox.detail.close') : __('outbox.detail.open') }}
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @if($expandedEventId === $event->id)

@@ -66,6 +66,17 @@ class IntegrationOutbox extends Component
         $this->dispatch('notify', message: __('outbox.retry_dispatched'));
     }
 
+    public function ignore(int $eventId): void
+    {
+        $event = IntegrationEvent::findOrFail($eventId);
+        $event->update([
+            'status' => 'ignored',
+            'last_error' => null,
+        ]);
+
+        $this->dispatch('notify', message: __('outbox.ignore_dispatched'));
+    }
+
     public function toggleDetails(int $eventId): void
     {
         $this->expandedEventId = $this->expandedEventId === $eventId ? null : $eventId;
@@ -109,6 +120,7 @@ class IntegrationOutbox extends Component
             'pending' => __('outbox.status.pending'),
             'sent' => __('outbox.status.sent'),
             'failed' => __('outbox.status.failed'),
+            'ignored' => __('outbox.status.ignored'),
         ];
     }
 
