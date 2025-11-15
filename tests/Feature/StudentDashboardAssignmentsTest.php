@@ -127,12 +127,15 @@ class StudentDashboardAssignmentsTest extends TestCase
             'submitted_at' => now(),
         ]);
 
+        config()->set('services.whatsapp.deeplink', 'https://wa.me/573001112233');
+
         Livewire::actingAs($user)
             ->test(Dashboard::class)
             ->assertSet('assignmentSummary.pending', 1)
             ->assertSet('assignmentSummary.submitted', 1)
             ->assertSet('assignmentSummary.rejected', 1)
-            ->assertSet('assignmentSummary.approved', 1);
+            ->assertSet('assignmentSummary.approved', 1)
+            ->assertSee('https://wa.me/573001112233', false);
     }
 }
 

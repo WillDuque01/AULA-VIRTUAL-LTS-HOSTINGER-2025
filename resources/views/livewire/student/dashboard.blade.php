@@ -73,6 +73,16 @@
                 <p class="text-xs text-slate-500">{{ __('dashboard.assignments.student_hint') }}</p>
             </div>
         </div>
+        @php
+            $whatsappSummaryLink = \App\Support\Integrations\WhatsAppLink::assignmentSummary($assignmentSummary, $course?->slug);
+        @endphp
+        @if($whatsappSummaryLink)
+            <div class="px-6 py-3 border-b border-slate-100 bg-slate-50/60">
+                <a href="{{ $whatsappSummaryLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-semibold text-emerald-700 hover:border-emerald-300">
+                    {{ __('whatsapp.assignment.summary_cta') }} <span aria-hidden="true">↗</span>
+                </a>
+            </div>
+        @endif
         @if(array_sum($assignmentSummary) > 0)
             <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                 <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.assignments.summary.title') }}</p>
@@ -109,6 +119,7 @@
                         'rejected' => 'bg-rose-50 text-rose-700 border border-rose-100',
                         default => 'bg-slate-50 text-slate-600 border border-slate-100',
                     };
+                    $whatsLink = \App\Support\Integrations\WhatsAppLink::assignment($assignment);
                 @endphp
                 <div class="px-6 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
@@ -132,13 +143,18 @@
                             <p class="text-[11px] text-rose-600 mt-1">{{ $assignment['feedback'] }}</p>
                         @endif
                     </div>
-                    <div class="text-right">
+                    <div class="text-right space-y-2">
                         <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClasses }}">
                             {{ $statusLabel }}
                             @if($assignment['score'])
                                 · {{ $assignment['score'] }} pts
                             @endif
                         </span>
+                        @if($whatsLink)
+                            <a href="{{ $whatsLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300">
+                                {{ __('whatsapp.assignment.help_cta') }} ↗
+                            </a>
+                        @endif
                     </div>
                 </div>
             @empty

@@ -43,6 +43,16 @@
                 </ul>
             </div>
         @endif
+        @if($link = \App\Support\Integrations\WhatsAppLink::assignment([
+            'title' => data_get($lesson->config, 'title', 'Tarea'),
+            'status' => $submission?->status ?? 'pending',
+        ]))
+            <div>
+                <a href="{{ $link }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300">
+                    {{ __('whatsapp.assignment.help_cta') }} ↗
+                </a>
+            </div>
+        @endif
     </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
