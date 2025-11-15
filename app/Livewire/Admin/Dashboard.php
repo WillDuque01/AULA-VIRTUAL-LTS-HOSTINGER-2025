@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\IntegrationEvent;
 use App\Models\PaymentEvent;
 use App\Models\Subscription;
 use App\Models\User;
@@ -20,6 +21,12 @@ class Dashboard extends Component
     ];
 
     public array $integrationStatus = [];
+
+    public array $outboxStats = [
+        'pending' => 0,
+        'failed' => 0,
+        'last_failed_at' => null,
+    ];
 
     public Collection $revenueTrend;
 
@@ -40,6 +47,7 @@ class Dashboard extends Component
         $this->metrics['watch_hours'] = round((VideoProgress::sum('watched_seconds') ?? 0) / 3600, 1);
 
         $this->integrationStatus = config('integrations.status', []);
+        $this->outboxStats = $this->loadOutboxStats();
 
         $this->revenueTrend = PaymentEvent::selectRaw('DATE(created_at) as day, SUM(amount) as total')
             ->where('created_at', '>=', Carbon::now()->subDays(14))
@@ -72,5 +80,18 @@ class Dashboard extends Component
     public function render()
     {
         return view('livewire.admin.dashboard');
+    }
+
+    private function loadOutboxStats(): array
+    {
+        $pending = IntegrationEvent::where('status', 'pending')->count();
+        $failed = IntegrationEvent::where('status', 'failed')->count();
+        $lastFailed = IntegrationEvent::where('status', 'failed')->latest()->first();
+
+        return [
+            'pending' => $pending,
+            'failed' => $failed,
+            'last_failed_at' => $lastFailed?->created_at,
+        ];
     }
 }

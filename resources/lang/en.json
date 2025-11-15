@@ -340,6 +340,8 @@
     "outbox.actions.retry": "Retry",
     "outbox.empty": "No events match the current filters.",
     "outbox.retry_dispatched": "Retry queued successfully.",
+    "outbox.no_recent_errors": "No recent errors",
+    "outbox.view_link": "Open outbox",
     "email.blocks.footer.support": "Need help? Reply to this email or write to :email",
     "email.blocks.footer.preferences": "Update your notification preferences",
     "email.blocks.message.preview": "Message preview",
