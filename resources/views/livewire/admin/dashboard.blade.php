@@ -152,7 +152,14 @@
                             <div>
                                 <p class="font-semibold text-slate-800">{{ $verification['student'] ?? __('dashboard.certificates.anonymous_student') }}</p>
                                 <p class="text-xs text-slate-500">{{ $verification['course'] }}</p>
-                                <p class="text-[11px] text-slate-400 mt-0.5">{{ __('dashboard.certificates.verification_source', ['source' => strtoupper($verification['source'] ?? 'web')]) }}</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">
+                                    {{ __('dashboard.certificates.verification_source', ['source' => strtoupper($verification['source'] ?? 'web')]) }}
+                                    · IP {{ $verification['ip'] ?? '—' }}
+                                </p>
+                                <details class="mt-1 text-[11px] text-slate-400">
+                                    <summary class="cursor-pointer">{{ __('dashboard.certificates.verification_details') }}</summary>
+                                    <p>{{ $verification['user_agent'] ?? 'N/A' }}</p>
+                                </details>
                             </div>
                             <div class="text-right text-xs text-slate-500">
                                 <p>{{ $verification['verified_at'] }}</p>

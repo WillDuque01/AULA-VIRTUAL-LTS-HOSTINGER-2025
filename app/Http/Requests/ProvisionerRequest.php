@@ -51,6 +51,8 @@ class ProvisionerRequest extends FormRequest
             'MAKE_WEBHOOK_URL' => ['nullable', 'url', 'max:255'],
             'DISCORD_WEBHOOK_URL' => ['nullable', 'url', 'max:255'],
 
+            'CERTIFICATES_VERIFY_SECRET' => ['nullable', 'string', 'max:255'],
+
             'GOOGLE_SHEETS_ENABLED' => ['nullable', 'boolean'],
             'FORCE_FREE_STORAGE' => ['nullable', 'boolean'],
             'FORCE_FREE_REALTIME' => ['nullable', 'boolean'],

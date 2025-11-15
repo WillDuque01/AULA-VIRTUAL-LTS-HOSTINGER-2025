@@ -71,6 +71,12 @@
       <label>GOOGLE_SERVICE_ACCOUNT_JSON_PATH</label><input name="GOOGLE_SERVICE_ACCOUNT_JSON_PATH" value="{{ config('services.google.service_account_json', 'storage/app/keys/google.json') }}">
       <label>SHEET_ID</label><input name="SHEET_ID" value="{{ config('services.google.sheet_id') }}">
       <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="GOOGLE_SHEETS_ENABLED" value="1" {{ config('services.google.enabled') ? 'checked' : '' }}> Habilitar Google Sheets</label>
+      <label class="mt-3 text-xs text-slate-500 uppercase font-semibold">CERTIFICATES_VERIFY_SECRET</label>
+      <div class="flex items-center gap-2">
+        <input name="CERTIFICATES_VERIFY_SECRET" value="{{ config('services.certificates.verify_secret') }}" class="flex-1" type="password">
+        <button type="button" id="generate-certificate-secret" class="px-3 py-2 text-xs font-semibold rounded bg-slate-900 text-white">Rotar</button>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-1">Se usa para firmar el endpoint `/api/certificates/verify`.</p>
     </div>
     <div class="card"><h3 class="font-medium mb-2">Modos gratuitos</h3>
       <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_STORAGE" value="1" {{ config('integrations.force_free_storage') ? 'checked' : '' }}> Forzar almacenamiento local</label>
@@ -82,6 +88,16 @@
     </div>
   </form>
   <script>
+    const secretInput = document.querySelector('input[name="CERTIFICATES_VERIFY_SECRET"]');
+    const generateSecret = () => {
+      const random = crypto.getRandomValues(new Uint8Array(32));
+      return Array.from(random, (b) => ('0' + b.toString(16)).slice(-2)).join('');
+    };
+    document.getElementById('generate-certificate-secret')?.addEventListener('click', () => {
+      if (secretInput) {
+        secretInput.value = generateSecret();
+      }
+    });
     document.getElementById('prov').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const data = new FormData(e.target);

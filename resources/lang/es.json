@@ -20,6 +20,7 @@
     "dashboard.certificates.verifications_empty":  "Aún no hay verificaciones recientes.",
     "dashboard.certificates.anonymous_student":  "Estudiante anónimo",
     "dashboard.certificates.verification_source":  "Origen: :source",
+    "dashboard.certificates.verification_details":  "Detalles",
     "dashboard.certificates.recent":  "Certificados recientes",
     "dashboard.certificates.empty":  "Aún no hay certificados emitidos.",
     "dashboard.assignments.student_title":  "Próximas entregas",

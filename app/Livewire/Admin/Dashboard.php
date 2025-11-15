@@ -211,8 +211,11 @@ class Dashboard extends Component
                 'student' => $log->certificate?->user?->name,
                 'course' => $log->certificate?->course?->slug,
                 'verified_at' => optional($log->created_at)->diffForHumans(),
+                'verified_at_absolute' => optional($log->created_at)->toDayDateTimeString(),
                 'code' => $log->certificate?->code,
                 'source' => $log->source,
+                'ip' => $log->ip,
+                'user_agent' => $log->user_agent,
             ]);
     }
 }
