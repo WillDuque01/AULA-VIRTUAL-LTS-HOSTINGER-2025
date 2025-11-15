@@ -8,6 +8,7 @@ use App\Models\StudentGroup;
 use App\Models\Tier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -28,6 +29,7 @@ class CourseCatalogTest extends TestCase
 
     public function test_user_can_simulate_purchase_and_gain_access(): void
     {
+        Notification::fake();
         $user = User::factory()->create();
         $tier = Tier::factory()->create(['access_type' => 'paid', 'price_monthly' => 25, 'slug' => 'gold']);
         $group = StudentGroup::factory()->create(['tier_id' => $tier->id]);

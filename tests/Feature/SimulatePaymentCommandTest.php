@@ -7,6 +7,7 @@ use App\Models\Tier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class SimulatePaymentCommandTest extends TestCase
@@ -15,6 +16,7 @@ class SimulatePaymentCommandTest extends TestCase
 
     public function test_payment_simulator_assigns_tier_and_subscription(): void
     {
+        Notification::fake();
         $user = User::factory()->create(['email' => 'student@example.com']);
         $tier = Tier::factory()->create(['slug' => 'pro', 'price_monthly' => 19.00]);
         $group = StudentGroup::factory()->create(['tier_id' => $tier->id]);

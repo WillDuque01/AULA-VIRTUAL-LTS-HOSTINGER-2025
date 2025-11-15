@@ -48,7 +48,7 @@ Credenciales seed:
 - **Centro de mensajes** (admin/estudiante): bandeja Livewire, envío segmentado y plantillas de correo unificadas.
 - **Simulador de pagos** (`/admin/payments/simulator`): asigna tiers, registra `payment_events`, dispara emails y despacha webhooks.
 - **Telemetría de video**: API de progreso alimenta segmentos `video_heatmap_segments`, expuestos como heatmap de abandono en el dashboard de profesores.
-- **Eventos automatizados**: desbloqueos de curso/módulo, ofertas y cambios de tier notifican por correo e ingresan al outbox (`integration_events`) para Make/Discord/Sheets/MailerLite.
+- **Eventos automatizados**: desbloqueos de curso/módulo, ofertas y cambios de tier notifican por correo e ingresan al outbox (`integration_events`) para Make/Discord/Sheets/MailerLite. Panel `/admin/integrations/outbox` permite filtrar y reintentar.
 - **Dashboards**:
   - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
   - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.

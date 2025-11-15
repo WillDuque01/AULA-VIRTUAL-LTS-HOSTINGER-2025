@@ -9,6 +9,7 @@ use App\Models\Tier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -25,6 +26,7 @@ class PaymentSimulatorLivewireTest extends TestCase
 
     public function test_admin_can_simulate_payment_from_panel(): void
     {
+        Notification::fake();
         $admin = User::factory()->create();
         $student = User::factory()->create(['email' => 'student@example.com']);
         $tier = Tier::factory()->create(['slug' => 'plus', 'access_type' => 'paid', 'price_monthly' => 15]);

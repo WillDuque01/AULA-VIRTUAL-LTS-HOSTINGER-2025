@@ -23,6 +23,9 @@
                         <x-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
                             Integraciones
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.integrations.outbox')" :active="request()->routeIs('admin.integrations.outbox')">
+                            {{ __('Outbox') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.payments.simulator')" :active="request()->routeIs('admin.payments.simulator')">
                             {{ __('Pagos') }}
                         </x-nav-link>
@@ -98,6 +101,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
                     Integraciones
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.integrations.outbox')" :active="request()->routeIs('admin.integrations.outbox')">
+                    {{ __('Outbox') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.payments.simulator')" :active="request()->routeIs('admin.payments.simulator')">
                     {{ __('Pagos') }}

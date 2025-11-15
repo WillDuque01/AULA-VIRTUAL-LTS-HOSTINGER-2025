@@ -10,6 +10,7 @@ use App\Http\Livewire\Player;
 use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
+use App\Livewire\Admin\IntegrationOutbox;
 use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
@@ -72,6 +73,10 @@ Route::prefix('{locale}')
             Route::get('/admin/messages', AdminMessageCenter::class)
                 ->middleware('role:teacher_admin|teacher')
                 ->name('admin.messages');
+
+            Route::get('/admin/integrations/outbox', IntegrationOutbox::class)
+                ->middleware('can:manage-settings')
+                ->name('admin.integrations.outbox');
 
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')
