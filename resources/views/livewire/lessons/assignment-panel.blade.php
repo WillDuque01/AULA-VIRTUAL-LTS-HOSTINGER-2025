@@ -53,6 +53,17 @@
                     <p class="mt-1 text-emerald-700">{{ $submission->feedback }}</p>
                 @endif
             </div>
+        @elseif($submission && $submission->status === 'rejected')
+            <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                Tu entrega fue rechazada. Revisa el feedback y vuelve a enviar.
+                @if($submission->feedback)
+                    <p class="mt-1 text-rose-700">{{ $submission->feedback }}</p>
+                @endif
+            </div>
+        @elseif($submission && $submission->status === 'submitted')
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Recibimos tu entrega. Quedará desbloqueada cuando un profesor la apruebe.
+            </div>
         @endif
 
         <form wire:submit.prevent="submit" class="space-y-4">
