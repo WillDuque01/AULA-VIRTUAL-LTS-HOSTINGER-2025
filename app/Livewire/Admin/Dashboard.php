@@ -43,6 +43,7 @@ class Dashboard extends Component
     public array $certificateStats = [
         'total' => 0,
         'last_24h' => 0,
+        'verified_total' => 0,
     ];
 
     public Collection $recentCertificates;
@@ -176,6 +177,7 @@ class Dashboard extends Component
         return [
             'total' => Certificate::count(),
             'last_24h' => Certificate::where('issued_at', '>=', now()->subDay())->count(),
+            'verified_total' => Certificate::sum('verified_count'),
         ];
     }
 
@@ -190,6 +192,7 @@ class Dashboard extends Component
                 'course' => $certificate->course?->slug,
                 'issued_at' => optional($certificate->issued_at)->diffForHumans(),
                 'code' => $certificate->code,
+                'verified' => $certificate->verified_count,
             ]);
     }
 }

@@ -119,6 +119,7 @@
                     <div>
                         <p class="font-semibold text-slate-900">{{ $certificate->user?->name }}</p>
                         <p class="text-xs text-slate-500">{{ $certificate->course?->slug }}</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">{{ __('dashboard.certificates.verified_label', ['count' => $certificate->verified_count]) }}</p>
                     </div>
                     <div class="text-right text-xs text-slate-500">
                         <p>{{ optional($certificate->issued_at)->diffForHumans() }}</p>

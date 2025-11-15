@@ -13,6 +13,8 @@
     "dashboard.certificates.title":  "Certificados emitidos",
     "dashboard.certificates.total":  "Total emitidos",
     "dashboard.certificates.last24":  "Últimas 24h",
+    "dashboard.certificates.verified_total":  "Verificaciones totales",
+    "dashboard.certificates.verified_label":  ":count verificaciones",
     "dashboard.certificates.recent":  "Certificados recientes",
     "dashboard.certificates.empty":  "Aún no hay certificados emitidos.",
     "Profile":  "Perfil",

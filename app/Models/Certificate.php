@@ -17,11 +17,15 @@ class Certificate extends Model
         'file_path',
         'issued_at',
         'metadata',
+        'verified_count',
+        'last_verified_at',
     ];
 
     protected $casts = [
         'issued_at' => 'datetime',
         'metadata' => 'array',
+        'verified_count' => 'integer',
+        'last_verified_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

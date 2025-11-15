@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/es');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/certificates/verify/{code}', [CertificateController::class, 'verify'])->name('certificates.verify');
 
 Route::prefix('{locale}')
     ->whereIn('locale', ['es', 'en'])

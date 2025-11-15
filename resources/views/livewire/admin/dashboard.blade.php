@@ -102,6 +102,10 @@
                         <p class="text-xs text-slate-500">{{ __('dashboard.certificates.last24') }}</p>
                         <p class="text-3xl font-bold text-emerald-600">{{ $certificateStats['last_24h'] }}</p>
                     </div>
+                    <div>
+                        <p class="text-xs text-slate-500">{{ __('dashboard.certificates.verified_total') }}</p>
+                        <p class="text-3xl font-bold text-slate-900">{{ $certificateStats['verified_total'] }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -119,6 +123,7 @@
                                 <div>
                                     <p class="font-semibold text-slate-800">{{ $certificate['student'] }}</p>
                                     <p class="text-xs text-slate-500">{{ $certificate['course'] }}</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">{{ __('dashboard.certificates.verified_label', ['count' => $certificate['verified']]) }}</p>
                                 </div>
                                 <div class="text-right text-xs text-slate-500">
                                     <p>{{ $certificate['issued_at'] }}</p>

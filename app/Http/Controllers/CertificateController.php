@@ -22,6 +22,28 @@ class CertificateController extends Controller
             'Content-Disposition' => 'inline; filename="certificate-'.$certificate->code.'.pdf"',
         ]);
     }
+
+    public function verify(string $code)
+    {
+        $certificate = Certificate::with(['user', 'course'])
+            ->where('code', $code)
+            ->first();
+
+        if ($certificate) {
+            $certificate->increment('verified_count');
+            $certificate->forceFill(['last_verified_at' => now()])->save();
+
+            $shareUrl = route('certificates.verify', ['code' => $certificate->code]);
+            $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='.urlencode($shareUrl);
+        }
+
+        return view('certificates.verify', [
+            'certificate' => $certificate,
+            'shareUrl' => $certificate ? $shareUrl : null,
+            'qrUrl' => $certificate ? $qrUrl : null,
+            'code' => $code,
+        ]);
+    }
 }
 
 
