@@ -228,6 +228,7 @@ class Dashboard extends Component
                     'passing_score' => $assignment->passing_score,
                     'status' => $submission?->status,
                     'score' => $submission?->score,
+                    'feedback' => $submission?->feedback,
                 ];
             });
     }

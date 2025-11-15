@@ -106,6 +106,9 @@
                                 {{ __('dashboard.assignments.minimum_score', ['score' => $assignment['passing_score']]) }}
                             </p>
                         @endif
+                        @if($assignment['feedback'])
+                            <p class="text-[11px] text-rose-600 mt-1">{{ $assignment['feedback'] }}</p>
+                        @endif
                     </div>
                     <div class="text-right">
                         <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClasses }}">
