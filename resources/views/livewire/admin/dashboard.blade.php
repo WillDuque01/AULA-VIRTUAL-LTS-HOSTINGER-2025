@@ -137,6 +137,33 @@
         </div>
     </div>
 
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100">
+            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.certificates.recent_verifications') }}</p>
+            <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.certificates.verifications_subtitle') }}</h4>
+        </div>
+        <div class="p-6">
+            @if($recentVerifications->isEmpty())
+                <p class="text-sm text-slate-500">{{ __('dashboard.certificates.verifications_empty') }}</p>
+            @else
+                <ul class="space-y-2 text-sm">
+                    @foreach($recentVerifications as $verification)
+                        <li class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold text-slate-800">{{ $verification['student'] ?? __('dashboard.certificates.anonymous_student') }}</p>
+                                <p class="text-xs text-slate-500">{{ $verification['course'] }}</p>
+                            </div>
+                            <div class="text-right text-xs text-slate-500">
+                                <p>{{ $verification['verified_at'] }}</p>
+                                <p class="font-mono text-slate-400">{{ $verification['code'] }}</p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

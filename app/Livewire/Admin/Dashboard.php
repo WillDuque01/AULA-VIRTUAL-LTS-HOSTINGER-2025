@@ -48,6 +48,8 @@ class Dashboard extends Component
 
     public Collection $recentCertificates;
 
+    public Collection $recentVerifications;
+
     public function mount(): void
     {
         $this->revenueTrend = collect();
@@ -56,6 +58,7 @@ class Dashboard extends Component
         $this->topXpStudents = collect();
         $this->topStreaks = collect();
         $this->recentCertificates = collect();
+        $this->recentVerifications = collect();
         $this->loadMetrics();
     }
 
@@ -101,6 +104,7 @@ class Dashboard extends Component
         $this->topStreaks = $this->loadTopStreaks();
         $this->certificateStats = $this->loadCertificateStats();
         $this->recentCertificates = $this->loadRecentCertificates();
+        $this->recentVerifications = $this->loadRecentVerifications();
     }
 
     public function render()
@@ -193,6 +197,21 @@ class Dashboard extends Component
                 'issued_at' => optional($certificate->issued_at)->diffForHumans(),
                 'code' => $certificate->code,
                 'verified' => $certificate->verified_count,
+            ]);
+    }
+
+    private function loadRecentVerifications(): Collection
+    {
+        return Certificate::with(['user', 'course'])
+            ->whereNotNull('last_verified_at')
+            ->orderByDesc('last_verified_at')
+            ->limit(5)
+            ->get()
+            ->map(fn ($certificate) => [
+                'student' => $certificate->user?->name,
+                'course' => $certificate->course?->slug,
+                'verified_at' => optional($certificate->last_verified_at)->diffForHumans(),
+                'code' => $certificate->code,
             ]);
     }
 }
