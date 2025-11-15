@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\CertificateIssued;
 use App\Events\CourseUnlocked;
 use App\Events\ModuleUnlocked;
 use App\Events\OfferLaunched;
@@ -10,10 +11,12 @@ use App\Events\SubscriptionExpiring;
 use App\Events\SubscriptionExpired;
 use App\Events\TierUpdated;
 use App\Listeners\DispatchCelebrationNotification;
+use App\Listeners\EnqueueCertificateIntegrationEvent;
 use App\Listeners\LogSimulatedPayment;
 use App\Listeners\SendCourseUnlockedNotification;
 use App\Listeners\SendModuleUnlockedNotification;
 use App\Listeners\SendOfferLaunchedNotification;
+use App\Listeners\SendCertificateIssuedNotification;
 use App\Listeners\SendSimulatedPaymentNotification;
 use App\Listeners\SendSubscriptionExpiringNotification;
 use App\Listeners\SendSubscriptionExpiredNotification;
@@ -47,6 +50,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Events\LessonCompleted::class => [
             DispatchCelebrationNotification::class,
+        ],
+        CertificateIssued::class => [
+            SendCertificateIssuedNotification::class,
+            EnqueueCertificateIntegrationEvent::class,
         ],
     ];
 }

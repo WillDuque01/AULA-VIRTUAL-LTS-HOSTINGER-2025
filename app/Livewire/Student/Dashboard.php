@@ -6,11 +6,9 @@ use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\VideoProgress;
-use App\Notifications\CertificateIssuedNotification;
 use App\Support\Certificates\CertificateGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -151,8 +149,6 @@ class Dashboard extends Component
             'percent' => $this->stats['percent'],
         ]);
 
-        Notification::send($user, new CertificateIssuedNotification($certificate));
-
         $this->latestCertificate = $certificate;
         $this->certificateDownloadUrl = route('certificates.show', ['locale' => app()->getLocale(), 'certificate' => $certificate]);
         session()->flash('certificate_status', __('Certificado generado correctamente.'));
@@ -183,7 +179,6 @@ class Dashboard extends Component
                 $certificate = app(CertificateGenerator::class)->generate($user, $this->course, [
                     'percent' => $percent,
                 ]);
-                Notification::send($user, new CertificateIssuedNotification($certificate));
                 session()->flash('certificate_status', __('Tu certificado se emitió automáticamente. 💫'));
             }
         }

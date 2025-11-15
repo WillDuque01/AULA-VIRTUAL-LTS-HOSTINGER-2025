@@ -58,7 +58,7 @@ Credenciales seed:
   - Estudiante: progreso personal, minutos vistos, XP acumulado, racha gamificada y próximas lecciones.
 - **Gamificación + celebraciones**: `LessonCompletionService` detecta finalización (>90%), otorga XP/streak, persiste `gamification_events` y emite `LessonCompleted`; el player lanza confetti (`canvas-confetti`) y toasts con los puntos obtenidos.
 - **Tareas evaluables con rúbrica**: lecciones tipo `assignment`, panel de entrega Livewire (texto + enlace), registro en `assignments/assignment_submissions` y gestor `/admin/assignments` para calificar con feedback y puntuación.
-- **Certificados automáticos**: al superar el 90 % del curso se emite el certificado (`config/certificates.php`), se envía notificación, queda accesible en el dashboard del alumno y se registran métricas en los tableros de admin/profesor.
+- **Certificados automáticos**: al superar el 90 % del curso se emite el certificado (`config/certificates.php`), se envía notificación, queda accesible en el dashboard del alumno, se registra en los tableros admin/profesor y se despacha al outbox (`certificate.issued`) para Make/Discord/Sheets/MailerLite.
 - **Branding Designer** (`/admin/branding`): panel Livewire para ajustar colores, tipografías, logos y modo oscuro, guardando en `BrandingSettings`.
 - **i18n + SEO**: rutas duplicadas `/es` / `/en` con middleware `localized`, switcher en el layout, hreflang/canonical automáticos y `sitemap.xml` multiidioma.
 - **Integraciones externas**: outbox `integration_events` + job `DispatchIntegrationEventJob` con reintentos/HMAC; webhooks Make (`/api/webhooks/make`), despachos a Discord, Google Sheets (service account) y MailerLite cuando hay credenciales.
@@ -84,7 +84,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-88 pruebas (251 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, certificados, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
+89 pruebas (254 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, certificados, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 

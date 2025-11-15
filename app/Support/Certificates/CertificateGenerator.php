@@ -2,6 +2,7 @@
 
 namespace App\Support\Certificates;
 
+use App\Events\CertificateIssued;
 use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\User;
@@ -30,7 +31,7 @@ class CertificateGenerator
 
         Storage::disk('local')->put($path, $pdf->output());
 
-        return Certificate::create([
+        $certificate = Certificate::create([
             'user_id' => $user->id,
             'course_id' => $course->id,
             'code' => $code,
@@ -40,6 +41,10 @@ class CertificateGenerator
                 'percent' => $context['percent'] ?? null,
             ],
         ]);
+
+        CertificateIssued::dispatch($certificate);
+
+        return $certificate;
     }
 }
 
