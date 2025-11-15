@@ -3,11 +3,13 @@
 namespace App\Http\Livewire\Builder;
 
 use App\Models\Assignment;
+use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -160,7 +162,7 @@ class CourseBuilder extends Component
         $this->resetErrorBag();
         $validationErrors = $this->validateLessonConfig($type, $config, $chapterIndex, $lessonIndex);
         if (! empty($validationErrors)) {
-            $this->dispatchBrowserEvent('builder:flash', [
+            $this->dispatch('builder:flash', [
                 'variant' => 'error',
                 'message' => collect($validationErrors)->implode("\n"),
             ]);
@@ -180,7 +182,7 @@ class CourseBuilder extends Component
         }
 
         $this->refreshState();
-        $this->dispatchBrowserEvent('builder:flash', [
+        $this->dispatch('builder:flash', [
             'variant' => 'success',
             'message' => 'Lección actualizada con éxito',
         ]);
@@ -233,17 +235,20 @@ class CourseBuilder extends Component
             ->chapters()
             ->orderBy('position')
             ->with(['lessons' => function ($query) {
-                $query->orderBy('position');
+                $query->orderBy('position')->with('assignment');
             }])
             ->get();
 
-        $this->state['chapters'] = $chapters->map(function (Chapter $chapter) {
+        $assignmentStats = $this->resolveAssignmentStats($chapters);
+
+        $this->state['chapters'] = $chapters->map(function (Chapter $chapter) use ($assignmentStats) {
             return [
                 'id' => $chapter->id,
                 'title' => $chapter->title,
                 'position' => $chapter->position,
-                'lessons' => $chapter->lessons->map(function (Lesson $lesson) {
+                'lessons' => $chapter->lessons->map(function (Lesson $lesson) use ($assignmentStats) {
                     $config = $lesson->config ?? [];
+                    $assignmentId = $lesson->assignment?->id;
 
                     return [
                         'id' => $lesson->id,
@@ -270,6 +275,10 @@ class CourseBuilder extends Component
                         'rubric' => is_array(data_get($config, 'rubric'))
                             ? implode(PHP_EOL, data_get($config, 'rubric'))
                             : data_get($config, 'rubric'),
+                        'assignment_id' => $assignmentId,
+                        'stats' => $assignmentId
+                            ? ($assignmentStats[$assignmentId] ?? ['pending' => 0, 'approved' => 0, 'rejected' => 0])
+                            : null,
                     ];
                 })->toArray(),
             ];
@@ -287,7 +296,7 @@ class CourseBuilder extends Component
             $this->resequenceChapters();
         }
 
-        $this->dispatchBrowserEvent('builder:refresh-sortables');
+        $this->dispatch('builder:refresh-sortables');
     }
 
     private function resequenceChapters(): void
@@ -443,6 +452,40 @@ class CourseBuilder extends Component
         }
 
         return [];
+    }
+
+    private function resolveAssignmentStats(Collection $chapters): array
+    {
+        $assignmentIds = $chapters->flatMap(function (Chapter $chapter) {
+            return $chapter->lessons
+                ->filter(fn (Lesson $lesson) => $lesson->assignment)
+                ->map(fn (Lesson $lesson) => $lesson->assignment?->id);
+        })->filter()->values();
+
+        if ($assignmentIds->isEmpty()) {
+            return [];
+        }
+
+        return AssignmentSubmission::selectRaw('assignment_id, status, COUNT(*) as total')
+            ->whereIn('assignment_id', $assignmentIds)
+            ->groupBy('assignment_id', 'status')
+            ->get()
+            ->groupBy('assignment_id')
+            ->map(function ($group) {
+                $pending = $group
+                    ->whereIn('status', ['submitted', 'graded', 'draft'])
+                    ->sum('total');
+
+                $approved = optional($group->firstWhere('status', 'approved'))->total ?? 0;
+                $rejected = optional($group->firstWhere('status', 'rejected'))->total ?? 0;
+
+                return [
+                    'pending' => (int) $pending,
+                    'approved' => (int) $approved,
+                    'rejected' => (int) $rejected,
+                ];
+            })
+            ->toArray();
     }
 }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use App\Models\Lesson;
 use App\Models\VideoProgress;
@@ -26,11 +27,17 @@ class Player extends Component
     public ?int $estimatedMinutes = null;
     public ?string $ctaLabel = null;
     public ?string $ctaUrl = null;
+    public array $timeline = [];
+    public ?string $courseTitle = null;
 
     public function mount(Lesson $lesson): void
     {
         $this->lesson = $lesson;
-        $this->lesson->loadMissing('assignment');
+        $this->lesson->loadMissing([
+            'assignment',
+            'chapter.course.chapters.lessons.assignment',
+            'chapter.course.i18n',
+        ]);
         $this->config = $lesson->config ?? [];
         $this->isVideo = $lesson->type === 'video';
         $this->provider = $this->isVideo ? $this->resolveProvider() : 'static';
@@ -43,6 +50,7 @@ class Player extends Component
         $this->ctaUrl = $this->configValue('cta_url');
 
         $this->evaluateLocks();
+        $this->buildTimeline();
     }
 
     public function render()
@@ -63,6 +71,8 @@ class Player extends Component
             'ctaLabel' => $this->ctaLabel,
             'ctaUrl' => $this->ctaUrl,
             'prerequisiteLesson' => $this->prerequisiteLesson,
+            'timeline' => $this->timeline,
+            'courseTitle' => $this->courseTitle,
         ]);
     }
 
@@ -225,6 +235,91 @@ class Player extends Component
     private function configValue(string $key, $default = null)
     {
         return data_get($this->config, $key, $default);
+    }
+
+    private function buildTimeline(): void
+    {
+        $course = $this->lesson->chapter?->course;
+        if (! $course) {
+            $this->timeline = [];
+
+            return;
+        }
+
+        $course->loadMissing(['chapters.lessons.assignment', 'i18n']);
+
+        $assignmentIds = $course->chapters
+            ->flatMap(function ($chapter) {
+                return $chapter->lessons
+                    ->map(fn (Lesson $lesson) => $lesson->assignment?->id);
+            })
+            ->filter()
+            ->values();
+
+        $submissionMap = collect();
+        $userId = Auth::id();
+
+        if ($userId && $assignmentIds->isNotEmpty()) {
+            $submissionMap = AssignmentSubmission::whereIn('assignment_id', $assignmentIds)
+                ->where('user_id', $userId)
+                ->latest('submitted_at')
+                ->get()
+                ->groupBy('assignment_id')
+                ->map(fn ($items) => $items->first());
+        }
+
+        $this->courseTitle = optional($course->i18n->firstWhere('locale', app()->getLocale()))
+            ?->title ?? $course->slug;
+
+        $this->timeline = $course->chapters
+            ->sortBy('position')
+            ->map(function ($chapter) use ($submissionMap) {
+                return [
+                    'id' => $chapter->id,
+                    'title' => $chapter->title,
+                    'lessons' => $chapter->lessons
+                        ->sortBy('position')
+                        ->map(function (Lesson $lesson) use ($submissionMap) {
+                            $item = [
+                                'id' => $lesson->id,
+                                'title' => data_get($lesson->config, 'title', "Lección #{$lesson->position}"),
+                                'type' => $lesson->type,
+                                'current' => $lesson->id === $this->lesson->id,
+                                'requiresApproval' => (bool) data_get($lesson->config, 'requires_approval', false),
+                            ];
+
+                            if ($lesson->assignment) {
+                                $submission = $submissionMap->get($lesson->assignment->id);
+                                $item['status'] = $this->resolveAssignmentTimelineStatus($submission, $lesson->assignment);
+                                $item['score'] = $submission?->score;
+                            } else {
+                                $item['status'] = null;
+                                $item['score'] = null;
+                            }
+
+                            return $item;
+                        })
+                        ->values()
+                        ->toArray(),
+                ];
+            })
+            ->values()
+            ->toArray();
+    }
+
+    private function resolveAssignmentTimelineStatus(?AssignmentSubmission $submission, Assignment $assignment): string
+    {
+        if (! $submission) {
+            return 'pending';
+        }
+
+        return match ($submission->status) {
+            'approved' => 'approved',
+            'rejected' => 'rejected',
+            'graded' => $assignment->requires_approval ? 'graded' : 'approved',
+            'submitted' => 'submitted',
+            default => 'pending',
+        };
     }
 }
 

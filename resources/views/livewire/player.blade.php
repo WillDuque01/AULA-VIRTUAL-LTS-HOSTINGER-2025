@@ -6,8 +6,80 @@
     $bodyContent = data_get($lesson->config, 'body');
     $resourceUrl = $resourceUrl ?? data_get($lesson->config, 'resource_url');
     $estimation = $estimatedMinutes ? $estimatedMinutes.' min' : null;
+    $assignmentStatusMeta = [
+        'pending' => ['label' => __('player.timeline.assignment.pending'), 'class' => 'bg-slate-200 text-slate-700'],
+        'submitted' => ['label' => __('player.timeline.assignment.submitted'), 'class' => 'bg-sky-100 text-sky-700'],
+        'graded' => ['label' => __('player.timeline.assignment.graded'), 'class' => 'bg-violet-100 text-violet-700'],
+        'approved' => ['label' => __('player.timeline.assignment.approved'), 'class' => 'bg-emerald-100 text-emerald-700'],
+        'rejected' => ['label' => __('player.timeline.assignment.rejected'), 'class' => 'bg-rose-100 text-rose-700'],
+    ];
+    $typeGlyphs = [
+        'video' => '▶️',
+        'audio' => '🎧',
+        'pdf' => '📄',
+        'text' => '📝',
+        'assignment' => '🧾',
+        'quiz' => '❓',
+        'iframe' => '🌐',
+        'default' => '📘',
+    ];
 @endphp
 
+<div class="grid gap-6 lg:grid-cols-[320px,1fr]">
+    <aside class="lg:sticky lg:top-28 space-y-4">
+        <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-400">{{ __('player.timeline.title') }}</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ $courseTitle ?? __('player.timeline.untitled_course') }}</p>
+                </div>
+                <span class="text-xl" aria-hidden="true">🧭</span>
+            </div>
+            <div class="mt-4 space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+                @forelse($timeline as $block)
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $block['title'] ?? __('player.timeline.chapter_fallback') }}</p>
+                        <div class="mt-2 space-y-2">
+                            @foreach($block['lessons'] as $timelineLesson)
+                                @php
+                                    $isCurrent = $timelineLesson['current'] ?? false;
+                                    $statusKey = $timelineLesson['status'] ?? null;
+                                    $statusMeta = $assignmentStatusMeta[$statusKey] ?? null;
+                                    $glyph = $typeGlyphs[$timelineLesson['type']] ?? $typeGlyphs['default'];
+                                    $itemClasses = $isCurrent
+                                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-400/40'
+                                        : 'bg-white text-slate-700 border border-slate-100 hover:border-slate-300 hover:shadow-md';
+                                @endphp
+                                <a href="{{ route('lessons.player', ['locale' => app()->getLocale(), 'lesson' => $timelineLesson['id']]) }}"
+                                   class="group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition {{ $itemClasses }}"
+                                   @if($isCurrent) aria-current="true" @endif>
+                                    <span class="text-base" aria-hidden="true">{{ $glyph }}</span>
+                                    <span class="flex-1">
+                                        <span class="block font-semibold">{{ $timelineLesson['title'] }}</span>
+                                        <span class="block text-[11px] text-slate-500 group-hover:text-slate-600">
+                                            {{ ucfirst($timelineLesson['type']) }}
+                                            @if($timelineLesson['requiresApproval'] ?? false)
+                                                · {{ __('player.timeline.requires_approval_badge') }}
+                                            @endif
+                                        </span>
+                                    </span>
+                                    @if($statusMeta)
+                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $statusMeta['class'] }}">
+                                            {{ $statusMeta['label'] }}
+                                        </span>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-500">{{ __('player.timeline.empty') }}</p>
+                @endforelse
+            </div>
+        </div>
+    </aside>
+
+    <div>
 @if($isLocked)
     <div class="space-y-6">
         <div class="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 shadow-inner">
@@ -185,6 +257,8 @@
         </div>
     </div>
 @endif
+    </div>
+</div>
 
 @once
     @push('scripts')

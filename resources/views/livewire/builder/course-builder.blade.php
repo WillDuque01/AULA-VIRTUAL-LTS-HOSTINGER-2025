@@ -1,4 +1,4 @@
-<div class="space-y-6" data-component-id="{{ $this->id }}">
+<div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-semibold">Builder de curso: {{ $course->slug }}</h2>
@@ -105,7 +105,39 @@
                                 </div>
                             </div>
 
-                            <div class="mt-3 grid gap-3 md:grid-cols-3">
+                        @if(($lesson['type'] ?? '') === 'assignment')
+                            @php($assignmentStats = $lesson['stats'] ?? ['pending' => 0, 'approved' => 0, 'rejected' => 0])
+                            <div class="mt-3 space-y-2">
+                                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
+                                        <span class="text-xs">🕒</span>
+                                        {{ __('builder.assignments.stats.pending') }}: {{ $assignmentStats['pending'] ?? 0 }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
+                                        <span class="text-xs">✅</span>
+                                        {{ __('builder.assignments.stats.approved') }}: {{ $assignmentStats['approved'] ?? 0 }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700">
+                                        <span class="text-xs">⚠️</span>
+                                        {{ __('builder.assignments.stats.rejected') }}: {{ $assignmentStats['rejected'] ?? 0 }}
+                                    </span>
+                                    @if($lesson['requires_approval'] ?? false)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700">
+                                            <span class="text-xs">🛡️</span>
+                                            {{ __('builder.assignments.requires_approval') }}
+                                            @if($lesson['passing_score'])
+                                                · {{ __('builder.assignments.passing_score', ['score' => $lesson['passing_score']]) }}
+                                            @endif
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-[10px] uppercase tracking-wide text-slate-400">
+                                    {{ __('builder.assignments.stats.hint') }}
+                                </p>
+                            </div>
+                        @endif
+
+                        <div class="mt-3 grid gap-3 md:grid-cols-3">
                                 @if(($lesson['type'] ?? '') === 'video')
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Proveedor</label>
@@ -334,7 +366,7 @@
 
                 initializeSortables();
 
-                window.addEventListener('builder:refresh-sortables', () => {
+                Livewire.on('builder:refresh-sortables', () => {
                     setTimeout(() => initializeSortables(), 60);
                 });
 
@@ -370,9 +402,9 @@
                     });
                 };
 
-                window.addEventListener('builder:flash', (event) => {
-                    showToast(event.detail || {});
-                    if ((event.detail?.variant ?? 'success') === 'success') {
+                Livewire.on('builder:flash', (payload = {}) => {
+                    showToast(payload || {});
+                    if ((payload?.variant ?? 'success') === 'success') {
                         launchConfetti();
                     }
                 });
