@@ -2,35 +2,28 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 
 class OfferLaunched
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public Collection $recipients;
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
-    public function broadcastOn(): array
-    {
-        return [
-            new PrivateChannel('channel-name'),
-        ];
+    public function __construct(
+        iterable $recipients,
+        public string $offerTitle,
+        public string $offerDescription,
+        public string $tierLabel,
+        public ?string $offerUrl = null,
+        public ?string $validUntil = null,
+        public ?string $price = null,
+        public ?string $discount = null,
+        public ?string $intro = null,
+    ) {
+        $this->recipients = collect($recipients);
     }
 }
