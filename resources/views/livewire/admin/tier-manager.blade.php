@@ -45,7 +45,7 @@
                         </div>
                         <div class="flex flex-col items-end text-right text-sm text-slate-400">
                             <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Tipo') }}</span>
-                            <span class="text-base font-semibold text-slate-100">{{ \\Illuminate\\Support\\Str::title($tier->access_type) }}</span>
+                            <span class="text-base font-semibold text-slate-100">{{ \Illuminate\Support\Str::title($tier->access_type) }}</span>
                             @if($tier->access_type === 'free')
                                 <span class="text-emerald-300 text-sm font-semibold">{{ __('Gratis') }}</span>
                             @else

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Events\TierUpdated;
 use App\Models\Tier;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -124,6 +125,7 @@ class TierManager extends Component
             Tier::where('id', '!=', $tier->id)->update(['is_default' => false]);
         }
 
+        $this->notifyTierUpdated($tier);
         $this->resetForm();
         $this->loadTiers();
 
@@ -140,6 +142,7 @@ class TierManager extends Component
             $this->form['is_active'] = $tier->is_active;
         }
 
+        $this->notifyTierUpdated($tier);
         $this->loadTiers();
         session()->flash('status', $tier->is_active ? __('Tier activado.') : __('Tier desactivado.'));
     }
@@ -156,6 +159,7 @@ class TierManager extends Component
             $this->form['is_default'] = true;
         }
 
+        $this->notifyTierUpdated($tier);
         $this->loadTiers();
         session()->flash('status', __('Tier establecido como predeterminado.'));
     }
@@ -210,5 +214,12 @@ class TierManager extends Component
             'metadata_color' => '#22c55e',
         ];
         $this->featureString = '';
+    }
+
+    private function notifyTierUpdated(Tier $tier): void
+    {
+        $recipients = $tier->users()->get();
+
+        TierUpdated::dispatch($tier->fresh(), $recipients);
     }
 }
