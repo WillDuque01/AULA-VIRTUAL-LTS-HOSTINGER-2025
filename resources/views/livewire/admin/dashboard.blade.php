@@ -46,6 +46,49 @@
         </div>
     </div>
 
+    <div class="grid gap-6 lg:grid-cols-2">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.gamification.top_xp') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.gamification.xp_title') }}</h4>
+            </div>
+            <div class="p-6">
+                @if($topXpStudents->isEmpty())
+                    <p class="text-sm text-slate-500">{{ __('dashboard.gamification.empty') }}</p>
+                @else
+                    <ul class="space-y-3">
+                        @foreach($topXpStudents as $student)
+                            <li class="flex items-center justify-between text-sm">
+                                <span class="font-semibold text-slate-800">{{ $student['name'] }}</span>
+                                <span class="text-emerald-600 font-semibold">+{{ number_format($student['xp']) }} XP</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.gamification.top_streaks') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.gamification.streak_title') }}</h4>
+            </div>
+            <div class="p-6">
+                @if($topStreaks->isEmpty())
+                    <p class="text-sm text-slate-500">{{ __('dashboard.gamification.empty') }}</p>
+                @else
+                    <ul class="space-y-3">
+                        @foreach($topStreaks as $student)
+                            <li class="flex items-center justify-between text-sm">
+                                <span class="font-semibold text-slate-800">{{ $student['name'] }}</span>
+                                <span class="text-sky-600 font-semibold">{{ $student['streak'] }} 🔥</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

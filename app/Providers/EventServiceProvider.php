@@ -9,6 +9,7 @@ use App\Events\PaymentSimulated;
 use App\Events\SubscriptionExpiring;
 use App\Events\SubscriptionExpired;
 use App\Events\TierUpdated;
+use App\Listeners\DispatchCelebrationNotification;
 use App\Listeners\LogSimulatedPayment;
 use App\Listeners\SendCourseUnlockedNotification;
 use App\Listeners\SendModuleUnlockedNotification;
@@ -43,6 +44,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         SubscriptionExpired::class => [
             SendSubscriptionExpiredNotification::class,
+        ],
+        \App\Events\LessonCompleted::class => [
+            DispatchCelebrationNotification::class,
         ],
     ];
 }

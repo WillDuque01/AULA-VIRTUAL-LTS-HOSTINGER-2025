@@ -28,6 +28,37 @@
         </div>
     </div>
 
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Celebraciones recientes</p>
+                <h4 class="text-lg font-semibold text-slate-900">Últimos logros</h4>
+            </div>
+            <span class="text-xs font-semibold text-slate-500">{{ $gamificationFeed->count() }} eventos</span>
+        </div>
+        <div class="divide-y divide-slate-100">
+            @forelse($gamificationFeed as $event)
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ data_get($event->metadata, 'badge') ?: '✅ Lección completada' }}</p>
+                        <p class="text-xs text-slate-500">
+                            {{ optional($event->lesson)->config['title'] ?? __('Lección') }}
+                            · {{ optional($event->created_at)->diffForHumans() }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-emerald-600">+{{ $event->points }} XP</p>
+                        <p class="text-xs text-slate-400">Racha {{ data_get($event->metadata, 'streak', $gamification['streak']) }}</p>
+                    </div>
+                </div>
+            @empty
+                <div class="px-6 py-8 text-center text-sm text-slate-500">
+                    Completa tu próxima lección para desbloquear celebraciones y XP.
+                </div>
+            @endforelse
+        </div>
+    </div>
+
     @if($course)
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>

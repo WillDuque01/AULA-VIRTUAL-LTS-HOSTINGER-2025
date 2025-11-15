@@ -24,6 +24,8 @@ class Dashboard extends Component
         'last_completion' => null,
     ];
 
+    public Collection $gamificationFeed;
+
     public ?Course $course = null;
 
     public ?Lesson $resumeLesson = null;
@@ -33,6 +35,7 @@ class Dashboard extends Component
     public function mount(): void
     {
         $this->upcomingLessons = collect();
+        $this->gamificationFeed = collect();
         $this->loadProgress();
     }
 
@@ -48,6 +51,10 @@ class Dashboard extends Component
             'streak' => $user->current_streak ?? 0,
             'last_completion' => optional($user->last_completion_at)?->diffForHumans(),
         ];
+        $this->gamificationFeed = $user->gamificationEvents()
+            ->latest()
+            ->take(5)
+            ->get();
 
         $this->course = Course::with('chapters.lessons')
             ->where('published', true)

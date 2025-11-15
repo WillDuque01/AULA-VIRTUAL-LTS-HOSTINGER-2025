@@ -35,11 +35,17 @@ class Dashboard extends Component
 
     public Collection $abandonmentInsights;
 
+    public Collection $topXpStudents;
+
+    public Collection $topStreaks;
+
     public function mount(): void
     {
         $this->revenueTrend = collect();
         $this->watchPerCourse = collect();
         $this->abandonmentInsights = collect();
+        $this->topXpStudents = collect();
+        $this->topStreaks = collect();
         $this->loadMetrics();
     }
 
@@ -81,6 +87,8 @@ class Dashboard extends Component
             ->take(5);
 
         $this->abandonmentInsights = $this->loadAbandonmentInsights();
+        $this->topXpStudents = $this->loadTopXpStudents();
+        $this->topStreaks = $this->loadTopStreaks();
     }
 
     public function render()
@@ -124,5 +132,31 @@ class Dashboard extends Component
                     'reach' => $row->reach_count,
                 ];
             });
+    }
+
+    private function loadTopXpStudents(): Collection
+    {
+        return User::select('id', 'name', 'experience_points')
+            ->where('experience_points', '>', 0)
+            ->orderByDesc('experience_points')
+            ->limit(5)
+            ->get()
+            ->map(fn ($user) => [
+                'name' => $user->name,
+                'xp' => $user->experience_points,
+            ]);
+    }
+
+    private function loadTopStreaks(): Collection
+    {
+        return User::select('id', 'name', 'current_streak')
+            ->where('current_streak', '>', 0)
+            ->orderByDesc('current_streak')
+            ->limit(5)
+            ->get()
+            ->map(fn ($user) => [
+                'name' => $user->name,
+                'streak' => $user->current_streak,
+            ]);
     }
 }
