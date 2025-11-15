@@ -57,6 +57,7 @@ Credenciales seed:
   - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap granular por lección.
   - Estudiante: progreso personal, minutos vistos, XP acumulado, racha gamificada y próximas lecciones.
 - **Gamificación + celebraciones**: `LessonCompletionService` detecta finalización (>90%), otorga XP/streak, persiste `gamification_events` y emite `LessonCompleted`; el player lanza confetti (`canvas-confetti`) y toasts con los puntos obtenidos.
+- **Tareas evaluables con rúbrica**: lecciones tipo `assignment`, panel de entrega Livewire (texto + enlace), registro en `assignments/assignment_submissions` y gestor `/admin/assignments` para calificar con feedback y puntuación.
 - **Branding Designer** (`/admin/branding`): panel Livewire para ajustar colores, tipografías, logos y modo oscuro, guardando en `BrandingSettings`.
 - **i18n + SEO**: rutas duplicadas `/es` / `/en` con middleware `localized`, switcher en el layout, hreflang/canonical automáticos y `sitemap.xml` multiidioma.
 - **Integraciones externas**: outbox `integration_events` + job `DispatchIntegrationEventJob` con reintentos/HMAC; webhooks Make (`/api/webhooks/make`), despachos a Discord, Google Sheets (service account) y MailerLite cuando hay credenciales.
@@ -82,7 +83,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-85 pruebas (244 assertions) cubren autenticación, perfiles, builder/player, quizzes/gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
+87 pruebas (248 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 

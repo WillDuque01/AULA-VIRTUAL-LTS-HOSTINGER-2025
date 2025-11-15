@@ -7,6 +7,7 @@ use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SetupController;
 use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
+use App\Livewire\Admin\AssignmentsManager;
 use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
@@ -65,6 +66,10 @@ Route::prefix('{locale}')
             Route::get('/admin/branding', BrandingDesigner::class)
                 ->middleware('can:manage-settings')
                 ->name('admin.branding');
+
+            Route::get('/admin/assignments', AssignmentsManager::class)
+                ->middleware('can:manage-settings')
+                ->name('admin.assignments');
 
             Route::get('/admin/payments/simulator', PaymentSimulator::class)
                 ->middleware('can:manage-settings')

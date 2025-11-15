@@ -79,5 +79,10 @@ class Lesson extends Model
     {
         return $this->hasOne(Quiz::class);
     }
+
+    public function assignment()
+    {
+        return $this->hasOne(Assignment::class);
+    }
 }
 

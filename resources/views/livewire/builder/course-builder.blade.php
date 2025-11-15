@@ -137,6 +137,27 @@
                                         <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.quiz_ref" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ej. a1-colores">
                                         <p class="text-xs text-gray-500 mt-1">Opcional. Usa un slug para enlazar con seeds o plantillas de preguntas.</p>
                                     </div>
+                                @elseif(($lesson['type'] ?? '') === 'assignment')
+                                    <div class="md:col-span-3 space-y-3">
+                                        <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Instrucciones</label>
+                                        <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.instructions" rows="3" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Describe la tarea y recursos recomendados..."></textarea>
+                                        </div>
+                                        <div class="grid gap-3 md:grid-cols-3">
+                                            <div>
+                                                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Fecha límite</label>
+                                                <input type="datetime-local" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.due_at" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Puntaje máximo</label>
+                                                <input type="number" min="1" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.max_points" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="100">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Rubrica (1 criterio por línea)</label>
+                                                <textarea wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.rubric" rows="2" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Comprensión&#10;Gramática&#10;Pronunciación"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @else
                                     <div class="md:col-span-3">
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Recurso / URL</label>

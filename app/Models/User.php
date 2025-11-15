@@ -90,6 +90,11 @@ class User extends Authenticatable
         return $this->hasMany(QuizAttempt::class);
     }
 
+    public function assignmentSubmissions(): HasMany
+    {
+        return $this->hasMany(AssignmentSubmission::class);
+    }
+
     public function hasTier(string $slug): bool
     {
         return $this->activeTiers()->where('slug', $slug)->exists();

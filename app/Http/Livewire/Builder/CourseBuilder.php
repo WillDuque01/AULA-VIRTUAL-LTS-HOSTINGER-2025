@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Builder;
 
+use App\Models\Assignment;
 use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\Lesson;
@@ -28,6 +29,7 @@ class CourseBuilder extends Component
         'text' => 'Texto enriquecido',
         'iframe' => 'Iframe',
         'quiz' => 'Quiz',
+        'assignment' => 'Tarea / Entrega',
     ];
 
     public array $videoSources = [
@@ -141,6 +143,13 @@ class CourseBuilder extends Component
             $config['quiz_ref'] = trim((string) ($lessonData['quiz_ref'] ?? data_get($config, 'quiz_ref', '')));
         }
 
+        if ($type === 'assignment') {
+            $config['instructions'] = $lessonData['instructions'] ?? data_get($config, 'instructions', '');
+            $config['due_at'] = $this->normalizeDate($lessonData['due_at'] ?? data_get($config, 'due_at'));
+            $config['max_points'] = max(1, (int) ($lessonData['max_points'] ?? data_get($config, 'max_points', 100)));
+            $config['rubric'] = $this->normalizeRubric($lessonData['rubric'] ?? data_get($config, 'rubric', []));
+        }
+
         $config['prerequisite_lesson_id'] = $this->sanitizePrerequisite(
             (int) ($lessonData['prerequisite_lesson_id'] ?? data_get($config, 'prerequisite_lesson_id', 0)),
             $lesson->id
@@ -161,6 +170,12 @@ class CourseBuilder extends Component
         $lesson->locked = (bool) ($lessonData['locked'] ?? false);
         $lesson->config = $config;
         $lesson->save();
+
+        if ($type === 'assignment') {
+            $this->syncAssignment($lesson, $config);
+        } elseif ($lesson->assignment) {
+            $lesson->assignment()->delete();
+        }
 
         $this->refreshState();
         $this->dispatchBrowserEvent('builder:flash', [
@@ -245,6 +260,12 @@ class CourseBuilder extends Component
                         'release_at' => data_get($config, 'release_at'),
                         'prerequisite_lesson_id' => data_get($config, 'prerequisite_lesson_id'),
                         'quiz_ref' => data_get($config, 'quiz_ref'),
+                        'instructions' => data_get($config, 'instructions'),
+                        'due_at' => data_get($config, 'due_at'),
+                        'max_points' => data_get($config, 'max_points'),
+                        'rubric' => is_array(data_get($config, 'rubric'))
+                            ? implode(PHP_EOL, data_get($config, 'rubric'))
+                            : data_get($config, 'rubric'),
                     ];
                 })->toArray(),
             ];
@@ -309,6 +330,13 @@ class CourseBuilder extends Component
                 'title' => 'Nuevo quiz',
                 'quiz_ref' => '',
             ],
+            'assignment' => [
+                'title' => 'Nueva tarea',
+                'instructions' => '',
+                'due_at' => null,
+                'max_points' => 100,
+                'rubric' => [],
+            ],
             default => [
                 'title' => 'Bloque de contenido',
                 'body' => '',
@@ -365,6 +393,36 @@ class CourseBuilder extends Component
         }
 
         return array_key_exists($candidate, $this->availablePrerequisites) ? $candidate : null;
+    }
+
+    private function syncAssignment(Lesson $lesson, array $config): void
+    {
+        Assignment::updateOrCreate(
+            ['lesson_id' => $lesson->id],
+            [
+                'instructions' => $config['instructions'] ?? '',
+                'due_at' => $config['due_at'] ?? null,
+                'max_points' => $config['max_points'] ?? 100,
+                'rubric' => $config['rubric'] ?? [],
+            ]
+        );
+    }
+
+    private function normalizeRubric($value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter($value));
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            return collect(preg_split('/\r\n|\r|\n/', $value))
+                ->filter()
+                ->map(fn ($line) => trim($line))
+                ->values()
+                ->all();
+        }
+
+        return [];
     }
 }
 

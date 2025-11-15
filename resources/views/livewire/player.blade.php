@@ -152,6 +152,8 @@
     </div>
 @elseif($lesson->type === 'quiz')
     <livewire:lessons.quiz-runner :lesson="$lesson" />
+@elseif($lesson->type === 'assignment')
+    <livewire:lessons.assignment-panel :lesson="$lesson" />
 @else
     <div class="space-y-6">
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-6 space-y-4">
