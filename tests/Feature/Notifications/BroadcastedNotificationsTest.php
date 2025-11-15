@@ -6,6 +6,7 @@ use App\Events\CourseUnlocked;
 use App\Events\ModuleUnlocked;
 use App\Events\OfferLaunched;
 use App\Events\TierUpdated;
+use App\Jobs\DispatchIntegrationEventJob;
 use App\Models\Course;
 use App\Models\Tier;
 use App\Models\User;
@@ -14,6 +15,7 @@ use App\Notifications\ModuleUnlockedNotification;
 use App\Notifications\OfferLaunchedNotification;
 use App\Notifications\TierUpdatedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -21,8 +23,17 @@ class BroadcastedNotificationsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config()->set('services.make.webhook_url', 'https://hooks.make.test/webhook');
+        config()->set('services.make.secret', 'test-secret');
+    }
+
     public function test_course_unlocked_event_notifies_recipients(): void
     {
+        Bus::fake([DispatchIntegrationEventJob::class]);
         Notification::fake();
 
         $course = $this->createCourse();
@@ -39,10 +50,13 @@ class BroadcastedNotificationsTest extends TestCase
         ));
 
         Notification::assertSentTo($user, CourseUnlockedNotification::class);
+        Bus::assertDispatched(DispatchIntegrationEventJob::class);
+        $this->assertDatabaseHas('integration_events', ['event' => 'course.unlocked']);
     }
 
     public function test_module_unlocked_event_notifies_recipients(): void
     {
+        Bus::fake([DispatchIntegrationEventJob::class]);
         Notification::fake();
 
         $course = $this->createCourse();
@@ -57,10 +71,13 @@ class BroadcastedNotificationsTest extends TestCase
         ));
 
         Notification::assertSentTo($user, ModuleUnlockedNotification::class);
+        Bus::assertDispatched(DispatchIntegrationEventJob::class);
+        $this->assertDatabaseHas('integration_events', ['event' => 'module.unlocked']);
     }
 
     public function test_offer_launched_event_notifies_recipients(): void
     {
+        Bus::fake([DispatchIntegrationEventJob::class]);
         Notification::fake();
 
         $user = User::factory()->create();
@@ -78,10 +95,13 @@ class BroadcastedNotificationsTest extends TestCase
         ));
 
         Notification::assertSentTo($user, OfferLaunchedNotification::class);
+        Bus::assertDispatched(DispatchIntegrationEventJob::class);
+        $this->assertDatabaseHas('integration_events', ['event' => 'offer.launched']);
     }
 
     public function test_tier_updated_event_notifies_recipients(): void
     {
+        Bus::fake([DispatchIntegrationEventJob::class]);
         Notification::fake();
 
         $tier = Tier::factory()->create();
@@ -90,6 +110,8 @@ class BroadcastedNotificationsTest extends TestCase
         event(new TierUpdated($tier, [$user]));
 
         Notification::assertSentTo($user, TierUpdatedNotification::class);
+        Bus::assertDispatched(DispatchIntegrationEventJob::class);
+        $this->assertDatabaseHas('integration_events', ['event' => 'tier.updated']);
     }
 
     private function createCourse(): Course

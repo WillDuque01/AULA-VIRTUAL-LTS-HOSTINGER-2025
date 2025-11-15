@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\OfferLaunched;
 use App\Notifications\OfferLaunchedNotification;
+use App\Support\Integrations\IntegrationDispatcher;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -31,6 +32,18 @@ class SendOfferLaunchedNotification implements ShouldQueue
                 $event->intro
             )
         );
+
+        IntegrationDispatcher::dispatch('offer.launched', [
+            'offer_title' => $event->offerTitle,
+            'description' => $event->offerDescription,
+            'tier_label' => $event->tierLabel,
+            'offer_url' => $event->offerUrl,
+            'valid_until' => $event->validUntil,
+            'price' => $event->price,
+            'discount' => $event->discount,
+            'recipient_ids' => $event->recipients->pluck('id')->filter()->values()->all(),
+            'recipient_emails' => $event->recipients->pluck('email')->filter()->values()->all(),
+        ]);
     }
 }
 
