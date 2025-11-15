@@ -22,12 +22,14 @@ class AssignmentSubmission extends Model
         'rubric_scores',
         'submitted_at',
         'graded_at',
+        'approved_at',
     ];
 
     protected $casts = [
         'rubric_scores' => 'array',
         'submitted_at' => 'datetime',
         'graded_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     public function assignment(): BelongsTo

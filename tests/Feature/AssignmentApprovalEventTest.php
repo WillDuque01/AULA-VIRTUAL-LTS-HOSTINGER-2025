@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Events\AssignmentApproved;
 use App\Livewire\Admin\AssignmentsManager;
-use App\Livewire\Lessons\AssignmentPanel;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
@@ -11,71 +11,68 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-class AssignmentSubmissionTest extends TestCase
+class AssignmentApprovalEventTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_student_can_submit_assignment(): void
-    {
-        $student = User::factory()->create();
-        $lesson = $this->createAssignmentLesson();
-
-        Livewire::actingAs($student)
-            ->test(AssignmentPanel::class, ['lesson' => $lesson])
-            ->set('body', 'Respuesta detallada con enlaces y observaciones.')
-            ->set('attachmentUrl', 'https://example.com/documento.pdf')
-            ->call('submit')
-            ->assertSet('submitted', true);
-
-        $this->assertDatabaseHas('assignment_submissions', [
-            'assignment_id' => $lesson->assignment->id,
-            'user_id' => $student->id,
-            'status' => 'submitted',
-        ]);
-    }
-
-    public function test_teacher_can_grade_submission(): void
+    public function test_assignment_approval_dispatches_notification_and_outbox(): void
     {
         Role::create(['name' => 'teacher_admin']);
         $teacher = User::factory()->create();
         $teacher->assignRole('teacher_admin');
+        $student = User::factory()->create();
 
         $lesson = $this->createAssignmentLesson();
         $assignment = $lesson->assignment;
+
         $submission = AssignmentSubmission::create([
             'assignment_id' => $assignment->id,
-            'user_id' => User::factory()->create()->id,
-            'body' => 'Mi tarea completa',
+            'user_id' => $student->id,
+            'body' => 'Mi entrega',
             'status' => 'submitted',
             'max_points' => 100,
             'submitted_at' => now(),
         ]);
+
+        config(['services.make.webhook_url' => 'https://example.test/webhook']);
+        Notification::fake();
+        Bus::fake([\App\Jobs\DispatchIntegrationEventJob::class]);
+        Http::fake();
 
         Livewire::actingAs($teacher)
             ->test(AssignmentsManager::class)
             ->set('selectedAssignmentId', $assignment->id)
             ->call('editSubmission', $submission->id)
             ->set('score', 90)
-            ->set('feedback', 'Excelente gramática y ejemplos.')
+            ->set('feedback', 'Listo')
             ->call('saveGrade')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('assignment_submissions', [
             'id' => $submission->id,
-            'status' => 'approved',
-            'score' => 90,
         ]);
+        $this->assertNotNull($submission->fresh()->approved_at);
+
+        Notification::assertSentTo($student, \App\Notifications\AssignmentApprovedNotification::class);
+        $this->assertDatabaseHas('integration_events', [
+            'event' => 'assignment.approved',
+            'target' => 'make',
+        ]);
+        Bus::assertDispatched(\App\Jobs\DispatchIntegrationEventJob::class);
     }
 
     private function createAssignmentLesson(): Lesson
     {
         $course = Course::create([
-            'slug' => 'assignment-course',
-            'level' => 'b1',
+            'slug' => 'approval-course',
+            'level' => 'advanced',
             'published' => true,
         ]);
 
@@ -90,22 +87,19 @@ class AssignmentSubmissionTest extends TestCase
             'type' => 'assignment',
             'position' => 1,
             'config' => [
-                'title' => 'Ensayo cultural',
-                'instructions' => 'Escribe un ensayo de 400 palabras sobre tu ciudad.',
+                'title' => 'Pitch deck',
                 'max_points' => 100,
-                'passing_score' => 70,
+                'passing_score' => 80,
                 'requires_approval' => true,
-                'rubric' => ['Contenido', 'Gramática', 'Vocabulario'],
             ],
         ]);
 
         Assignment::create([
             'lesson_id' => $lesson->id,
-            'instructions' => 'Escribe un ensayo de 400 palabras sobre tu ciudad.',
+            'instructions' => 'Entrega tu pitch deck',
             'max_points' => 100,
-            'passing_score' => 70,
+            'passing_score' => 80,
             'requires_approval' => true,
-            'rubric' => ['Contenido', 'Gramática', 'Vocabulario'],
         ]);
 
         return $lesson->fresh('assignment');

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Events\AssignmentApproved;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +70,8 @@ class AssignmentsManager extends Component
             'graded_at' => now(),
         ]);
 
+        $this->handleApproval($submission);
+
         $this->editingSubmissionId = null;
         $this->loadSubmissions();
 
@@ -102,6 +105,28 @@ class AssignmentsManager extends Component
                 'attachment_url' => $submission->attachment_url,
             ])
             ->toArray();
+    }
+
+    private function handleApproval(AssignmentSubmission $submission): void
+    {
+        $assignment = $submission->assignment;
+        if (! $assignment || ! $assignment->requires_approval) {
+            return;
+        }
+
+        $requiredPoints = (int) ceil(($assignment->passing_score ?? 70) / 100 * ($assignment->max_points ?: 100));
+        $passed = ($submission->score ?? 0) >= max(1, $requiredPoints);
+
+        if (! $passed || $submission->approved_at) {
+            return;
+        }
+
+        $submission->update([
+            'approved_at' => now(),
+            'status' => 'approved',
+        ]);
+
+        AssignmentApproved::dispatch($submission->fresh('assignment.lesson.chapter.course', 'user'));
     }
 }
 
