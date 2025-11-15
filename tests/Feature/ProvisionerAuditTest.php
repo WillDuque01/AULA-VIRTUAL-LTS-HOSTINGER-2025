@@ -28,7 +28,7 @@ class ProvisionerAuditTest extends TestCase
         putenv('GOOGLE_CLIENT_ID=old-client-id');
         $_ENV['GOOGLE_CLIENT_ID'] = 'old-client-id';
 
-        $response = $this->post(route('provisioner.save'), [
+        $response = $this->post(route('provisioner.save', ['locale' => $this->testingLocale]), [
             'GOOGLE_CLIENT_ID' => 'new-client-id',
         ]);
 

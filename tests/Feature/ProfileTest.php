@@ -16,7 +16,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/profile');
+            ->get($this->localized('/profile'));
 
         $response->assertOk();
     }
@@ -27,14 +27,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
+            ->patch($this->localized('/profile'), [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect($this->localized('/profile'));
 
         $user->refresh();
 
@@ -49,14 +49,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
+            ->patch($this->localized('/profile'), [
                 'name' => 'Test User',
                 'email' => $user->email,
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect($this->localized('/profile'));
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
@@ -67,7 +67,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->delete('/profile', [
+            ->delete($this->localized('/profile'), [
                 'password' => 'password',
             ]);
 
@@ -85,14 +85,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->from($this->localized('/profile'))
+            ->delete($this->localized('/profile'), [
                 'password' => 'wrong-password',
             ]);
 
         $response
             ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
+            ->assertRedirect($this->localized('/profile'));
 
         $this->assertNotNull($user->fresh());
     }

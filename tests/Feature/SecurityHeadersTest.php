@@ -14,7 +14,7 @@ class SecurityHeadersTest extends TestCase
             'security.hsts.enabled' => true,
         ]);
 
-        $response = $this->get('https://example.com/');
+        $response = $this->get($this->localized());
 
         $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
@@ -28,7 +28,7 @@ class SecurityHeadersTest extends TestCase
     {
         config(['security.enabled' => false]);
 
-        $response = $this->get('/');
+        $response = $this->get($this->localized());
 
         $response->assertHeaderMissing('X-Frame-Options');
         $response->assertHeaderMissing('Content-Security-Policy');

@@ -27,6 +27,19 @@
                 font-family: var(--brand-font), 'Figtree', sans-serif;
             }
         </style>
+        <?php
+            $route = request()->route();
+            $routeName = $route ? $route->getName() : null;
+            $routeParams = $route ? $route->parameters() : [];
+        ?>
+        @if($routeName && isset($routeParams['locale']))
+            @foreach(['es','en'] as $localeOption)
+                @php($altParams = $routeParams)
+                @php($altParams['locale'] = $localeOption)
+                <link rel="alternate" hreflang="{{ $localeOption }}" href="{{ route($routeName, $altParams) }}">
+            @endforeach
+            <link rel="canonical" href="{{ route($routeName, $routeParams) }}">
+        @endif
     </head>
     <body class="font-sans antialiased {{ $branding->dark_mode ? 'dark' : '' }}">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-950">

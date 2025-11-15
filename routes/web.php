@@ -1,65 +1,71 @@
 <?php
 
-use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Api\VideoProgressController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvisionerController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SetupController;
-use App\Http\Controllers\Api\VideoProgressController;
 use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
+use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\TierManager;
-use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Catalog\CourseCatalog;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/es');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 
-Route::get('/setup', SetupController::class)->name('setup');
-Route::get('/catalog', CourseCatalog::class)->name('catalog');
+Route::prefix('{locale}')
+    ->whereIn('locale', ['es', 'en'])
+    ->group(function (): void {
+        Route::get('/', function () {
+            return view('welcome');
+        })->name('welcome');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+        Route::get('/setup', SetupController::class)->name('setup');
+        Route::get('/catalog', CourseCatalog::class)->name('catalog');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    // Builder y Player
-    Route::get('/courses/{course}/builder', CourseBuilder::class)->name('courses.builder');
-    Route::get('/lessons/{lesson}/player', Player::class)->name('lessons.player');
+        Route::get('/dashboard', function () {
+            return view('dashboard');
+        })->middleware(['auth', 'verified'])->name('dashboard');
 
-    // Notificaciones basicas (placeholder UI)
-    Route::view('/admin/notifications','notifications.index')->middleware('can:manage-settings');
-    Route::view('/student/notifications','notifications.student');
+        Route::middleware('auth')->group(function (): void {
+            Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+            Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+            Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Provisioner (Admin)
-    Route::view('/provisioner','provisioner.index')
-        ->middleware('can:manage-settings')
-        ->name('provisioner');
-    Route::post('/provisioner/save', [ProvisionerController::class,'save'])
-        ->middleware('can:manage-settings')
-        ->name('provisioner.save');
+            Route::get('/courses/{course}/builder', CourseBuilder::class)->name('courses.builder');
+            Route::get('/lessons/{lesson}/player', Player::class)->name('lessons.player');
 
-    Route::get('/admin/tiers', TierManager::class)
-        ->middleware('can:manage-settings')
-        ->name('admin.tiers');
+            Route::view('/admin/notifications', 'notifications.index')
+                ->middleware('can:manage-settings');
+            Route::view('/student/notifications', 'notifications.student');
 
-    Route::get('/admin/groups', GroupManager::class)
-        ->middleware('can:manage-settings')
-        ->name('admin.groups');
+            Route::view('/provisioner', 'provisioner.index')
+                ->middleware('can:manage-settings')
+                ->name('provisioner');
+            Route::post('/provisioner/save', [ProvisionerController::class, 'save'])
+                ->middleware('can:manage-settings')
+                ->name('provisioner.save');
 
-    Route::get('/admin/branding', BrandingDesigner::class)
-        ->middleware('can:manage-settings')
-        ->name('admin.branding');
+            Route::get('/admin/tiers', TierManager::class)
+                ->middleware('can:manage-settings')
+                ->name('admin.tiers');
 
-    Route::post('/api/video/progress', [VideoProgressController::class,'store'])->name('api.video.progress');
-});
+            Route::get('/admin/groups', GroupManager::class)
+                ->middleware('can:manage-settings')
+                ->name('admin.groups');
+
+            Route::get('/admin/branding', BrandingDesigner::class)
+                ->middleware('can:manage-settings')
+                ->name('admin.branding');
+
+            Route::post('/api/video/progress', [VideoProgressController::class, 'store'])->name('api.video.progress');
+        });
+
+        require __DIR__.'/auth.php';
+    });
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
-
-require __DIR__.'/auth.php';

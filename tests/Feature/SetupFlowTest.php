@@ -21,15 +21,17 @@ class SetupFlowTest extends TestCase
 
         $middleware = app(EnsureSetupIsComplete::class);
 
-        $request = Request::create('/', 'GET');
+        $request = Request::create('/es', 'GET');
+        $request->attributes->set('locale', 'es');
         $response = $middleware->handle($request, fn () => response('ok', 200));
 
         $this->assertTrue($response->isRedirection());
-        $this->assertStringEndsWith('/setup', $response->headers->get('Location'));
+        $this->assertStringEndsWith('/es/setup', $response->headers->get('Location'));
 
         SetupState::markCompleted();
 
-        $second = Request::create('/', 'GET');
+        $second = Request::create('/es', 'GET');
+        $second->attributes->set('locale', 'es');
         $responseOk = $middleware->handle($second, fn () => response('ok', 200));
 
         $this->assertEquals(200, $responseOk->getStatusCode());
@@ -50,7 +52,7 @@ class SetupFlowTest extends TestCase
             ->assertSet('step', 2)
             ->call('next')
             ->call('finish')
-            ->assertRedirect(route('dashboard'));
+            ->assertRedirect(route('dashboard', ['locale' => $this->testingLocale]));
 
         $this->assertTrue(SetupState::isCompleted());
         $this->assertEquals(1, User::count());

@@ -13,7 +13,7 @@ class EnsureSetupIsComplete
 
     public function handle(Request $request, Closure $next)
     {
-        if ($request->is('setup*') || $this->shouldBypass($request)) {
+        if ($this->isSetupRoute($request) || $this->shouldBypass($request)) {
             return $next($request);
         }
 
@@ -22,7 +22,12 @@ class EnsureSetupIsComplete
         }
 
         if (User::query()->count() === 0 || ! SetupState::isCompleted()) {
-            return redirect()->to('/setup');
+            $locale = $request->route('locale') ?: $request->segment(1);
+            if (! in_array($locale, config('app.available_locales', ['es', 'en']), true)) {
+                $locale = config('app.locale', 'es');
+            }
+
+            return redirect()->to('/'.$locale.'/setup');
         }
 
         return $next($request);
@@ -44,5 +49,10 @@ class EnsureSetupIsComplete
     public static function forceForConsole(bool $state = true): void
     {
         static::$forceForConsole = $state;
+    }
+
+    private function isSetupRoute(Request $request): bool
+    {
+        return $request->is('setup*') || $request->is('*/setup*');
     }
 }
