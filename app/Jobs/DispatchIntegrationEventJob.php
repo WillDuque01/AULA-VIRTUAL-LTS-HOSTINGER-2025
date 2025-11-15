@@ -12,6 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class DispatchIntegrationEventJob implements ShouldQueue
@@ -43,6 +44,7 @@ class DispatchIntegrationEventJob implements ShouldQueue
                 'discord' => $this->sendToDiscord($event),
                 'sheets' => $this->sendToSheets($event),
                 'mailerlite' => $this->sendToMailerLite($event),
+                'whatsapp' => $this->sendToWhatsApp($event),
                 default => 'skipped',
             };
 
@@ -205,5 +207,67 @@ class DispatchIntegrationEventJob implements ShouldQueue
             ->throw();
 
         return 'sent';
+    }
+
+    private function sendToWhatsApp(IntegrationEvent $event): void
+    {
+        $config = config('services.whatsapp', []);
+
+        if (! data_get($config, 'enabled')) {
+            throw new \RuntimeException('WhatsApp deshabilitado');
+        }
+
+        $token = data_get($config, 'token');
+        $phoneId = data_get($config, 'phone_number_id');
+        $defaultTo = data_get($config, 'default_to');
+        $rawRecipient = data_get($event->payload, 'student.phone') ?? $defaultTo;
+        $recipient = $rawRecipient ? preg_replace('/\D+/', '', $rawRecipient) : null;
+
+        if (! $token || ! $phoneId || ! $recipient) {
+            throw new \RuntimeException('Config de WhatsApp incompleta');
+        }
+
+        $body = $this->buildWhatsAppMessage($event);
+
+        Http::withToken($token)
+            ->timeout(12)
+            ->post("https://graph.facebook.com/v18.0/{$phoneId}/messages", [
+                'messaging_product' => 'whatsapp',
+                'to' => $recipient,
+                'type' => 'text',
+                'text' => [
+                    'preview_url' => false,
+                    'body' => $body,
+                ],
+            ])
+            ->throw();
+    }
+
+    private function buildWhatsAppMessage(IntegrationEvent $event): string
+    {
+        $title = data_get($event->payload, 'assignment.title', 'Tarea');
+        $course = data_get($event->payload, 'assignment.course', 'curso');
+        $student = data_get($event->payload, 'student.name', 'estudiante');
+        $reason = data_get($event->payload, 'submission.reason')
+            ?? data_get($event->payload, 'submission.feedback');
+
+        $lines = [
+            sprintf('*%s*', Str::headline($event->event)),
+            "Curso: {$course}",
+            "Tarea: {$title}",
+            "Estudiante: {$student}",
+        ];
+
+        if ($reason) {
+            $lines[] = 'Motivo: '.Str::limit($reason, 180);
+        }
+
+        if ($deeplink = config('services.whatsapp.deeplink')) {
+            $lines[] = $deeplink;
+        }
+
+        return Str::of(implode("\n", $lines))
+            ->limit(1000)
+            ->toString();
     }
 }

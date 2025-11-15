@@ -40,6 +40,10 @@ class IntegrationDispatcher
             $targets[] = 'mailerlite';
         }
 
+        if (config('services.whatsapp.enabled')) {
+            $targets[] = 'whatsapp';
+        }
+
         return $targets;
     }
 }

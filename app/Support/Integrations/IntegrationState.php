@@ -124,6 +124,36 @@ class IntegrationState
                 'forced' => config('integrations.force_youtube_only'),
                 'has_credentials' => $videoMode !== 'youtube',
             ],
+            'whatsapp' => self::whatsappSummary(),
+        ];
+    }
+
+    protected static function hasWhatsAppCredentials(): bool
+    {
+        $config = config('services.whatsapp', []);
+
+        return filled(Arr::get($config, 'token'))
+            && filled(Arr::get($config, 'phone_number_id'))
+            && filled(Arr::get($config, 'default_to'));
+    }
+
+    protected static function whatsappSummary(): array
+    {
+        $config = config('services.whatsapp', []);
+        $hasApi = self::hasWhatsAppCredentials();
+        $hasDeeplink = filled(Arr::get($config, 'deeplink'));
+
+        return [
+            'label' => 'Alertas WhatsApp',
+            'driver' => $hasApi ? 'cloud-api' : 'deeplink',
+            'status' => match (true) {
+                $hasApi => 'Automático (Cloud API)',
+                $hasDeeplink => 'Disponible vía deeplink',
+                default => 'Sin configurar',
+            },
+            'ok' => $hasApi || $hasDeeplink,
+            'forced' => false,
+            'has_credentials' => $hasApi,
         ];
     }
 }

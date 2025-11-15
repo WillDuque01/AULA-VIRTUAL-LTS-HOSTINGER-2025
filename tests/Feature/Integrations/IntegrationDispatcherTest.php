@@ -29,5 +29,20 @@ class IntegrationDispatcherTest extends TestCase
         $this->assertDatabaseHas('integration_events', ['target' => 'discord']);
         Queue::assertPushed(DispatchIntegrationEventJob::class, 2);
     }
+
+    public function test_whatsapp_target_is_included_when_enabled(): void
+    {
+        config()->set('services.whatsapp.enabled', true);
+        config()->set('services.whatsapp.token', 'token');
+        config()->set('services.whatsapp.phone_number_id', '12345');
+        config()->set('services.whatsapp.default_to', '+573001112233');
+
+        Queue::fake();
+
+        IntegrationDispatcher::dispatch('demo.event', ['foo' => 'bar']);
+
+        $this->assertDatabaseHas('integration_events', ['target' => 'whatsapp']);
+        Queue::assertPushed(DispatchIntegrationEventJob::class);
+    }
 }
 

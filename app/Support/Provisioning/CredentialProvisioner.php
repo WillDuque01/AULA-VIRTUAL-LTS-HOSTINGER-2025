@@ -26,6 +26,7 @@ class CredentialProvisioner
             'FORCE_FREE_REALTIME',
             'FORCE_YOUTUBE_ONLY',
             'AWS_USE_PATH_STYLE_ENDPOINT',
+            'WHATSAPP_ENABLED',
         ];
 
         foreach ($booleanKeys as $boolKey) {

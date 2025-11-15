@@ -85,4 +85,16 @@ return [
         'group_id' => env('MAILERLITE_GROUP_ID'),
     ],
 
+    'certificates' => [
+        'verify_secret' => env('CERTIFICATES_VERIFY_SECRET'),
+    ],
+
+    'whatsapp' => [
+        'enabled' => (bool) env('WHATSAPP_ENABLED', false),
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_ID'),
+        'default_to' => env('WHATSAPP_DEFAULT_TO'),
+        'deeplink' => env('WHATSAPP_DEEPLINK'),
+    ],
+
 ];

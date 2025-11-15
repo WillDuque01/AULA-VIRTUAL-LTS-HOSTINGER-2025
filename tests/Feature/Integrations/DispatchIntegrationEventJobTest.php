@@ -47,5 +47,32 @@ class DispatchIntegrationEventJobTest extends TestCase
         $event->refresh();
         $this->assertEquals('skipped', $event->status);
     }
+
+    public function test_whatsapp_event_is_marked_as_sent(): void
+    {
+        config()->set('services.whatsapp.enabled', true);
+        config()->set('services.whatsapp.token', 'token');
+        config()->set('services.whatsapp.phone_number_id', '999999');
+        config()->set('services.whatsapp.default_to', '+573001112233');
+        config()->set('services.whatsapp.deeplink', 'https://wa.me/573001112233');
+
+        Http::fake([
+            'https://graph.facebook.com/*' => Http::response(['messages' => []], 200),
+        ]);
+
+        $event = IntegrationEvent::factory()->create([
+            'target' => 'whatsapp',
+            'payload' => [
+                'assignment' => ['title' => 'Ensayo', 'course' => 'B1'],
+                'student' => ['name' => 'Carla'],
+                'submission' => ['reason' => 'Faltan referencias'],
+            ],
+        ]);
+
+        (new DispatchIntegrationEventJob($event->id))->handle();
+
+        $event->refresh();
+        $this->assertEquals('sent', $event->status);
+    }
 }
 

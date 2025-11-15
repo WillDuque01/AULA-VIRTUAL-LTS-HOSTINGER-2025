@@ -78,6 +78,14 @@
       </div>
       <p class="text-[11px] text-slate-500 mt-1">Se usa para firmar el endpoint `/api/certificates/verify`.</p>
     </div>
+    <div class="card"><h3 class="font-medium mb-2">WhatsApp / Alertas</h3>
+      <label class="flex items-center gap-2"><input type="checkbox" name="WHATSAPP_ENABLED" value="1" {{ config('services.whatsapp.enabled') ? 'checked' : '' }}> Activar Cloud API</label>
+      <label>WHATSAPP_TOKEN</label><input name="WHATSAPP_TOKEN" type="password" value="{{ config('services.whatsapp.token') }}">
+      <label>WHATSAPP_PHONE_ID</label><input name="WHATSAPP_PHONE_ID" value="{{ config('services.whatsapp.phone_number_id') }}">
+      <label>WHATSAPP_DEFAULT_TO</label><input name="WHATSAPP_DEFAULT_TO" placeholder="+57300..." value="{{ config('services.whatsapp.default_to') }}">
+      <label>WHATSAPP_DEEPLINK</label><input name="WHATSAPP_DEEPLINK" placeholder="https://wa.me/57..." value="{{ config('services.whatsapp.deeplink') }}">
+      <p class="text-[11px] text-slate-500 mt-1">Usa el deeplink si solo necesitas compartir un enlace de contacto rápido. Con token y phone ID se habilitan alertas automáticas.</p>
+    </div>
     <div class="card"><h3 class="font-medium mb-2">Modos gratuitos</h3>
       <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_STORAGE" value="1" {{ config('integrations.force_free_storage') ? 'checked' : '' }}> Forzar almacenamiento local</label>
       <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_REALTIME" value="1" {{ config('integrations.force_free_realtime') ? 'checked' : '' }}> Forzar realtime local</label>

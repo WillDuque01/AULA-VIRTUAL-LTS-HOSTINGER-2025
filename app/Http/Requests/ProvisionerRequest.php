@@ -53,6 +53,12 @@ class ProvisionerRequest extends FormRequest
 
             'CERTIFICATES_VERIFY_SECRET' => ['nullable', 'string', 'max:255'],
 
+            'WHATSAPP_ENABLED' => ['nullable', 'boolean'],
+            'WHATSAPP_TOKEN' => ['nullable', 'string', 'max:255'],
+            'WHATSAPP_PHONE_ID' => ['nullable', 'string', 'max:255'],
+            'WHATSAPP_DEFAULT_TO' => ['nullable', 'string', 'max:255'],
+            'WHATSAPP_DEEPLINK' => ['nullable', 'url', 'max:255'],
+
             'GOOGLE_SHEETS_ENABLED' => ['nullable', 'boolean'],
             'FORCE_FREE_STORAGE' => ['nullable', 'boolean'],
             'FORCE_FREE_REALTIME' => ['nullable', 'boolean'],
