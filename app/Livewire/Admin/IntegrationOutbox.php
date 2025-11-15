@@ -20,6 +20,8 @@ class IntegrationOutbox extends Component
 
     public int $perPage = 10;
 
+    public ?int $expandedEventId = null;
+
     protected $queryString = [
         'status' => ['except' => 'all'],
         'search' => ['except' => ''],
@@ -55,13 +57,18 @@ class IntegrationOutbox extends Component
         $event = IntegrationEvent::findOrFail($eventId);
         $event->update([
             'status' => 'pending',
-            'error_message' => null,
+            'last_error' => null,
             'attempts' => 0,
         ]);
 
         DispatchIntegrationEventJob::dispatch($event->id);
 
         $this->dispatch('notify', message: __('outbox.retry_dispatched'));
+    }
+
+    public function toggleDetails(int $eventId): void
+    {
+        $this->expandedEventId = $this->expandedEventId === $eventId ? null : $eventId;
     }
 
     public function render()

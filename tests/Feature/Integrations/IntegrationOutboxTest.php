@@ -68,6 +68,8 @@ class IntegrationOutboxTest extends TestCase
         Livewire::actingAs($user)
             ->test(IntegrationOutbox::class)
             ->set('target', 'discord')
+            ->call('toggleDetails', IntegrationEvent::where('target', 'discord')->first()->id)
+            ->assertSet('expandedEventId', IntegrationEvent::where('target', 'discord')->first()->id)
             ->assertSee('offer.launched')
             ->assertDontSee('course.unlocked');
     }

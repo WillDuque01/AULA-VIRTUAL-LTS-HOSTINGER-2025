@@ -67,9 +67,34 @@
                                 <button wire:click="retry({{ $event->id }})"
                                         class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-blue-300 hover:text-blue-700">
                                     <span aria-hidden="true">⟳</span> {{ __('outbox.actions.retry') }}
+                            </button>
+                            <button wire:click="toggleDetails({{ $event->id }})"
+                                    class="mt-2 inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-amber-300 hover:text-amber-700">
+                                <span aria-hidden="true">🔎</span> {{ $expandedEventId === $event->id ? __('Cerrar') : __('Detalle') }}
                                 </button>
                             </td>
                         </tr>
+                    @if($expandedEventId === $event->id)
+                        <tr class="bg-slate-50/80">
+                            <td colspan="6" class="px-4 py-4">
+                                <div class="grid gap-4 md:grid-cols-2">
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase text-slate-500 mb-1">{{ __('Payload') }}</p>
+                                        <pre class="bg-slate-900 text-slate-100 text-xs rounded-xl p-3 overflow-auto max-h-48">{{ json_encode($event->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase text-slate-500 mb-1">{{ __('Metadatos') }}</p>
+                                        <ul class="text-xs text-slate-600 space-y-1">
+                                            <li>{{ __('Status') }}: <strong>{{ ucfirst($event->status) }}</strong></li>
+                                            <li>{{ __('Intentos') }}: <strong>{{ $event->attempts }}</strong></li>
+                                            <li>{{ __('Último error') }}: <span class="text-rose-600">{{ $event->last_error ?? '—' }}</span></li>
+                                            <li>{{ __('Último intento') }}: {{ $event->last_attempt_at ? $event->last_attempt_at->diffForHumans() : '—' }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
                     @empty
                         <tr>
                             <td colspan="6" class="px-4 py-6 text-center text-slate-500 text-sm">
