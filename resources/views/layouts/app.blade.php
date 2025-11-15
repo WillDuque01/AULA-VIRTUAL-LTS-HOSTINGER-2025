@@ -20,11 +20,29 @@
                 --brand-primary: {{ $branding->primary_color }};
                 --brand-secondary: {{ $branding->secondary_color }};
                 --brand-accent: {{ $branding->accent_color }};
+                --brand-neutral: {{ $branding->neutral_color }};
                 --brand-radius: {{ $branding->border_radius }};
                 --brand-font: {{ $branding->font_family }};
+                --brand-heading-font: {{ $branding->font_family }};
+                --brand-body-font: {{ $branding->body_font_family }};
+                --brand-type-scale: {{ $branding->type_scale_ratio }};
+                --brand-base-font-size: {{ $branding->base_font_size }};
+                --brand-line-height: {{ $branding->line_height }};
+                --brand-letter-spacing: {{ $branding->letter_spacing }};
+                --brand-spacing-unit: {{ $branding->spacing_unit }};
+                --brand-shadow-soft: {{ $branding->shadow_soft }};
+                --brand-shadow-bold: {{ $branding->shadow_bold }};
+                --brand-container-width: {{ $branding->container_max_width }};
             }
             body {
-                font-family: var(--brand-font), 'Figtree', sans-serif;
+                font-family: var(--brand-body-font, var(--brand-font)), 'Figtree', sans-serif;
+                font-size: var(--brand-base-font-size, 1rem);
+                line-height: var(--brand-line-height, 1.5);
+                letter-spacing: var(--brand-letter-spacing, 0);
+            }
+            h1, h2, h3, h4, h5, h6 {
+                font-family: var(--brand-heading-font, var(--brand-font)), 'Figtree', sans-serif;
+                letter-spacing: calc(var(--brand-letter-spacing, 0) * 0.75);
             }
         </style>
         <?php
