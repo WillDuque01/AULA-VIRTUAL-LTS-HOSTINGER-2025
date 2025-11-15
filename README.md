@@ -40,6 +40,19 @@ Credenciales seed:
 - Aplica cambios al vuelo (`config:clear`, `config:cache`, `IntegrationConfigurator::apply()`)
 - Ejecutar `php artisan credentials:check` para ver estados y variables faltantes
 
+## Funcionalidades ya implementadas
+
+- **Builder drag & drop** (Livewire) para capítulos/lecciones + recursos (video, PDF, iframe, texto, quiz).
+- **Player inteligente** con reanudación exacta, bloqueo best-effort (YouTube) y modo estricto listo para Vimeo/Cloudflare.
+- **Dashboards**:
+  - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
+  - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.
+  - Estudiante: progreso personal, minutos vistos, próximas lecciones y reanudación.
+- **Mensajería y notificaciones**: migraciones, eventos/listeners, campañas por email/push y centros de mensajes para Admin/Alumno.
+- **Tiers / Suscripciones / Pagos simulados**: asociaciones curso-tier, simulador de pagos y listeners que actualizan el acceso.
+- **Panel de seguridad**: headers CSP/HSTS configurables, middleware `SecurityHeaders`.
+- **CI/CD**: workflows de build/test y deploy Hostinger (SFTP/SSH puerto 65002) con comandos post-deploy.
+
 ## Seguridad
 - Middleware `SecurityHeaders` aplicado a todas las rutas web
 - CSP, HSTS, frame/referrer/permissions policy configurables en `config/security.php`
