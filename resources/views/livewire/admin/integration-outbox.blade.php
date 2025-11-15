@@ -4,10 +4,16 @@
             <p class="text-xs uppercase font-semibold tracking-[0.3em] text-slate-400">{{ __('outbox.title') }}</p>
             <h2 class="text-2xl font-semibold text-slate-900">{{ __('outbox.subtitle') }}</h2>
         </div>
-        <div class="flex gap-3 items-center">
+        <div class="flex flex-wrap gap-3 items-center">
             <select wire:model.live="status"
                     class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:ring-blue-500">
                 @foreach($statuses as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+            <select wire:model.live="target"
+                    class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:ring-blue-500">
+                @foreach($targets as $value => $label)
                     <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </select>

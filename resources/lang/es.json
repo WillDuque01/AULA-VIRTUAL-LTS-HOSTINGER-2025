@@ -314,6 +314,7 @@
     "outbox.retry_dispatched": "Reintento enviado a la cola.",
     "outbox.no_recent_errors": "Sin errores recientes",
     "outbox.view_link": "Ver outbox",
+    "outbox.target.all": "Todos los destinos",
     "email.blocks.footer.support": "¿Necesitas ayuda? Responde este correo o escribe a :email",
     "email.blocks.footer.preferences": "Actualiza tus preferencias de notificación",
     "email.blocks.message.preview": "Vista previa del mensaje",

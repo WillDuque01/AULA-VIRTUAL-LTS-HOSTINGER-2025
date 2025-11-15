@@ -16,11 +16,14 @@ class IntegrationOutbox extends Component
 
     public string $search = '';
 
+    public string $target = 'all';
+
     public int $perPage = 10;
 
     protected $queryString = [
         'status' => ['except' => 'all'],
         'search' => ['except' => ''],
+        'target' => ['except' => 'all'],
     ];
 
     protected $listeners = [
@@ -38,6 +41,11 @@ class IntegrationOutbox extends Component
     }
 
     public function updatingStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTarget(): void
     {
         $this->resetPage();
     }
@@ -61,6 +69,7 @@ class IntegrationOutbox extends Component
         return view('livewire.admin.integration-outbox', [
             'events' => $this->events(),
             'statuses' => $this->availableStatuses(),
+            'targets' => $this->availableTargets(),
         ]);
     }
 
@@ -78,6 +87,10 @@ class IntegrationOutbox extends Component
                         ->orWhere('target', 'like', "%{$this->search}%");
                 })
             )
+            ->when(
+                $this->target !== 'all',
+                fn ($query) => $query->where('target', $this->target)
+            )
             ->latest()
             ->paginate($this->perPage);
     }
@@ -90,6 +103,19 @@ class IntegrationOutbox extends Component
             'sent' => __('outbox.status.sent'),
             'failed' => __('outbox.status.failed'),
         ];
+    }
+
+    private function availableTargets(): array
+    {
+        $targets = IntegrationEvent::select('target')
+            ->distinct()
+            ->pluck('target')
+            ->filter()
+            ->sort()
+            ->values()
+            ->all();
+
+        return array_merge(['all' => __('outbox.target.all')], array_combine($targets, $targets));
     }
 }
 

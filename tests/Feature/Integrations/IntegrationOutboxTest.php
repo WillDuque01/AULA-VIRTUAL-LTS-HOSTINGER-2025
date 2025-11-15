@@ -28,6 +28,7 @@ class IntegrationOutboxTest extends TestCase
         IntegrationEvent::factory()->count(3)->create([
             'status' => 'failed',
             'event' => 'course.unlocked',
+            'target' => 'make',
         ]);
 
         $response = $this->actingAs($user)->get('/es/admin/integrations/outbox');
@@ -56,6 +57,19 @@ class IntegrationOutboxTest extends TestCase
         ]);
 
         Bus::assertDispatched(DispatchIntegrationEventJob::class);
+    }
+
+    public function test_target_filter_shows_only_selected(): void
+    {
+        $user = User::factory()->create();
+        IntegrationEvent::factory()->create(['target' => 'make', 'event' => 'course.unlocked']);
+        IntegrationEvent::factory()->create(['target' => 'discord', 'event' => 'offer.launched']);
+
+        Livewire::actingAs($user)
+            ->test(IntegrationOutbox::class)
+            ->set('target', 'discord')
+            ->assertSee('offer.launched')
+            ->assertDontSee('course.unlocked');
     }
 }
 
