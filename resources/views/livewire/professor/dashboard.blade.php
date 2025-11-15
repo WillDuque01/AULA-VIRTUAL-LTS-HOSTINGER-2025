@@ -17,6 +17,41 @@
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('prof.dashboard.heatmap.title') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ $heatmap['lesson'] ?? __('prof.dashboard.heatmap.empty_title') }}</h4>
+                @if($heatmap['lesson'])
+                    <p class="text-xs text-slate-500">{{ $heatmap['course'] }}</p>
+                @endif
+            </div>
+        </div>
+        <div class="px-6 py-6">
+            @if(!empty($heatmap['segments']))
+                @php
+                    $maxReach = max(array_column($heatmap['segments'], 'reach')) ?: 1;
+                @endphp
+                <div class="flex items-end gap-1 h-48">
+                    @foreach($heatmap['segments'] as $segment)
+                        @php
+                            $height = max(6, ($segment['reach'] / $maxReach) * 100);
+                        @endphp
+                        <div class="flex flex-col items-center gap-2 w-6">
+                            <div class="w-full rounded-full bg-sky-400/50" style="height: {{ $height }}%;"></div>
+                            <span class="text-[10px] text-slate-500">{{ $segment['label'] }}</span>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-xs text-slate-500 mt-4">
+                    {{ __('prof.dashboard.heatmap.hint', ['seconds' => $heatmap['bucket_seconds']]) }}
+                </p>
+            @else
+                <p class="text-sm text-slate-500">{{ __('prof.dashboard.heatmap.empty_state') }}</p>
+            @endif
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
                 <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Insights</p>
                 <h4 class="text-lg font-semibold text-slate-900">Lecciones con mejor desempeño</h4>
             </div>

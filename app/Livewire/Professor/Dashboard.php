@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Professor;
 
+use App\Models\Lesson;
+use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -19,10 +21,19 @@ class Dashboard extends Component
 
     public Collection $recentActivity;
 
+    public array $heatmap = [
+        'lesson' => null,
+        'course' => null,
+        'segments' => [],
+        'bucket_seconds' => 0,
+        'duration' => null,
+    ];
+
     public function mount(): void
     {
         $this->lessonInsights = collect();
         $this->recentActivity = collect();
+        $this->heatmap['bucket_seconds'] = max(1, (int) config('player.heatmap_bucket_seconds', 15));
         $this->loadData();
     }
 
@@ -73,6 +84,60 @@ class Dashboard extends Component
             ->sortByDesc('updated_at')
             ->take(5)
             ->values();
+
+        $this->loadHeatmapData();
+    }
+
+    private function loadHeatmapData(): void
+    {
+        $bucketSeconds = max(1, (int) config('player.heatmap_bucket_seconds', 15));
+
+        $lessonId = VideoHeatmapSegment::select('lesson_id')
+            ->selectRaw('SUM(reach_count) as total_reach')
+            ->groupBy('lesson_id')
+            ->orderByDesc('total_reach')
+            ->value('lesson_id');
+
+        if (! $lessonId) {
+            $this->heatmap = [
+                'lesson' => null,
+                'course' => null,
+                'segments' => [],
+                'bucket_seconds' => $bucketSeconds,
+                'duration' => null,
+            ];
+
+            return;
+        }
+
+        $lesson = Lesson::with('chapter.course')->find($lessonId);
+        if (! $lesson) {
+            return;
+        }
+
+        $segments = VideoHeatmapSegment::where('lesson_id', $lessonId)
+            ->orderBy('bucket')
+            ->get()
+            ->map(function (VideoHeatmapSegment $segment) use ($bucketSeconds) {
+                $seconds = $segment->bucket * $bucketSeconds;
+
+                return [
+                    'bucket' => $segment->bucket,
+                    'seconds' => $seconds,
+                    'label' => gmdate('i:s', $seconds),
+                    'reach' => $segment->reach_count,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $this->heatmap = [
+            'lesson' => data_get($lesson->config, 'title', 'Lección '.$lesson->position),
+            'course' => $lesson->chapter?->course?->slug,
+            'segments' => $segments,
+            'bucket_seconds' => $bucketSeconds,
+            'duration' => data_get($lesson->config, 'length'),
+        ];
     }
 
     private function calculateAverageCompletion(): float

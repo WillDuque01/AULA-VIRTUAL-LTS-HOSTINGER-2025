@@ -16,6 +16,12 @@ class VideoProgress extends Model
         'watched_seconds',
     ];
 
+    protected $casts = [
+        'last_second' => 'integer',
+        'watched_seconds' => 'integer',
+        'last_recorded_bucket' => 'integer',
+    ];
+
     public function lesson()
     {
         return $this->belongsTo(Lesson::class);

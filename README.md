@@ -47,6 +47,7 @@ Credenciales seed:
 - **Player inteligente** con reanudación exacta, agenda de liberación, prerequisitos y conmutador de modo estricto (Vimeo/Cloudflare) + CTA configurable.
 - **Centro de mensajes** (admin/estudiante): bandeja Livewire, envío segmentado y plantillas de correo unificadas.
 - **Simulador de pagos** (`/admin/payments/simulator`): asigna tiers, registra `payment_events`, dispara emails y despacha webhooks.
+- **Telemetría de video**: API de progreso alimenta segmentos `video_heatmap_segments`, expuestos como heatmap de abandono en el dashboard de profesores.
 - **Dashboards**:
   - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
   - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.
