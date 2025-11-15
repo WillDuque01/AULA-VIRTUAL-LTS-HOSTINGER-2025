@@ -1,5 +1,10 @@
 {
     "Dashboard":  "Panel",
+    "dashboard.abandonment.title":  "Heatmap global",
+    "dashboard.abandonment.subtitle":  "Top momentos de abandono",
+    "dashboard.abandonment.empty":  "Aún no registramos abandono significativo.",
+    "dashboard.abandonment.timestamp":  "Marca de tiempo",
+    "dashboard.abandonment.reach":  "Vistas: :count",
     "Profile":  "Perfil",
     "Log Out":  "Cerrar sesión",
     "Notifications":  "Notificaciones",

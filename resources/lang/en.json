@@ -1,5 +1,10 @@
 {
     "Dashboard":  "Dashboard",
+    "dashboard.abandonment.title":  "Global heatmap",
+    "dashboard.abandonment.subtitle":  "Top drop-off moments",
+    "dashboard.abandonment.empty":  "No significant drop-offs recorded yet.",
+    "dashboard.abandonment.timestamp":  "Timestamp",
+    "dashboard.abandonment.reach":  "Views: :count",
     "Profile":  "Profile",
     "Log Out":  "Log out",
     "Notifications":  "Notifications",

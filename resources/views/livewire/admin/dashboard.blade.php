@@ -18,6 +18,34 @@
         </div>
     </div>
 
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100">
+            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.abandonment.title') }}</p>
+            <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.abandonment.subtitle') }}</h4>
+        </div>
+        <div class="p-6">
+            @if($abandonmentInsights->isEmpty())
+                <p class="text-sm text-slate-500">{{ __('dashboard.abandonment.empty') }}</p>
+            @else
+                <ul class="space-y-3">
+                    @foreach($abandonmentInsights as $insight)
+                        <li class="flex items-center justify-between text-sm">
+                            <div>
+                                <p class="font-semibold text-slate-800">{{ $insight['lesson'] }}</p>
+                                <p class="text-xs text-slate-500">{{ $insight['course'] }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs uppercase text-slate-400">{{ __('dashboard.abandonment.timestamp') }}</p>
+                                <p class="text-base font-semibold text-slate-900">{{ $insight['timestamp'] }}</p>
+                                <p class="text-xs text-slate-500">{{ __('dashboard.abandonment.reach', ['count' => $insight['reach']]) }}</p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

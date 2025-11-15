@@ -6,6 +6,7 @@ use App\Models\IntegrationEvent;
 use App\Models\PaymentEvent;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -32,10 +33,13 @@ class Dashboard extends Component
 
     public Collection $watchPerCourse;
 
+    public Collection $abandonmentInsights;
+
     public function mount(): void
     {
         $this->revenueTrend = collect();
         $this->watchPerCourse = collect();
+        $this->abandonmentInsights = collect();
         $this->loadMetrics();
     }
 
@@ -75,6 +79,8 @@ class Dashboard extends Component
                 ];
             })
             ->take(5);
+
+        $this->abandonmentInsights = $this->loadAbandonmentInsights();
     }
 
     public function render()
@@ -93,5 +99,30 @@ class Dashboard extends Component
             'failed' => $failed,
             'last_failed_at' => $lastFailed?->created_at,
         ];
+    }
+
+    private function loadAbandonmentInsights(): Collection
+    {
+        $bucketSeconds = max(1, (int) config('player.heatmap_bucket_seconds', 15));
+
+        return VideoHeatmapSegment::selectRaw('video_heatmap_segments.bucket, video_heatmap_segments.reach_count, lessons.config, courses.slug')
+            ->join('lessons', 'video_heatmap_segments.lesson_id', '=', 'lessons.id')
+            ->join('chapters', 'lessons.chapter_id', '=', 'chapters.id')
+            ->join('courses', 'chapters.course_id', '=', 'courses.id')
+            ->where('video_heatmap_segments.bucket', '>', 0)
+            ->orderByDesc('video_heatmap_segments.reach_count')
+            ->limit(5)
+            ->get()
+            ->map(function ($row) use ($bucketSeconds) {
+                $seconds = (int) $row->bucket * $bucketSeconds;
+                $config = json_decode($row->config ?? '[]', true) ?: [];
+
+                return [
+                    'course' => $row->slug,
+                    'lesson' => data_get($config, 'title', __('Lesson')),
+                    'timestamp' => gmdate('i:s', $seconds),
+                    'reach' => $row->reach_count,
+                ];
+            });
     }
 }
