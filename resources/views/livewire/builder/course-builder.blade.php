@@ -12,21 +12,46 @@
         </div>
     </div>
 
+    <div class="grid gap-3 md:grid-cols-3">
+        <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <p class="text-xs uppercase font-semibold text-blue-500 tracking-wide">Capítulos</p>
+            <p class="mt-1 text-2xl font-bold text-blue-700">{{ count($state['chapters']) }}</p>
+            <p class="text-xs text-blue-500/80">Drag & drop disponible</p>
+        </div>
+        <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <p class="text-xs uppercase font-semibold text-emerald-500 tracking-wide">Total lecciones</p>
+            <p class="mt-1 text-2xl font-bold text-emerald-700">
+                {{ collect($state['chapters'])->sum(fn($chapter) => count($chapter['lessons'])) }}
+            </p>
+            <p class="text-xs text-emerald-500/80">Incluye videos, quizzes y más</p>
+        </div>
+        <div class="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <p class="text-xs uppercase font-semibold text-amber-500 tracking-wide">Bloqueos activos</p>
+            <p class="mt-1 text-2xl font-bold text-amber-700">
+                {{ collect($state['chapters'])->flatMap(fn($chapter) => $chapter['lessons'])->where('locked', true)->count() }}
+            </p>
+            <p class="text-xs text-amber-500/80">Controla el progreso del alumno</p>
+        </div>
+    </div>
+
     <div class="space-y-4" data-sortable-chapters>
         @forelse($state['chapters'] as $chapterIndex => $chapter)
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 space-y-4" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-lg shadow-slate-100/60 p-4 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-8 h-8 cursor-move" title="Arrastrar capítulo">
-                            <span class="text-lg leading-none">⋮⋮</span>
+                        <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-9 h-9 cursor-move bg-white shadow-inner" title="Arrastrar capítulo">
+                            <span class="text-lg leading-none select-none">⋮⋮</span>
                         </span>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Título del capítulo</label>
                             <input type="text"
                                    wire:model.defer="state.chapters.{{ $chapterIndex }}.title"
                                    wire:blur="saveChapterTitle({{ $chapter['id'] }}, {{ $chapterIndex }})"
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   class="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition"
                                    placeholder="Capítulo sin título">
+                            @error("state.chapters.$chapterIndex.title")
+                                <span class="text-xs text-red-500">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -43,18 +68,21 @@
 
                 <div class="space-y-3" data-sortable-lessons>
                     @forelse($chapter['lessons'] as $lessonIndex => $lesson)
-                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50" data-lesson-item data-lesson-id="{{ $lesson['id'] }}" wire:key="lesson-{{ $lesson['id'] }}">
+                        <div class="border border-gray-200 rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent data-[state=saving]:ring-blue-200" data-lesson-item data-lesson-id="{{ $lesson['id'] }}" wire:key="lesson-{{ $lesson['id'] }}">
                             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                                 <div class="flex items-center gap-3">
-                                    <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-7 h-7 cursor-move" title="Arrastrar lección">
+                                    <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-8 h-8 cursor-move bg-white shadow-inner" title="Arrastrar lección">
                                         <span class="text-base leading-none">⋮⋮</span>
                                     </span>
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Título</label>
                                         <input type="text"
                                                wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.title"
-                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                               class="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                placeholder="Título de la lección">
+                                        @error("state.chapters.$chapterIndex.lessons.$lessonIndex.title")
+                                            <span class="text-xs text-red-500">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-4 text-sm">
@@ -90,6 +118,9 @@
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">ID del video / asset</label>
                                         <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.video_id" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ej. YTdQw4w9WgXcQ">
+                                        @error("state.chapters.$chapterIndex.lessons.$lessonIndex.video_id")
+                                            <span class="text-xs text-red-500">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Duración (seg)</label>
@@ -104,8 +135,54 @@
                                     <div class="md:col-span-3">
                                         <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Recurso / URL</label>
                                         <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.resource_url" class="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://"> 
+                                        @error("state.chapters.$chapterIndex.lessons.$lessonIndex.resource_url")
+                                            <span class="text-xs text-red-500">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 @endif
+                            </div>
+
+                            <div x-data="{ open: false }" class="mt-3 rounded-xl border border-dashed border-slate-200 bg-white/80 px-3 py-2">
+                                <button type="button" @click="open = !open" class="flex w-full items-center justify-between text-sm font-semibold text-slate-700">
+                                    <span>Configuración avanzada</span>
+                                    <span class="text-xs text-slate-500" x-text="open ? 'Cerrar' : 'Expandir'"></span>
+                                </button>
+                                <div x-show="open" x-transition.duration.200ms class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Minutos estimados</label>
+                                        <input type="number" min="0" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.estimated_minutes" class="mt-1 block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="10">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Badge / Emoji</label>
+                                        <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.badge" maxlength="24" class="mt-1 block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="🔥 Clave">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Liberar el</label>
+                                        <input type="datetime-local" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.release_at" class="mt-1 block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">CTA label</label>
+                                        <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.cta_label" class="mt-1 block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Agenda sesión">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">CTA URL</label>
+                                        <input type="text" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.cta_url" class="mt-1 block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://">
+                                        @error("state.chapters.$chapterIndex.lessons.$lessonIndex.cta_url")
+                                            <span class="text-xs text-red-500">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Prerequisito</label>
+                                        <select wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.prerequisite_lesson_id" class="mt-1 block w-full rounded-md border-gray-200 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="">Sin prerequisito</option>
+                                            @foreach($availablePrerequisites as $lessonId => $label)
+                                                @if($lessonId !== $lesson['id'])
+                                                    <option value="{{ $lessonId }}">{{ $label }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mt-4 text-right">
@@ -130,6 +207,29 @@
 @once
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha256-Ros5pTKty+O+kO5OVwOB1p5MNDoAuCEi0aKBslZx2XY=" crossorigin="anonymous"></script>
+        <style>
+            @keyframes builder-toast {
+                from { opacity: 0; transform: translateY(6px) scale(0.96); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            .builder-toast {
+                animation: builder-toast 0.18s ease-out;
+            }
+            .builder-confetti {
+                position: fixed;
+                width: 6px;
+                height: 12px;
+                background: var(--confetti-color, #38bdf8);
+                border-radius: 999px;
+                pointer-events: none;
+                opacity: 0;
+                animation: builder-confetti-fall 0.8s ease-out forwards;
+            }
+            @keyframes builder-confetti-fall {
+                0% { transform: translateY(-20px) scale(1); opacity: 1; }
+                100% { transform: translateY(40px) scale(0.5); opacity: 0; }
+            }
+        </style>
         <script>
             document.addEventListener('livewire:load', () => {
                 const initializeSortables = () => {
@@ -191,6 +291,45 @@
 
                 window.addEventListener('builder:refresh-sortables', () => {
                     setTimeout(() => initializeSortables(), 60);
+                });
+
+                const showToast = ({ variant = 'success', message = '' }) => {
+                    const container = document.getElementById('builder-toasts') ?? createToastContainer();
+                    const toast = document.createElement('div');
+                    toast.className = `builder-toast mb-2 flex items-center gap-3 rounded-2xl px-4 py-2 text-sm font-semibold shadow-lg ${variant === 'error' ? 'bg-rose-500/90 text-white' : 'bg-emerald-500/90 text-white'}`;
+                    toast.textContent = message;
+                    container.appendChild(toast);
+                    setTimeout(() => toast.remove(), 2800);
+                };
+
+                const createToastContainer = () => {
+                    const div = document.createElement('div');
+                    div.id = 'builder-toasts';
+                    div.className = 'fixed bottom-6 right-6 z-50 flex flex-col items-end';
+                    document.body.appendChild(div);
+                    return div;
+                };
+
+                const launchConfetti = () => {
+                    const colors = ['#3b82f6', '#a855f7', '#f59e0b', '#10b981'];
+                    const baseX = window.innerWidth - 100;
+                    const baseY = window.innerHeight - 80;
+                    Array.from({ length: 12 }).forEach(() => {
+                        const piece = document.createElement('span');
+                        piece.className = 'builder-confetti';
+                        piece.style.left = `${baseX + (Math.random() * 60 - 30)}px`;
+                        piece.style.top = `${baseY}px`;
+                        piece.style.setProperty('--confetti-color', colors[Math.floor(Math.random() * colors.length)]);
+                        document.body.appendChild(piece);
+                        setTimeout(() => piece.remove(), 900);
+                    });
+                };
+
+                window.addEventListener('builder:flash', (event) => {
+                    showToast(event.detail || {});
+                    if ((event.detail?.variant ?? 'success') === 'success') {
+                        launchConfetti();
+                    }
                 });
             });
         </script>

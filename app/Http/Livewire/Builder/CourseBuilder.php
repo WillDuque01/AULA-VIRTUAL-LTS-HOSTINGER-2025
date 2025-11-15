@@ -6,6 +6,7 @@ use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -34,6 +35,8 @@ class CourseBuilder extends Component
         'vimeo' => 'Vimeo',
         'cloudflare' => 'Cloudflare Stream',
     ];
+
+    public array $availablePrerequisites = [];
 
     protected $listeners = [
         'builder-reorder' => 'saveOrder',
@@ -113,19 +116,41 @@ class CourseBuilder extends Component
 
         $config = $lesson->config ?? [];
         $config['title'] = trim((string) ($lessonData['title'] ?? data_get($config, 'title', 'Lección')));
+        $config['estimated_minutes'] = max(0, (int) ($lessonData['estimated_minutes'] ?? data_get($config, 'estimated_minutes', 0)));
+        $config['badge'] = trim((string) ($lessonData['badge'] ?? data_get($config, 'badge', '')));
+        $config['cta_label'] = trim((string) ($lessonData['cta_label'] ?? data_get($config, 'cta_label', '')));
+        $config['cta_url'] = trim((string) ($lessonData['cta_url'] ?? data_get($config, 'cta_url', '')));
+        $config['release_at'] = $this->normalizeDate($lessonData['release_at'] ?? data_get($config, 'release_at'));
 
         if ($type === 'video') {
             $config['source'] = in_array($lessonData['source'] ?? '', array_keys($this->videoSources), true)
                 ? $lessonData['source']
                 : 'youtube';
-            $config['video_id'] = trim((string) ($lessonData['video_id'] ?? ''));
-            $config['length'] = (int) ($lessonData['length'] ?? 0);
+            $config['video_id'] = trim((string) ($lessonData['video_id'] ?? data_get($config, 'video_id', '')));
+            $config['length'] = max(0, (int) ($lessonData['length'] ?? data_get($config, 'length', 0)));
         } else {
             $config['resource_url'] = trim((string) ($lessonData['resource_url'] ?? data_get($config, 'resource_url', '')));
+            $config['length'] = max(0, (int) ($lessonData['length'] ?? data_get($config, 'length', 0)));
         }
 
         if ($type === 'text') {
             $config['body'] = $lessonData['body'] ?? data_get($config, 'body', '');
+        }
+
+        $config['prerequisite_lesson_id'] = $this->sanitizePrerequisite(
+            (int) ($lessonData['prerequisite_lesson_id'] ?? data_get($config, 'prerequisite_lesson_id', 0)),
+            $lesson->id
+        );
+
+        $this->resetErrorBag();
+        $validationErrors = $this->validateLessonConfig($type, $config, $chapterIndex, $lessonIndex);
+        if (! empty($validationErrors)) {
+            $this->dispatchBrowserEvent('builder:flash', [
+                'variant' => 'error',
+                'message' => collect($validationErrors)->implode("\n"),
+            ]);
+
+            return;
         }
 
         $lesson->type = $type;
@@ -134,6 +159,10 @@ class CourseBuilder extends Component
         $lesson->save();
 
         $this->refreshState();
+        $this->dispatchBrowserEvent('builder:flash', [
+            'variant' => 'success',
+            'message' => 'Lección actualizada con éxito',
+        ]);
     }
 
     public function saveOrder(array $payload): void
@@ -171,6 +200,7 @@ class CourseBuilder extends Component
         return view('livewire.builder.course-builder', [
             'lessonTypes' => $this->lessonTypes,
             'videoSources' => $this->videoSources,
+            'availablePrerequisites' => $this->availablePrerequisites,
         ]);
     }
 
@@ -204,9 +234,23 @@ class CourseBuilder extends Component
                         'length' => data_get($config, 'length'),
                         'resource_url' => data_get($config, 'resource_url'),
                         'body' => data_get($config, 'body'),
+                        'estimated_minutes' => data_get($config, 'estimated_minutes', 0),
+                        'badge' => data_get($config, 'badge'),
+                        'cta_label' => data_get($config, 'cta_label'),
+                        'cta_url' => data_get($config, 'cta_url'),
+                        'release_at' => data_get($config, 'release_at'),
+                        'prerequisite_lesson_id' => data_get($config, 'prerequisite_lesson_id'),
                     ];
                 })->toArray(),
             ];
+        })->toArray();
+
+        $this->availablePrerequisites = $chapters->flatMap(function (Chapter $chapter) {
+            return $chapter->lessons->mapWithKeys(function (Lesson $lesson) use ($chapter) {
+                $title = "{$chapter->title} · ".data_get($lesson->config, 'title', "Lección {$lesson->position}");
+
+                return [$lesson->id => $title];
+            });
         })->toArray();
 
         if ($shouldReorder) {
@@ -264,6 +308,57 @@ class CourseBuilder extends Component
                 'body' => '',
             ],
         };
+    }
+
+    private function validateLessonConfig(string $type, array $config, int $chapterIndex, int $lessonIndex): array
+    {
+        $errors = [];
+
+        if ($config['title'] === '') {
+            $errors[] = 'El título es obligatorio.';
+            $this->addError("state.chapters.$chapterIndex.lessons.$lessonIndex.title", 'Requerido');
+        }
+
+        if ($type === 'video') {
+            if ($config['video_id'] === '') {
+                $errors[] = 'Debes indicar el ID del video.';
+                $this->addError("state.chapters.$chapterIndex.lessons.$lessonIndex.video_id", 'Requerido');
+            }
+        }
+
+        if (in_array($type, ['audio', 'pdf', 'iframe'], true) && $config['resource_url'] === '') {
+            $errors[] = 'Debes indicar la URL del recurso.';
+            $this->addError("state.chapters.$chapterIndex.lessons.$lessonIndex.resource_url", 'Requerido');
+        }
+
+        if ($config['cta_url'] && ! filter_var($config['cta_url'], FILTER_VALIDATE_URL)) {
+            $errors[] = 'La URL del CTA no es válida.';
+            $this->addError("state.chapters.$chapterIndex.lessons.$lessonIndex.cta_url", 'Formato no válido');
+        }
+
+        return $errors;
+    }
+
+    private function normalizeDate(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->toIso8601String();
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function sanitizePrerequisite(int $candidate, int $currentLessonId): ?int
+    {
+        if ($candidate === 0 || $candidate === $currentLessonId) {
+            return null;
+        }
+
+        return array_key_exists($candidate, $this->availablePrerequisites) ? $candidate : null;
     }
 }
 
