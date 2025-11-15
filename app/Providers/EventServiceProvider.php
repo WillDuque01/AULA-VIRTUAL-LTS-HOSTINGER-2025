@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\AssignmentApproved;
+use App\Events\AssignmentRejected;
 use App\Events\CertificateIssued;
 use App\Events\CourseUnlocked;
 use App\Events\ModuleUnlocked;
@@ -14,12 +15,14 @@ use App\Events\TierUpdated;
 use App\Listeners\DispatchCelebrationNotification;
 use App\Listeners\EnqueueCertificateIntegrationEvent;
 use App\Listeners\EnqueueAssignmentApprovedIntegrationEvent;
+use App\Listeners\EnqueueAssignmentRejectedIntegrationEvent;
 use App\Listeners\LogSimulatedPayment;
 use App\Listeners\SendCourseUnlockedNotification;
 use App\Listeners\SendModuleUnlockedNotification;
 use App\Listeners\SendOfferLaunchedNotification;
 use App\Listeners\SendCertificateIssuedNotification;
 use App\Listeners\SendAssignmentApprovedNotification;
+use App\Listeners\SendAssignmentRejectedNotification;
 use App\Listeners\SendSimulatedPaymentNotification;
 use App\Listeners\SendSubscriptionExpiringNotification;
 use App\Listeners\SendSubscriptionExpiredNotification;
@@ -61,6 +64,10 @@ class EventServiceProvider extends ServiceProvider
         AssignmentApproved::class => [
             SendAssignmentApprovedNotification::class,
             EnqueueAssignmentApprovedIntegrationEvent::class,
+        ],
+        AssignmentRejected::class => [
+            SendAssignmentRejectedNotification::class,
+            EnqueueAssignmentRejectedIntegrationEvent::class,
         ],
     ];
 }

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Events\AssignmentRejected;
 use App\Livewire\Admin\AssignmentsManager;
-use App\Livewire\Lessons\AssignmentPanel;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
@@ -11,67 +11,49 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-class AssignmentSubmissionTest extends TestCase
+class AssignmentRejectionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_student_can_submit_assignment(): void
+    public function test_teacher_can_reject_assignment_and_dispatch_event(): void
     {
-        $student = User::factory()->create();
-        $lesson = $this->createAssignmentLesson();
-
-        Livewire::actingAs($student)
-            ->test(AssignmentPanel::class, ['lesson' => $lesson])
-            ->set('body', 'Respuesta detallada con enlaces y observaciones.')
-            ->set('attachmentUrl', 'https://example.com/documento.pdf')
-            ->call('submit')
-            ->assertSet('submitted', true);
-
-        $this->assertDatabaseHas('assignment_submissions', [
-            'assignment_id' => $lesson->assignment->id,
-            'user_id' => $student->id,
-            'status' => 'submitted',
-        ]);
-    }
-
-    public function test_teacher_can_grade_submission(): void
-    {
-        Notification::fake();
-
         Role::create(['name' => 'teacher_admin']);
         $teacher = User::factory()->create();
         $teacher->assignRole('teacher_admin');
+        $student = User::factory()->create();
 
         $lesson = $this->createAssignmentLesson();
         $assignment = $lesson->assignment;
         $submission = AssignmentSubmission::create([
             'assignment_id' => $assignment->id,
-            'user_id' => User::factory()->create()->id,
-            'body' => 'Mi tarea completa',
+            'user_id' => $student->id,
+            'body' => 'Entrega',
             'status' => 'submitted',
             'max_points' => 100,
             'submitted_at' => now(),
         ]);
 
+        Event::fake();
+
         Livewire::actingAs($teacher)
             ->test(AssignmentsManager::class)
             ->set('selectedAssignmentId', $assignment->id)
             ->call('editSubmission', $submission->id)
-            ->set('score', 90)
-            ->set('feedback', 'Excelente gramática y ejemplos.')
-            ->call('saveGrade')
-            ->assertHasNoErrors();
+            ->set('selectedRejectionReason', 'quality')
+            ->set('feedback', 'Por favor mejora el análisis')
+            ->call('rejectSubmission', $submission->id);
 
         $this->assertDatabaseHas('assignment_submissions', [
             'id' => $submission->id,
-            'status' => 'approved',
-            'score' => 90,
+            'status' => 'rejected',
         ]);
+
+        Event::assertDispatched(AssignmentRejected::class);
     }
 
     private function createAssignmentLesson(): Lesson
@@ -94,21 +76,19 @@ class AssignmentSubmissionTest extends TestCase
             'position' => 1,
             'config' => [
                 'title' => 'Ensayo cultural',
-                'instructions' => 'Escribe un ensayo de 400 palabras sobre tu ciudad.',
+                'instructions' => 'Describe una tradición local.',
                 'max_points' => 100,
                 'passing_score' => 70,
                 'requires_approval' => true,
-                'rubric' => ['Contenido', 'Gramática', 'Vocabulario'],
             ],
         ]);
 
         Assignment::create([
             'lesson_id' => $lesson->id,
-            'instructions' => 'Escribe un ensayo de 400 palabras sobre tu ciudad.',
+            'instructions' => 'Describe una tradición local.',
             'max_points' => 100,
             'passing_score' => 70,
             'requires_approval' => true,
-            'rubric' => ['Contenido', 'Gramática', 'Vocabulario'],
         ]);
 
         return $lesson->fresh('assignment');

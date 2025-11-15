@@ -37,6 +37,7 @@
     "dashboard.assignments.professor_title":  "Tareas por vencer",
     "dashboard.assignments.professor_subtitle":  "Monitorea revisiones pendientes",
     "dashboard.assignments.professor_pending_label":  ":count revisiones pendientes",
+    "dashboard.assignments.reject_placeholder":  "Motivo del rechazo (opcional)",
     "api.certificates.missing_code":  "El parámetro code es obligatorio.",
     "api.certificates.invalid_signature":  "La firma proporcionada no es válida.",
     "api.certificates.not_found":  "No encontramos un certificado con ese código.",

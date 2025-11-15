@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Events\AssignmentApproved;
+use App\Events\AssignmentRejected;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,15 @@ class AssignmentsManager extends Component
     public ?int $score = null;
 
     public ?string $feedback = null;
+
+    public array $rejectionReasons = [
+        'incomplete' => 'Entrega incompleta',
+        'plagiarism' => 'Posible plagio',
+        'quality' => 'Calidad insuficiente',
+        'other' => 'Otro (usar feedback)',
+    ];
+
+    public ?string $selectedRejectionReason = null;
 
     public function mount(): void
     {
@@ -76,6 +86,24 @@ class AssignmentsManager extends Component
         $this->loadSubmissions();
 
         session()->flash('status', 'Calificación guardada');
+    }
+
+    public function rejectSubmission(int $submissionId): void
+    {
+        $submission = AssignmentSubmission::with('assignment')->findOrFail($submissionId);
+        $submission->update([
+            'status' => 'rejected',
+            'score' => null,
+            'feedback' => $this->feedback,
+            'graded_at' => null,
+            'approved_at' => null,
+        ]);
+
+        AssignmentRejected::dispatch($submission->fresh('assignment.lesson.chapter.course', 'user'), $this->selectedRejectionReason);
+        $this->feedback = null;
+        $this->selectedRejectionReason = null;
+        $this->loadSubmissions();
+        session()->flash('status', 'Entrega rechazada');
     }
 
     public function render()

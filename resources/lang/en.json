@@ -37,6 +37,7 @@
     "dashboard.assignments.professor_title": "Assignments due soon",
     "dashboard.assignments.professor_subtitle": "Monitor pending reviews",
     "dashboard.assignments.professor_pending_label": ":count pending reviews",
+    "dashboard.assignments.reject_placeholder": "Rejection reason (optional)",
     "api.certificates.missing_code": "The code parameter is required.",
     "api.certificates.invalid_signature": "The signature is invalid.",
     "api.certificates.not_found": "Certificate not found.",

@@ -68,8 +68,19 @@
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+                <div class="md:col-span-2">
+                    <label class="text-xs uppercase font-semibold text-slate-500">Rechazar entrega</label>
+                    <select wire:model.defer="selectedRejectionReason" class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-rose-500 focus:ring-rose-500">
+                        <option value="">{{ __('dashboard.assignments.reject_placeholder') }}</option>
+                        @foreach($rejectionReasons as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-[11px] text-slate-500 mt-1">Selecciona un motivo y usa el feedback para detallar.</p>
+                </div>
                 <div class="md:col-span-2 flex items-center justify-end gap-3">
                     <button type="button" wire:click="$set('editingSubmissionId', null)" class="text-sm text-slate-500">Cancelar</button>
+                    <button type="button" wire:click="rejectSubmission({{ $editingSubmissionId }})" class="inline-flex items-center rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-rose-700">Rechazar entrega</button>
                     <button type="submit" class="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700">Guardar calificación</button>
                 </div>
             </form>
