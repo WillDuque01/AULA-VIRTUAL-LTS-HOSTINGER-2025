@@ -37,6 +37,10 @@ class CertificateVerificationTest extends TestCase
             'id' => $certificate->id,
             'verified_count' => 1,
         ]);
+        $this->assertDatabaseHas('certificate_verification_logs', [
+            'certificate_id' => $certificate->id,
+            'source' => 'web',
+        ]);
     }
 
     public function test_verification_page_handles_unknown_code(): void

@@ -19,6 +19,7 @@
     "dashboard.certificates.verifications_subtitle": "Last API/portal checks",
     "dashboard.certificates.verifications_empty": "No certificate has been verified recently.",
     "dashboard.certificates.anonymous_student": "Anonymous student",
+    "dashboard.certificates.verification_source": "Source: :source",
     "dashboard.certificates.recent":  "Latest certificates",
     "dashboard.certificates.empty":  "No certificates issued yet.",
     "dashboard.assignments.student_title": "Upcoming assignments",

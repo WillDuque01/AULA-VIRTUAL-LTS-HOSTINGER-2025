@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Certificate;
+use App\Models\CertificateVerificationLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -42,6 +43,7 @@ class CertificateVerificationController extends Controller
 
         $certificate->increment('verified_count');
         $certificate->forceFill(['last_verified_at' => now()])->save();
+        $this->logVerification($certificate, $request, 'api');
 
         return response()->json([
             'valid' => true,
@@ -72,6 +74,19 @@ class CertificateVerificationController extends Controller
         $signature = hash_hmac('sha256', $payload, $secret);
 
         return hash_equals($signature, (string) $provided);
+    }
+
+    private function logVerification(Certificate $certificate, Request $request, string $source): void
+    {
+        CertificateVerificationLog::create([
+            'certificate_id' => $certificate->id,
+            'source' => $source,
+            'ip' => $request->ip(),
+            'user_agent' => (string) $request->userAgent(),
+            'meta' => [
+                'query' => $request->query(),
+            ],
+        ]);
     }
 }
 

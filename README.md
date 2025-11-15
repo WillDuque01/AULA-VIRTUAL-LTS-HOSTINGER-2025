@@ -59,7 +59,7 @@ Credenciales seed:
 - **Gamificación + celebraciones**: `LessonCompletionService` detecta finalización (>90%), otorga XP/streak, persiste `gamification_events` y emite `LessonCompleted`; el player lanza confetti (`canvas-confetti`) y toasts con los puntos obtenidos.
 - **Tareas evaluables con rúbrica**: lecciones tipo `assignment`, panel de entrega Livewire (texto + enlace), registro en `assignments/assignment_submissions`, gestor `/admin/assignments` para calificar con feedback/puntaje y bloqueo automático del siguiente módulo hasta aprobar (score mínimo configurable). El dashboard del alumno muestra “Próximas entregas” y el de profesor alerta tareas por vencer con revisiones pendientes. Cada aprobación dispara notificación al alumno y se ingresa al outbox (`assignment.approved`).
 - **Certificados automáticos**: al superar el 90 % del curso se emite el certificado (`config/certificates.php`), se envía notificación, queda accesible en el dashboard del alumno, se registra en los tableros admin/profesor y se despacha al outbox (`certificate.issued`) para Make/Discord/Sheets/MailerLite.
-- **Verificación pública de certificados**: endpoint `/certificates/verify/{code}` sin autenticación y API `/api/certificates/verify?code=` con firma HMAC (`services.certificates.verify_secret`), tracking de verificaciones, enlace compartible y QR dinámico para reclutadores/empresas.
+- **Verificación pública de certificados**: endpoint `/certificates/verify/{code}` sin autenticación y API `/api/certificates/verify?code=` con firma HMAC (`services.certificates.verify_secret`). Ambos registran un historial (`certificate_verification_logs`) que se muestra en el dashboard admin junto a los últimos accesos y contadores globales.
 - **Branding Designer** (`/admin/branding`): panel Livewire para ajustar colores, tipografías, logos y modo oscuro, guardando en `BrandingSettings`.
 - **i18n + SEO**: rutas duplicadas `/es` / `/en` con middleware `localized`, switcher en el layout, hreflang/canonical automáticos y `sitemap.xml` multiidioma.
 - **Integraciones externas**: outbox `integration_events` + job `DispatchIntegrationEventJob` con reintentos/HMAC; webhooks Make (`/api/webhooks/make`), despachos a Discord, Google Sheets (service account) y MailerLite cuando hay credenciales.
@@ -85,7 +85,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-98 pruebas (282 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, certificados, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
+99 pruebas (287 assertions) cubren autenticación, perfiles, builder/player, quizzes/tareas/gamificación, certificados, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 

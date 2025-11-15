@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Certificate;
+use App\Models\CertificateVerificationLog;
 use App\Models\IntegrationEvent;
 use App\Models\PaymentEvent;
 use App\Models\Subscription;
@@ -202,16 +203,16 @@ class Dashboard extends Component
 
     private function loadRecentVerifications(): Collection
     {
-        return Certificate::with(['user', 'course'])
-            ->whereNotNull('last_verified_at')
-            ->orderByDesc('last_verified_at')
+        return CertificateVerificationLog::with(['certificate.user', 'certificate.course'])
+            ->latest()
             ->limit(5)
             ->get()
-            ->map(fn ($certificate) => [
-                'student' => $certificate->user?->name,
-                'course' => $certificate->course?->slug,
-                'verified_at' => optional($certificate->last_verified_at)->diffForHumans(),
-                'code' => $certificate->code,
+            ->map(fn ($log) => [
+                'student' => $log->certificate?->user?->name,
+                'course' => $log->certificate?->course?->slug,
+                'verified_at' => optional($log->created_at)->diffForHumans(),
+                'code' => $log->certificate?->code,
+                'source' => $log->source,
             ]);
     }
 }

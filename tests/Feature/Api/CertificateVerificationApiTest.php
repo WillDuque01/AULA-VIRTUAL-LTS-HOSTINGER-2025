@@ -64,6 +64,11 @@ class CertificateVerificationApiTest extends TestCase
             'id' => $certificate->id,
             'verified_count' => 1,
         ]);
+
+        $this->assertDatabaseHas('certificate_verification_logs', [
+            'certificate_id' => $certificate->id,
+            'source' => 'api',
+        ]);
     }
 }
 

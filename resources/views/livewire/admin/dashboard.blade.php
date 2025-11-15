@@ -152,6 +152,7 @@
                             <div>
                                 <p class="font-semibold text-slate-800">{{ $verification['student'] ?? __('dashboard.certificates.anonymous_student') }}</p>
                                 <p class="text-xs text-slate-500">{{ $verification['course'] }}</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">{{ __('dashboard.certificates.verification_source', ['source' => strtoupper($verification['source'] ?? 'web')]) }}</p>
                             </div>
                             <div class="text-right text-xs text-slate-500">
                                 <p>{{ $verification['verified_at'] }}</p>
