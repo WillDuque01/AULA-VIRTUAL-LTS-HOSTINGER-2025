@@ -1,0 +1,31 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\IntegrationEvent;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\IntegrationEvent>
+ */
+class IntegrationEventFactory extends Factory
+{
+    protected $model = IntegrationEvent::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'event' => 'test.event',
+            'target' => 'make',
+            'payload' => [
+                'foo' => 'bar',
+            ],
+            'status' => 'pending',
+        ];
+    }
+}

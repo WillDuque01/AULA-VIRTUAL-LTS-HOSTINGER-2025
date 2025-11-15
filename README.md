@@ -50,6 +50,7 @@ Credenciales seed:
   - Estudiante: progreso personal, minutos vistos, próximas lecciones y reanudación.
 - **Branding Designer** (`/admin/branding`): panel Livewire para ajustar colores, tipografías, logos y modo oscuro, guardando en `BrandingSettings`.
 - **i18n + SEO**: rutas duplicadas `/es` / `/en` con middleware `localized`, switcher en el layout, hreflang/canonical automáticos y `sitemap.xml` multiidioma.
+- **Integraciones externas**: outbox `integration_events` + job `DispatchIntegrationEventJob` con reintentos/HMAC; webhooks Make (`/api/webhooks/make`), despachos a Discord, Google Sheets (service account) y MailerLite cuando hay credenciales.
 - **Mensajería y notificaciones**: migraciones, eventos/listeners, campañas por email/push y centros de mensajes para Admin/Alumno.
 - **Tiers / Suscripciones / Pagos simulados**: asociaciones curso-tier, simulador de pagos y listeners que actualizan el acceso.
 - **Panel de seguridad**: headers CSP/HSTS configurables, middleware `SecurityHeaders`.
@@ -72,7 +73,7 @@ php artisan test
 php artisan migrate:fresh --seed
 ```
 
-30 pruebas (70 assertions) cubren autenticacion, perfiles, builder/player, provisionamiento y comandos personalizados.
+61 pruebas (170 assertions) cubren autenticación, perfiles, builder/player, provisionamiento, outbox de integraciones, webhooks y comandos personalizados.
 
 ## CI / Build
 

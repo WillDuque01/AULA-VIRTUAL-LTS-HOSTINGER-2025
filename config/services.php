@@ -43,6 +43,7 @@ return [
         'service_account_json' => env('GOOGLE_SERVICE_ACCOUNT_JSON_PATH', 'storage/app/keys/google.json'),
         'sheet_id' => env('SHEET_ID'),
         'enabled' => (bool) env('GOOGLE_SHEETS_ENABLED', false),
+        'range' => env('GOOGLE_SHEETS_RANGE', 'Integraciones!A1'),
     ],
 
     'pusher' => [
@@ -77,6 +78,11 @@ return [
 
     'discord' => [
         'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+    ],
+
+    'mailerlite' => [
+        'api_key' => env('MAILERLITE_API_KEY'),
+        'group_id' => env('MAILERLITE_GROUP_ID'),
     ],
 
 ];

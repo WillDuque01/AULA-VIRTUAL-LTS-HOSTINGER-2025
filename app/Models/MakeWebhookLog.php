@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class MakeWebhookLog extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'event',
+        'payload',
+        'signature',
+        'processed',
+        'processed_at',
+    ];
+
+    protected $casts = [
+        'payload' => 'array',
+        'processed' => 'boolean',
+        'processed_at' => 'datetime',
+    ];
+}
