@@ -9,8 +9,10 @@ use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
 use App\Livewire\Admin\BrandingDesigner;
 use App\Livewire\Admin\GroupManager;
+use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
+use App\Livewire\Student\MessageCenter as StudentMessageCenter;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +63,14 @@ Route::prefix('{locale}')
             Route::get('/admin/branding', BrandingDesigner::class)
                 ->middleware('can:manage-settings')
                 ->name('admin.branding');
+
+            Route::get('/admin/messages', AdminMessageCenter::class)
+                ->middleware('role:teacher_admin|teacher')
+                ->name('admin.messages');
+
+            Route::get('/student/messages', StudentMessageCenter::class)
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('student.messages');
 
             Route::post('/api/video/progress', [VideoProgressController::class, 'store'])->name('api.video.progress');
         });

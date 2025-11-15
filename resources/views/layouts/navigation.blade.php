@@ -1,4 +1,5 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    @php($currentUser = Auth::user())
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -23,6 +24,15 @@
                             Integraciones
                         </x-nav-link>
                     @endcan
+                    @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
+                        <x-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
+                            {{ __('Mensajes') }}
+                        </x-nav-link>
+                    @elseif($currentUser?->hasAnyRole(['student_free','student_paid','student_vip']))
+                        <x-nav-link :href="route('student.messages')" :active="request()->routeIs('student.messages')">
+                            {{ __('Mensajes') }}
+                        </x-nav-link>
+                    @endif
                     <x-locale-switcher />
                 </div>
             </div>
@@ -87,6 +97,15 @@
                     Integraciones
                 </x-responsive-nav-link>
             @endcan
+            @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
+                <x-responsive-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
+                    {{ __('Mensajes') }}
+                </x-responsive-nav-link>
+            @elseif($currentUser?->hasAnyRole(['student_free','student_paid','student_vip']))
+                <x-responsive-nav-link :href="route('student.messages')" :active="request()->routeIs('student.messages')">
+                    {{ __('Mensajes') }}
+                </x-responsive-nav-link>
+            @endif
             <div class="px-4">
                 <x-locale-switcher />
             </div>

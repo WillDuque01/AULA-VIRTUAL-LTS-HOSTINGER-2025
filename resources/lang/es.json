@@ -278,5 +278,16 @@
     "Requiere":  "Requiere",
     "Tus tiers activos":  "Tus tiers activos",
     "Ya cuentas con este tier activo.":  "Ya cuentas con este tier activo.",
-    "Contacta soporte para habilitar este curso.":  "Contacta soporte para habilitar este curso."
+    "Contacta soporte para habilitar este curso.":  "Contacta soporte para habilitar este curso.",
+    "email.actions.view_message": "Ver mensaje",
+    "email.blocks.footer.support": "¿Necesitas ayuda? Responde este correo o escribe a :email",
+    "email.blocks.footer.preferences": "Actualiza tus preferencias de notificación",
+    "email.blocks.message.preview": "Vista previa del mensaje",
+    "email.body.message.teacher_intro": ":sender envió una nueva actualización.",
+    "email.body.message.student_intro": "Recibiste un mensaje de :name.",
+    "email.body.message.student_intro_teacher": "Recibiste un mensaje del estudiante :name.",
+    "email.greeting": "Hola :name,",
+    "email.signature": "Un abrazo del equipo :brand",
+    "email.subjects.teacher_message": "Nuevo mensaje de tu academia",
+    "email.subjects.student_message": "Nuevo mensaje de :name"
 }
