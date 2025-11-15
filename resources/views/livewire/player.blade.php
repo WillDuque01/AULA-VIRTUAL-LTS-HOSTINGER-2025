@@ -5,17 +5,54 @@
     $resumeLabel = $resumeSeconds > 0 ? gmdate('H:i:s', $resumeSeconds) : 'Inicio';
     $bodyContent = data_get($lesson->config, 'body');
     $resourceUrl = $resourceUrl ?? data_get($lesson->config, 'resource_url');
+    $estimation = $estimatedMinutes ? $estimatedMinutes.' min' : null;
 @endphp
 
-@if($isVideo)
+@if($isLocked)
+    <div class="space-y-6">
+        <div class="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 shadow-inner">
+            <div class="flex items-center gap-3 text-amber-900">
+                <span class="text-2xl">🔒</span>
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-wide">Lección bloqueada</p>
+                    <p class="text-base font-semibold">{{ $lockReason }}</p>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-4 text-sm text-amber-800/90">
+                @if($releaseAtHuman)
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⏳</span>
+                        Disponible en {{ $releaseAtHuman }}
+                    </div>
+                @endif
+                @if($prerequisiteLesson)
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">✅</span>
+                        Completa "{{ data_get($prerequisiteLesson->config, 'title', $prerequisiteLesson->chapter?->title) }}"
+                    </div>
+                @endif
+            </div>
+            @if($prerequisiteLesson)
+                <div class="mt-4">
+                    <a href="{{ route('lessons.player', ['locale' => app()->getLocale(), 'lesson' => $prerequisiteLesson]) }}"
+                       class="inline-flex items-center gap-2 rounded-full bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-amber-700">
+                        Ir a la lección previa
+                        <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            @endif
+        </div>
+    </div>
+@elseif($isVideo)
     <div class="space-y-6" data-player-shell
          data-provider="{{ $provider }}"
          data-lesson="{{ $lesson->id }}"
          data-resume="{{ $resumeSeconds }}"
          data-duration="{{ $durationSeconds ?? '' }}"
+         data-strict="{{ $strictSeeking ? '1' : '0' }}"
          data-progress-url="{{ route('api.video.progress') }}">
 
-        <div class="aspect-video rounded-xl overflow-hidden bg-black relative">
+        <div class="aspect-video rounded-3xl overflow-hidden bg-black relative ring-1 ring-slate-900/10 shadow-xl shadow-black/30">
             @switch($provider)
                 @case('vimeo')
                     @if($videoId)
@@ -55,49 +92,91 @@
             @endswitch
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-3">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                    <h3 class="text-lg font-semibold">{{ $title }}</h3>
+        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100/80 p-6 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xl font-semibold">{{ $title }}</h3>
+                        @if($badge)
+                            <span class="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-0.5 text-xs font-semibold text-blue-600">{{ $badge }}</span>
+                        @endif
+                    </div>
                     <p class="text-sm text-gray-500">Proveedor: {{ ucfirst($provider) }}</p>
                 </div>
-                <div class="flex items-center gap-6 text-xs text-gray-500">
+                <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
                     <div>
                         <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Reanudar</span>
-                        <span class="text-sm text-gray-700">{{ $resumeLabel }}</span>
+                        <span class="text-sm text-gray-900">{{ $resumeLabel }}</span>
                     </div>
                     @if($durationSeconds)
                         <div>
                             <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Duración</span>
-                            <span class="text-sm text-gray-700">{{ gmdate('H:i:s', $durationSeconds) }}</span>
+                            <span class="text-sm text-gray-900">{{ gmdate('H:i:s', $durationSeconds) }}</span>
                         </div>
                     @endif
-                    @if($strictMode)
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">Modo estricto</span>
+                    @if($estimation)
+                        <div>
+                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Estimado</span>
+                            <span class="text-sm text-gray-900">{{ $estimation }}</span>
+                        </div>
+                    @endif
+                    @if($provider !== 'youtube')
+                        <button type="button"
+                                wire:click="toggleStrict"
+                                class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $strictSeeking ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-600' }}">
+                            <span class="text-base" aria-hidden="true">{{ $strictSeeking ? '🛡️' : '🎯' }}</span>
+                            {{ $strictSeeking ? 'Modo estricto' : 'Modo libre' }}
+                        </button>
                     @else
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold">Modo best-effort</span>
+                        <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                            <span aria-hidden="true">⚙️</span> YouTube (best effort)
+                        </span>
                     @endif
                 </div>
             </div>
+
+            @if($ctaLabel && $ctaUrl)
+                <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-emerald-800">{{ $ctaLabel }}</p>
+                        <p class="text-xs text-emerald-600/90">Enlace recomendado al finalizar esta lección.</p>
+                    </div>
+                    <a href="{{ $ctaUrl }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-emerald-700">
+                        Abrir recurso
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
 @else
     <div class="space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-            <div>
+        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-6 space-y-4">
+            <div class="flex items-center gap-3">
                 <h3 class="text-lg font-semibold">{{ $title }}</h3>
-                <p class="text-sm text-gray-500 capitalize">Tipo de contenido: {{ $lesson->type }}</p>
+                @if($badge)
+                    <span class="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-0.5 text-xs font-semibold text-blue-600">{{ $badge }}</span>
+                @endif
             </div>
+            <p class="text-sm text-gray-500 capitalize">Tipo de contenido: {{ $lesson->type }}</p>
             @if($lesson->type === 'text' && $bodyContent)
                 <div class="prose prose-slate max-w-none">
                     {!! \Illuminate\Support\Str::markdown($bodyContent) !!}
                 </div>
             @elseif($resourceUrl)
-                <a href="{{ $resourceUrl }}" target="_blank" rel="noopener" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-blue-700">
+                <a href="{{ $resourceUrl }}" target="_blank" rel="noopener"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-full shadow-sm hover:bg-blue-700">
                     Abrir recurso externo
                 </a>
             @else
                 <p class="text-sm text-gray-500">Configura el recurso de esta lección desde el builder.</p>
+            @endif
+            @if($ctaLabel && $ctaUrl)
+                <a href="{{ $ctaUrl }}" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
+                    {{ $ctaLabel }} ↗
+                </a>
             @endif
         </div>
     </div>
@@ -161,6 +240,7 @@
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
                         const resumeAt = toSeconds(container.dataset.resume);
+                        const isStrict = container.dataset.strict === '1';
 
                         const initPlayer = () => {
                             const player = new YT.Player(iframeId, {
@@ -199,7 +279,7 @@
                                         });
                                     }
 
-                                    if (currentTime > lastValid + 3) {
+                                    if (isStrict && currentTime > lastValid + 3) {
                                         player.seekTo(lastValid, true);
                                     }
                                 }, 2000);
@@ -223,6 +303,7 @@
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
                         const resumeAt = toSeconds(container.dataset.resume);
+                        const isStrict = container.dataset.strict === '1';
 
                         const player = new Vimeo.Player(iframe);
                         let lastValid = resumeAt;
@@ -252,6 +333,10 @@
                         });
 
                         player.on('seeked', (event) => {
+                            if (! isStrict) {
+                                return;
+                            }
+
                             const seconds = Math.floor(event.seconds ?? 0);
                             if (seconds > lastValid + 3) {
                                 player.setCurrentTime(lastValid).catch(() => null);
@@ -268,6 +353,7 @@
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
                         const resumeAt = toSeconds(container.dataset.resume);
+                        const isStrict = container.dataset.strict === '1';
 
                         let lastValid = resumeAt;
                         let lastSent = resumeAt;
@@ -296,6 +382,10 @@
                         });
 
                         element.addEventListener('seeking', () => {
+                            if (! isStrict) {
+                                return;
+                            }
+
                             const current = Math.floor(element.currentTime || 0);
                             if (current > lastValid + 3) {
                                 element.currentTime = lastValid;

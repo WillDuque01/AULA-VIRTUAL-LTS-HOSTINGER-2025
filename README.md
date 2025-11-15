@@ -44,6 +44,7 @@ Credenciales seed:
 
 - **Builder drag & drop** (Livewire) para capítulos/lecciones + recursos (video, PDF, iframe, texto, quiz) con prerequisitos, badges, estimaciones de tiempo, CTA y microinteracciones UIX 2030.
 - **Player inteligente** con reanudación exacta, bloqueo best-effort (YouTube) y modo estricto listo para Vimeo/Cloudflare.
+- **Player inteligente** con reanudación exacta, agenda de liberación, prerequisitos y conmutador de modo estricto (Vimeo/Cloudflare) + CTA configurable.
 - **Dashboards**:
   - Admin: usuarios, MRR 30d, horas vistas, estado de integraciones, horas por curso.
   - Profesor: actividad de estudiantes (7d), completitud promedio y heatmap básico de lecciones.
