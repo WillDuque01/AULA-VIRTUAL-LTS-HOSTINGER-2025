@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Course;
+use App\Models\CourseI18n;
 use App\Models\StudentGroup;
 use App\Models\Tier;
 use App\Models\User;
+use App\Notifications\CourseUnlockedNotification;
 use App\Notifications\SimulatedPaymentNotification;
 use App\Support\Payments\PaymentSimulator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,8 +23,10 @@ class PaymentSimulatedListenersTest extends TestCase
         Notification::fake();
 
         $user = User::factory()->create();
-        $tier = Tier::factory()->create(['access_type' => 'paid', 'price_monthly' => 49, 'slug' => 'premium']);
+        $tier = Tier::factory()->create(['access_type' => 'paid', 'price_monthly' => 49, 'slug' => 'premium', 'name' => 'Premium']);
         StudentGroup::factory()->create(['tier_id' => $tier->id, 'capacity' => null]);
+
+        $course = $this->createCourseForTier($tier);
 
         $simulator = app(PaymentSimulator::class);
         $simulator->simulate($user, $tier, [
@@ -43,5 +48,27 @@ class PaymentSimulatedListenersTest extends TestCase
                 return $notification->subscription->tier_id === $tier->id;
             }
         );
+
+        Notification::assertSentTo($user, CourseUnlockedNotification::class);
+    }
+
+    private function createCourseForTier(Tier $tier): Course
+    {
+        $course = Course::create([
+            'slug' => 'nivel-a1',
+            'level' => 'beginner',
+            'published' => true,
+        ]);
+
+        $course->tiers()->attach($tier->id);
+
+        CourseI18n::create([
+            'course_id' => $course->id,
+            'locale' => 'es',
+            'title' => 'Curso Nivel A1',
+            'description' => 'Contenido introductor para estudiantes Premium.',
+        ]);
+
+        return $course;
     }
 }

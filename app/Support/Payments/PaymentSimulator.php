@@ -2,7 +2,9 @@
 
 namespace App\Support\Payments;
 
+use App\Events\CourseUnlocked;
 use App\Events\PaymentSimulated;
+use App\Models\Course;
 use App\Models\StudentGroup;
 use App\Models\Subscription;
 use App\Models\Tier;
@@ -11,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 
 class PaymentSimulator
 {
@@ -53,6 +56,7 @@ class PaymentSimulator
             $this->assignToGroup($user, $tier, $payload);
 
             Event::dispatch(new PaymentSimulated($subscription));
+            $this->dispatchCourseUnlocks($user, $tier);
 
             return $subscription;
         });
@@ -97,5 +101,42 @@ class PaymentSimulator
                 ],
             ]);
         }
+    }
+
+    private function dispatchCourseUnlocks(User $user, Tier $tier): void
+    {
+        $courses = $tier->courses()->with('i18n')->get();
+
+        if ($courses->isEmpty()) {
+            return;
+        }
+
+        $locale = app()->getLocale();
+
+        foreach ($courses as $course) {
+            CourseUnlocked::dispatch(
+                $course,
+                [$user],
+                $this->resolveCourseTitle($course, $locale),
+                $this->resolveCourseSummary($course, $locale, $tier->name),
+                $tier->name,
+                url(sprintf('/%s/courses/%s', $locale, $course->slug))
+            );
+        }
+    }
+
+    private function resolveCourseTitle(Course $course, string $locale): string
+    {
+        $translation = $course->i18n->firstWhere('locale', $locale) ?? $course->i18n->first();
+
+        return $translation?->title ?? $course->slug;
+    }
+
+    private function resolveCourseSummary(Course $course, string $locale, string $tierName): string
+    {
+        $translation = $course->i18n->firstWhere('locale', $locale) ?? $course->i18n->first();
+        $summary = $translation?->description ?? __('Se desbloqueó un nuevo curso asociado a :tier.', ['tier' => $tierName]);
+
+        return Str::limit(strip_tags($summary), 160);
     }
 }
