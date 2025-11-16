@@ -78,10 +78,17 @@ Componente: `App\Livewire\Admin\DataPorterHub`.
 - **Compras de packs**: `RecordPracticePackPurchaseSnapshot` escucha `PracticePackagePurchased` y guarda `practice_pack_purchase` incluyendo pack, sesiones, precio y orden (`order_id`, `paid_at`).
 - **Consumo de sesiones**: `RecordPracticeSessionConsumedSnapshot` toma `PracticePackageSessionConsumed` y registra `practice_pack_consumption` con sesiones restantes, orden y paquete.
 - **Solicitudes escaladas**: `RecordPracticeRequestEscalationSnapshot` captura `DiscordPracticeRequestEscalated` y crea snapshots `practice_request_escalated` en `teacher_activity_snapshots` con backlog pendiente y destinatarios.
+- **Asistencia efectiva**: el comando `practices:sync-attendance` recorre las prácticas ya impartidas y emite `practice_attendance` por cada reserva confirmada.
+- **Cancelaciones tardías**: el mismo comando registra `practice_cancellation` cuando la reserva se cancela dentro de la ventana configurada (`DISCORD_PRACTICES_LATE_CANCEL_MINUTES`), marcando el flag `late`.
 - Todos usan `TelemetryRecorder`, por lo que las entradas aparecen al instante en DataPorter sin carga manual.
 
-## 8. Próximos pasos
-- Añadir snapshots para asistencia efectiva (sesiones realizadas vs. reservadas) y cancelaciones tardías.
-- Exponer alertas automáticas (Slack/Discord) cuando `events_pending` supere umbrales definidos.
-- Documentar guías rápidas para interpretar los nuevos datasets (`discord_practices`, `practice_package_orders`) desde Analytics/BI.
+## 8. Monitoreo y alertas
+- **Backlog de telemetría**: `telemetry:monitor-backlog` compara `video_player_events` sin sincronizar contra `TELEMETRY_ALERT_THRESHOLD` y envía `TelemetryBacklogAlertNotification` (mail + base) respetando `TELEMETRY_ALERT_COOLDOWN_MINUTES`.
+- **Panel DataPorter**: el card de “Eventos pendientes” se ilumina cuando se supera el umbral y muestra el mensaje de acción inmediata.
+- **Historial**: `telemetry_sync_logs` guarda estado/duración/driver/usuario por cada `telemetry:sync`, accesible desde el Hub.
+- **Asistencia**: `practices:sync-attendance --limit=25` se ejecuta cada 30 minutos (scheduler) y deja constancia en snapshots para analytics.
+
+## 9. Métricas externas
+- Cada dataset permite exportar CSV/JSON. GA4 y Mixpanel siguen su driver respectivo (`telemetry:sync`).
+- Los snapshots (`student_activity_snapshots` y `teacher_activity_snapshots`) pueden importarse vía CSV/JSON usando `TelemetryRecorder`.
 

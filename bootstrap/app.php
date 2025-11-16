@@ -2,10 +2,12 @@
 
 use App\Console\Commands\CredentialsAudit;
 use App\Console\Commands\CredentialsCheck;
+use App\Console\Commands\MonitorTelemetryBacklogCommand;
 use App\Console\Commands\RetryIntegrationEvents;
 use App\Console\Commands\SimulatePayment;
 use App\Console\Commands\RemindIncompleteProfilesCommand;
 use App\Console\Commands\SyncTelemetryCommand;
+use App\Console\Commands\SyncPracticeAttendanceSnapshotsCommand;
 use App\Console\Commands\StorageMigrate;
 use App\Http\Middleware\EnsureSetupIsComplete;
 use App\Http\Middleware\SecurityHeaders;
@@ -29,7 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
         SimulatePayment::class,
         RetryIntegrationEvents::class,
         SyncTelemetryCommand::class,
+        SyncPracticeAttendanceSnapshotsCommand::class,
         RemindIncompleteProfilesCommand::class,
+        MonitorTelemetryBacklogCommand::class,
     ])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('integration:retry failed')
@@ -37,6 +41,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
         $schedule->command('telemetry:sync --limit=500')
             ->hourly()
+            ->withoutOverlapping();
+        $schedule->command('practices:sync-attendance --limit=25')
+            ->everyThirtyMinutes()
+            ->withoutOverlapping();
+        $schedule->command('telemetry:monitor-backlog')
+            ->everyFifteenMinutes()
             ->withoutOverlapping();
         $schedule->command('profile:remind-incomplete --threshold=80')
             ->dailyAt('09:00')

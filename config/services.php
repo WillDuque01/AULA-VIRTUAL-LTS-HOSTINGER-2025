@@ -103,6 +103,13 @@ return [
     'discord_practices' => [
         'request_threshold' => (int) env('DISCORD_PRACTICES_REQUEST_THRESHOLD', 3),
         'request_cooldown_minutes' => (int) env('DISCORD_PRACTICES_REQUEST_COOLDOWN_MINUTES', 240),
+        'attendance_grace_minutes' => (int) env('DISCORD_PRACTICES_ATTENDANCE_GRACE_MINUTES', 45),
+        'late_cancel_minutes' => (int) env('DISCORD_PRACTICES_LATE_CANCEL_MINUTES', 180),
+    ],
+
+    'telemetry_alerts' => [
+        'threshold' => (int) env('TELEMETRY_ALERT_THRESHOLD', 4000),
+        'cooldown_minutes' => (int) env('TELEMETRY_ALERT_COOLDOWN_MINUTES', 60),
     ],
 
 ];

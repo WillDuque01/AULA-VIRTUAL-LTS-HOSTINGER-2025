@@ -27,6 +27,7 @@ class DiscordPractice extends Model
         'status',
         'created_by',
         'requires_package',
+        'attendance_synced_at',
     ];
 
     protected $casts = [
@@ -34,6 +35,7 @@ class DiscordPractice extends Model
         'end_at' => 'datetime',
         'capacity' => 'integer',
         'requires_package' => 'boolean',
+        'attendance_synced_at' => 'datetime',
     ];
 
     public function lesson(): BelongsTo

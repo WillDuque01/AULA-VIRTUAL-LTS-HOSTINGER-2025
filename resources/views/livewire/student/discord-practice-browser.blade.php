@@ -77,6 +77,11 @@
                         </p>
                     </div>
                     <div class="flex flex-col gap-2 text-sm">
+                        @if(isset($statusMessages[$practice['id']]))
+                            <p class="text-[11px] font-semibold text-emerald-600">
+                                {{ $statusMessages[$practice['id']] }}
+                            </p>
+                        @endif
                         @if($practice['has_reservation'])
                             <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                                 ✔ {{ __('Reserva confirmada') }}
@@ -85,6 +90,13 @@
                                 <a href="{{ $practice['discord_channel_url'] }}" target="_blank" rel="noopener" class="text-xs font-semibold text-blue-600 hover:underline">
                                     Abrir canal
                                 </a>
+                            @endif
+                            @if($practice['can_cancel'])
+                                <button type="button"
+                                        wire:click="cancelReservation({{ $practice['id'] }})"
+                                        class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-rose-300 hover:text-rose-600">
+                                    {{ __('Cancelar reserva') }}
+                                </button>
                             @endif
                         @elseif($practice['available'] > 0)
                             @if($practice['requires_package'] && ! $practice['has_required_pack'])

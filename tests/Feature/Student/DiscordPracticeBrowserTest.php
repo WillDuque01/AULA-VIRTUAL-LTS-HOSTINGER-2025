@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
+use Spatie\Permission\Models\Role;
 
 class DiscordPracticeBrowserTest extends TestCase
 {
@@ -36,6 +37,10 @@ class DiscordPracticeBrowserTest extends TestCase
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
+
+        Role::findOrCreate('teacher_admin');
+        Role::findOrCreate('teacher');
+        Role::findOrCreate('Admin');
     }
 
     public function test_practice_requires_pack_and_shows_cta_when_user_has_none(): void
@@ -187,6 +192,69 @@ class DiscordPracticeBrowserTest extends TestCase
             ->assertSet('packReminder', null);
 
         $this->assertNotNull($notification->fresh()->read_at);
+    }
+
+    public function test_user_can_cancel_reservation_and_restore_pack_session(): void
+    {
+        $user = User::factory()->create();
+        $teacher = User::factory()->create();
+        $lesson = $this->createLesson();
+
+        $package = PracticePackage::create([
+            'creator_id' => $teacher->id,
+            'lesson_id' => $lesson->id,
+            'title' => 'Pack cancelable',
+            'sessions_count' => 2,
+            'price_amount' => 80,
+            'price_currency' => 'USD',
+            'is_global' => false,
+            'status' => 'published',
+        ]);
+
+        $order = PracticePackageOrder::create([
+            'practice_package_id' => $package->id,
+            'user_id' => $user->id,
+            'status' => 'paid',
+            'sessions_remaining' => 2,
+        ]);
+
+        $practice = DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'title' => 'Pronunciación',
+            'type' => 'cohort',
+            'start_at' => now()->addHours(3),
+            'end_at' => now()->addHours(4),
+            'duration_minutes' => 60,
+            'capacity' => 5,
+            'status' => 'scheduled',
+            'created_by' => $teacher->id,
+            'requires_package' => true,
+            'practice_package_id' => $package->id,
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(DiscordPracticeBrowser::class)
+            ->call('reserve', $practice->id);
+
+        $this->assertDatabaseHas('discord_practice_reservations', [
+            'discord_practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => 'confirmed',
+        ]);
+
+        $this->assertSame(1, $order->fresh()->sessions_remaining);
+
+        Livewire::test(DiscordPracticeBrowser::class)
+            ->call('cancelReservation', $practice->id);
+
+        $this->assertDatabaseHas('discord_practice_reservations', [
+            'discord_practice_id' => $practice->id,
+            'user_id' => $user->id,
+            'status' => 'cancelled',
+        ]);
+
+        $this->assertSame(2, $order->fresh()->sessions_remaining);
     }
 
     private function createLesson(): Lesson

@@ -3,6 +3,11 @@
     x-on:data-porter:download.window="window.open($event.detail.url, '_blank')"
     class="space-y-6"
 >
+    @php
+        $pendingEvents = $telemetryStatus['pending'] ?? 0;
+        $alertThreshold = $telemetryStatus['alert_threshold'] ?? null;
+        $isPendingAlert = $alertThreshold && $pendingEvents >= $alertThreshold;
+    @endphp
     <div class="rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-lg shadow-slate-200/50 space-y-4">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -26,13 +31,22 @@
         </div>
 
         <div class="grid gap-4 lg:grid-cols-3">
-            <div class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+            <div @class([
+                'rounded-2xl p-4',
+                'border border-rose-200 bg-rose-50/80' => $isPendingAlert,
+                'border border-slate-100 bg-slate-50/80' => ! $isPendingAlert,
+            ])>
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Eventos pendientes') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ $telemetryStatus['pending'] ?? 0 }}</p>
+                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ $pendingEvents }}</p>
                 <p class="text-xs text-slate-500">
                     {{ __('Última sync:') }}
                     {{ $telemetryStatus['last_synced_at'] ? $telemetryStatus['last_synced_at']->diffForHumans() : __('Nunca') }}
                 </p>
+                @if($isPendingAlert)
+                    <p class="mt-2 text-[11px] font-semibold text-rose-600">
+                        {{ __('Backlog supera el umbral (:threshold). Ejecuta telemetry:sync.', ['threshold' => number_format($alertThreshold)]) }}
+                    </p>
+                @endif
             </div>
 
             <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">

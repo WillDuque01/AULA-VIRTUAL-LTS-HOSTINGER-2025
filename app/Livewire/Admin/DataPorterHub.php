@@ -213,6 +213,7 @@ class DataPorterHub extends Component
             'pending' => $pendingEvents,
             'last_synced_at' => $lastSyncedAt ? $lastSyncedAt->copy()->timezone(config('app.timezone', 'UTC')) : null,
             'drivers' => $drivers,
+            'alert_threshold' => (int) config('services.telemetry_alerts.threshold', 4000),
             'logs' => TelemetrySyncLog::with('user:id,name,email')
                 ->latest()
                 ->limit(5)

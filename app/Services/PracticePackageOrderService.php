@@ -55,6 +55,25 @@ class PracticePackageOrderService
 
         PracticePackageSessionConsumed::dispatch($order->fresh(['package.lesson.chapter.course']));
     }
+
+    public function restoreSession(PracticePackageOrder $order): void
+    {
+        $order->refresh();
+
+        $originalSessions = $order->package?->sessions_count ?? null;
+        $sessionsRemaining = (int) $order->sessions_remaining;
+
+        if ($originalSessions !== null) {
+            $sessionsRemaining = min($sessionsRemaining + 1, (int) $originalSessions);
+        } else {
+            $sessionsRemaining++;
+        }
+
+        $order->update([
+            'sessions_remaining' => $sessionsRemaining,
+            'status' => $sessionsRemaining > 0 ? 'paid' : $order->status,
+        ]);
+    }
 }
 
 

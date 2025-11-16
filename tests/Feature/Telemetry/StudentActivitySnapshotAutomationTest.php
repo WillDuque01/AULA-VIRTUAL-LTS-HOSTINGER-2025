@@ -108,6 +108,57 @@ class StudentActivitySnapshotAutomationTest extends TestCase
         ]);
     }
 
+    public function test_attendance_command_creates_attendance_and_cancellation_snapshots(): void
+    {
+        $teacher = User::factory()->create();
+        $student = User::factory()->create();
+        $otherStudent = User::factory()->create();
+        $lesson = $this->createLesson($teacher);
+
+        $practice = DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'type' => 'coaching',
+            'title' => 'Sesión QA',
+            'description' => 'repaso',
+            'start_at' => now()->subHours(2),
+            'end_at' => now()->subHour(),
+            'duration_minutes' => 45,
+            'capacity' => 6,
+            'status' => 'scheduled',
+            'created_by' => $teacher->id,
+            'requires_package' => false,
+        ]);
+
+        DiscordPracticeReservation::create([
+            'discord_practice_id' => $practice->id,
+            'user_id' => $student->id,
+            'status' => 'confirmed',
+        ]);
+
+        DiscordPracticeReservation::create([
+            'discord_practice_id' => $practice->id,
+            'user_id' => $otherStudent->id,
+            'status' => 'cancelled',
+            'cancelled_at' => now()->subMinutes(30),
+        ]);
+
+        $this->artisan('practices:sync-attendance --limit=10')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('student_activity_snapshots', [
+            'user_id' => $student->id,
+            'category' => 'practice_attendance',
+        ]);
+
+        $this->assertDatabaseHas('student_activity_snapshots', [
+            'user_id' => $otherStudent->id,
+            'category' => 'practice_cancellation',
+        ]);
+
+        $this->assertSame('completed', $practice->fresh()->status);
+        $this->assertNotNull($practice->fresh()->attendance_synced_at);
+    }
+
     public function test_pack_session_consumption_records_snapshot(): void
     {
         $teacher = User::factory()->create();

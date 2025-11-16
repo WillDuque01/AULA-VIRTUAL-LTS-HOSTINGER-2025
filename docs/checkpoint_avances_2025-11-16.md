@@ -16,7 +16,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | Player avanzado (heatmap, CTAs, celebraciones)| ~100 %   | Panel insights ahora muestra racha/XP/último logro, CTA inteligente, celebraciones con fallback motion-safe y documentación QA (`docs/player_signals_playbook.md`). |
 | HelpHub contextual                           | ~100 %   | Nuevo sistema de guías: wizard, dashboards y layout consumen `config/integration_guides.php` + `experience_guides.php`, con paneles interactivos y botón flotante por ruta (player, builder, planner, DataPorter). |
 | Planner Discord & Packs                       | ~100 %   | Planner con plantillas multi-slot, presets de cohorte, checklist Make y guía operativa (`docs/planner_operativa_make.md`) completada. |
-| DataPorter & Telemetría                       | ~95 %    | Hub con datasets nuevos (`discord_practices`, `practice_package_orders`), snapshots de consumo/escalaciones, monitoreo con historial `telemetry_sync_logs` y panel GA4/Mixpanel. |
+| DataPorter & Telemetría                       | ~100 %   | Hub con datasets nuevos, snapshots de consumo/asistencia/cancelaciones y monitoreo con alertas (`telemetry:monitor-backlog`, `practices:sync-attendance`) + historial `telemetry_sync_logs`. |
 | Perfiles completos                            | ~100 %   | Checklist docente (headline, bio, idiomas, especialidades, certificaciones, LinkedIn/notas) + recordatorios automáticos `profile:remind-incomplete` (cooldown 7 d) corriendo a diario. |
 | Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente con historial de aprobación, filtros por estado en builder y nuevo reporte de desempeño (tiempos, tasas, backlog) disponible para Admin/Teacher Admin. |
 | Documentación & Playbooks                     | ~85 %    | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md` y actualización roles; faltan UI playbook completo, guía de cohortes y checklists Hostinger. |
@@ -32,8 +32,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 3. **Player UIX 2030 (100 %)**  
    Completado con panel de insights (racha, XP, último logro), CTA contextual ampliado y efectos celebratorios con fallback `prefers-reduced-motion`.
 
-4. **DataPorter & Telemetría (95 % → 100 %)**  
-   Pendientes: snapshots de asistencia/cancelaciones, alertas automáticas cuando `events_pending` supere el umbral y guías analíticas para los nuevos datasets.
+4. **DataPorter & Telemetría (100 %)**  
+   Cerrado: nuevos snapshots (`practice_attendance`, `practice_cancellation`), comando `practices:sync-attendance`, alertas `telemetry:monitor-backlog` y documentación actualizada.
 
 5. **Perfiles completos (100 %)**  
    Completado: campos profesionales Teacher Admin, banner con formulario in-place y automatización `profile:remind-incomplete` (cron diario 09:00, configurable con `PROFILE_REMINDER_COOLDOWN_DAYS`).
@@ -50,8 +50,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
    `workflow_dispatch` en Deploy, encadenar smoke.yml y publicar resultados (Slack/Discord) con documentación del procedimiento.
 
 ## Próximas acciones inmediatas
-- Afinar **alertas DataPorter**: snapshots de asistencia/cancelaciones y notificaciones cuando `events_pending` exceda el umbral definido.
-- Revisar las guías: añadir nuevas fichas en `experience_guides.php` cuando se liberen módulos (p. ej. Practice Packs checkout real).
-- Completar documentación UIX 2030 (playbook + cohortes) y habilitar triggers CI/CD pendientes.
+- Completar **UIX Course Builder 100 %**: hotkeys contextuales, microinteracciones y documentación del focus panel.
+- Mantener guías y playbooks al día (`experience_guides.php`, UI playbook 2030 y guía de cohortes).
+- Activar `workflow_dispatch` + smoke tests encadenados en CI/CD y documentar el runbook Hostinger.
 - Tras completar cada bloque, actualizar este checkpoint y comunicar cuando el frente llegue al 100 %.
 

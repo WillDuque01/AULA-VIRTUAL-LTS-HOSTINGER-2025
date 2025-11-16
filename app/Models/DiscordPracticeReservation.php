@@ -16,6 +16,11 @@ class DiscordPracticeReservation extends Model
         'practice_package_order_id',
         'status',
         'notes',
+        'cancelled_at',
+    ];
+
+    protected $casts = [
+        'cancelled_at' => 'datetime',
     ];
 
     public function practice(): BelongsTo

@@ -61,7 +61,10 @@ class DiscordPracticeBrowser extends Component
     public function reserve(int $practiceId, PracticePackageOrderService $orderService): void
     {
         $user = auth()->user();
-        $practice = DiscordPractice::withCount('reservations')->findOrFail($practiceId);
+        $practice = DiscordPractice::withCount([
+                'reservations as confirmed_reservations_count' => fn ($query) => $query->where('status', '!=', 'cancelled'),
+            ])
+            ->findOrFail($practiceId);
 
         if ($practice->start_at->isPast() || $practice->status !== 'scheduled') {
             $this->addError('reservation', __('Esta práctica ya no está disponible.'));
@@ -69,7 +72,7 @@ class DiscordPracticeBrowser extends Component
             return;
         }
 
-        if ($practice->reservations_count >= $practice->capacity) {
+        if ($practice->confirmed_reservations_count >= $practice->capacity) {
             $this->addError('reservation', __('No hay cupos disponibles.'));
 
             return;
@@ -99,6 +102,7 @@ class DiscordPracticeBrowser extends Component
                 [
                     'status' => 'confirmed',
                     'practice_package_order_id' => $order?->id,
+                    'cancelled_at' => null,
                 ]
             );
         });
@@ -112,6 +116,42 @@ class DiscordPracticeBrowser extends Component
         $this->loadPractices();
         $this->dismissPackReminder();
         $this->dispatch('practice-reserved');
+    }
+
+    public function cancelReservation(int $practiceId, PracticePackageOrderService $orderService): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        $practice = DiscordPractice::with(['reservations' => fn ($query) => $query->where('user_id', $user->id)])->findOrFail($practiceId);
+        $reservation = $practice->reservations->first();
+
+        if (! $reservation || $reservation->status === 'cancelled') {
+            $this->addError('reservation', __('No tienes una reserva activa para este slot.'));
+
+            return;
+        }
+
+        if ($practice->start_at->isPast()) {
+            $this->addError('reservation', __('No puedes cancelar una sesión que ya inició.'));
+
+            return;
+        }
+
+        $reservation->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+        ]);
+
+        if ($reservation->packageOrder) {
+            $orderService->restoreSession($reservation->packageOrder);
+        }
+
+        $this->statusMessages[$practice->id] = __('Reserva cancelada');
+        $this->loadPractices();
+        $this->dispatch('practice-cancelled');
     }
 
     private function resolveEligibleOrder(int $userId, DiscordPractice $practice): ?PracticePackageOrder
@@ -180,6 +220,14 @@ class DiscordPracticeBrowser extends Component
         }
 
         $query = DiscordPractice::with(['lesson.chapter.course'])
+            ->with(['reservations' => function ($builder) use ($user) {
+                if ($user) {
+                    $builder->where('user_id', $user->id);
+                } else {
+                    $builder->whereRaw('1 = 0');
+                }
+            }])
+            ->withCount(['reservations as confirmed_reservations_count' => fn ($builder) => $builder->where('status', '!=', 'cancelled')])
             ->where('start_at', '>=', now())
             ->where('status', 'scheduled');
 
@@ -192,8 +240,10 @@ class DiscordPracticeBrowser extends Component
             ->limit(10)
             ->get()
             ->map(function (DiscordPractice $practice) use ($user, $activeOrders) {
-                $reserved = $practice->reservations()->count();
-                $hasReservation = $practice->reservations()->where('user_id', auth()->id())->exists();
+                $reserved = (int) $practice->confirmed_reservations_count;
+                $userReservation = $practice->reservations->first();
+                $hasReservation = $userReservation && $userReservation->status !== 'cancelled';
+                $canCancel = $hasReservation && $practice->start_at && $practice->start_at->isFuture();
 
                 $hasRequiredPack = false;
                 if ($practice->requires_package && $user) {
@@ -216,6 +266,8 @@ class DiscordPracticeBrowser extends Component
                     'reserved' => $reserved,
                     'available' => max(0, $practice->capacity - $reserved),
                     'has_reservation' => $hasReservation,
+                    'can_cancel' => $canCancel,
+                    'reservation_status' => $userReservation?->status,
                     'discord_channel_url' => $practice->discord_channel_url,
                     'lesson_id' => $practice->lesson_id,
                     'requires_package' => $practice->requires_package,
