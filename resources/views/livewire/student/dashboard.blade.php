@@ -28,6 +28,53 @@
         </div>
     </div>
 
+    @if($packReminder)
+        <div class="rounded-2xl border border-amber-100 bg-amber-50/70 px-5 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-amber-600 tracking-wide">Pack recomendado</p>
+                <p class="text-sm font-semibold text-slate-900">
+                    {{ $packReminder['practice_title'] }}
+                    @if($packReminder['start_at'])
+                        · {{ $packReminder['start_at']->translatedFormat('d M H:i') }}
+                    @endif
+                </p>
+                <p class="text-xs text-slate-600">
+                    {{ $packReminder['pack']['title'] }} · {{ $packReminder['pack']['sessions'] }} {{ __('sesiones') }}
+                    @if($packReminder['pack']['price_amount'])
+                        · ${{ number_format($packReminder['pack']['price_amount'], 0) }} {{ $packReminder['pack']['currency'] }}
+                    @endif
+                    @if($packReminder['pack']['price_per_session'])
+                        (≈ ${{ number_format($packReminder['pack']['price_per_session'], 1) }}/sesión)
+                    @endif
+                </p>
+                <p class="text-[11px] text-amber-700 font-semibold mt-1">
+                    {{ $packReminder['pack']['requires_package']
+                        ? __('Necesitas un pack activo para reservar este slot.')
+                        : __('Activa tu pack para tener prioridad permanente en la agenda.') }}
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                @if($packReminder['practice_url'])
+                    <a href="{{ $packReminder['practice_url'] }}"
+                       class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800">
+                        {{ __('Ver prácticas') }} ↗
+                    </a>
+                @endif
+                @if($packReminder['packs_url'])
+                    <a href="{{ $packReminder['packs_url'] }}"
+                       class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-600">
+                        {{ __('Ver packs') }} ↗
+                    </a>
+                @endif
+                <button type="button"
+                        wire:click="dismissPackReminder"
+                        class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400">
+                    {{ __('Descartar') }}
+                </button>
+            </div>
+        </div>
+    @endif
+
     <livewire:student.discord-practice-browser />
 
     @if(session('certificate_status'))

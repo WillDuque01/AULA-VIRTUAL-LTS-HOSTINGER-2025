@@ -7,9 +7,14 @@ use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\VideoProgress;
+use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use App\Support\Certificates\CertificateGenerator;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -50,14 +55,29 @@ class Dashboard extends Component
         'approved' => 0,
     ];
 
+    public ?array $packReminder = null;
+
+    public ?string $packNotificationId = null;
+
+    public string $packsUrl = '';
+
+    public ?string $practiceUrl = null;
+
     public function mount(): void
     {
+        $locale = request()->route('locale') ?? app()->getLocale();
+        $this->packsUrl = route('dashboard', ['locale' => $locale]).'#practice-packs';
+        $this->practiceUrl = Route::has('student.discord-practices')
+            ? route('student.discord-practices', ['locale' => $locale])
+            : null;
+
         $this->upcomingLessons = collect();
         $this->gamificationFeed = collect();
         $this->upcomingAssignments = collect();
         $this->latestCertificate = null;
         $this->certificateDownloadUrl = null;
         $this->loadProgress();
+        $this->loadPackReminder();
     }
 
     private function loadProgress(): void
@@ -257,5 +277,70 @@ class Dashboard extends Component
         }
 
         $this->upcomingAssignments = $assignments->take(3);
+    }
+
+    public function dismissPackReminder(): void
+    {
+        if ($this->packNotificationId && Auth::check() && Schema::hasTable('notifications')) {
+            $notification = Auth::user()
+                ->notifications()
+                ->whereKey($this->packNotificationId)
+                ->first();
+
+            $notification?->markAsRead();
+        }
+
+        $this->packReminder = null;
+        $this->packNotificationId = null;
+    }
+
+    private function loadPackReminder(): void
+    {
+        $user = Auth::user();
+        if (! $user || ! Schema::hasTable('notifications')) {
+            $this->packReminder = null;
+            $this->packNotificationId = null;
+
+            return;
+        }
+
+        /** @var DatabaseNotification|null $notification */
+        $notification = $user->unreadNotifications()
+            ->where('type', DiscordPracticeSlotAvailableNotification::class)
+            ->latest()
+            ->first();
+
+        if (! $notification) {
+            $this->packReminder = null;
+            $this->packNotificationId = null;
+
+            return;
+        }
+
+        $pack = data_get($notification->data, 'pack_recommendation');
+        if (! $pack || ($pack['has_order'] ?? false)) {
+            $this->packReminder = null;
+            $this->packNotificationId = null;
+
+            return;
+        }
+
+        $startAt = data_get($notification->data, 'start_at');
+
+        $this->packNotificationId = $notification->id;
+        $this->packReminder = [
+            'practice_title' => data_get($notification->data, 'title'),
+            'start_at' => $startAt ? Carbon::parse($startAt) : null,
+            'practice_url' => data_get($notification->data, 'practice_url') ?? $this->practiceUrl,
+            'packs_url' => data_get($notification->data, 'packs_url') ?? $this->packsUrl,
+            'pack' => [
+                'title' => data_get($pack, 'title'),
+                'sessions' => data_get($pack, 'sessions'),
+                'price_amount' => data_get($pack, 'price_amount'),
+                'currency' => data_get($pack, 'currency'),
+                'price_per_session' => data_get($pack, 'price_per_session'),
+                'requires_package' => (bool) data_get($pack, 'requires_package'),
+            ],
+        ];
     }
 }
