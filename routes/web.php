@@ -22,6 +22,9 @@ use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
 use App\Livewire\Student\DiscordPracticeBrowser;
+use App\Livewire\Student\PracticeCartPage;
+use App\Livewire\Student\PracticeCheckout;
+use App\Livewire\Student\PracticePackagesCatalog;
 use App\Livewire\Professor\DiscordPracticePlanner;
 use App\Livewire\Professor\PracticePackagesManager;
 use App\Livewire\Teacher\Dashboard as TeacherDashboard;
@@ -143,6 +146,26 @@ Route::prefix('{locale}')
             Route::get('/student/practices', DiscordPracticeBrowser::class)
                 ->middleware('role:student_free|student_paid|student_vip')
                 ->name('student.discord-practices');
+
+            Route::get('/shop/packs', PracticePackagesCatalog::class)
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('shop.packs');
+
+            Route::get('/shop/cart', PracticeCartPage::class)
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('shop.cart');
+
+            Route::get('/shop/checkout', PracticeCheckout::class)
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('shop.checkout');
+
+            Route::view('/shop/checkout/success', 'shop.checkout-success')
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('shop.checkout.success');
+
+            Route::view('/shop/checkout/failed', 'shop.checkout-failed')
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('shop.checkout.failed');
 
             Route::get('/professor/practices', DiscordPracticePlanner::class)
                 ->middleware('role:Profesor|teacher_admin')

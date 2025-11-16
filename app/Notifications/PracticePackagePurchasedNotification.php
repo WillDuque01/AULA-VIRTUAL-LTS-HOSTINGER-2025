@@ -29,9 +29,11 @@ class PracticePackagePurchasedNotification extends Notification implements Shoul
             ? url(route('lessons.player', ['lesson' => $package->lesson_id, 'locale' => app()->getLocale()]))
             : url(route('dashboard'));
 
+        $name = data_get($notifiable, 'name', __('estudiante'));
+
         return (new MailMessage())
             ->subject(__('Compra confirmada: :title', ['title' => $package->title]))
-            ->greeting(__('Hola :name', ['name' => $notifiable->name]))
+            ->greeting(__('Hola :name', ['name' => $name]))
             ->line(__('Has adquirido el pack ":title" con :count sesiones.', [
                 'title' => $package->title,
                 'count' => $package->sessions_count,

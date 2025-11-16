@@ -5,7 +5,9 @@ namespace App\Livewire\Student;
 use App\Models\PracticePackage;
 use App\Models\PracticePackageOrder;
 use App\Services\PracticePackageOrderService;
+use App\Support\Practice\PracticeCart;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class PracticePackagesCatalog extends Component
@@ -18,6 +20,8 @@ class PracticePackagesCatalog extends Component
 
     public ?int $highlightPackageId = null;
     public bool $autoOpenHighlight = false;
+
+    public ?string $flashMessage = null;
 
     public function mount(?int $highlightPackageId = null, bool $autoOpenHighlight = false): void
     {
@@ -76,8 +80,8 @@ class PracticePackagesCatalog extends Component
 
     public function startCheckout(int $packageId)
     {
-        if (! auth()->check()) {
-            return redirect()->route('login');
+        if (! $this->ensureAuthenticated()) {
+            return;
         }
 
         $this->checkoutPackageId = $packageId;
@@ -86,7 +90,7 @@ class PracticePackagesCatalog extends Component
 
     public function confirmCheckout(PracticePackageOrderService $service): void
     {
-        if (! $this->checkoutPackageId) {
+        if (! $this->checkoutPackageId || ! $this->ensureAuthenticated()) {
             return;
         }
 
@@ -110,6 +114,39 @@ class PracticePackagesCatalog extends Component
 
         $this->loadOrders();
         $this->dispatch('package-purchased');
+    }
+
+    public function addToCart(int $packageId): void
+    {
+        if (! $this->ensureAuthenticated()) {
+            return;
+        }
+
+        $package = $this->packages->firstWhere('id', $packageId);
+
+        if (! $package) {
+            $this->addError('cart', __('El pack seleccionado ya no está disponible.'));
+
+            return;
+        }
+
+        PracticeCart::add($packageId);
+        $this->flashMessage = __('Pack agregado al carrito.');
+        $this->dispatch('notify', message: $this->flashMessage);
+    }
+
+    protected function ensureAuthenticated(): bool
+    {
+        if (Auth::check()) {
+            return true;
+        }
+
+        $this->redirectRoute('login', [
+            'locale' => app()->getLocale(),
+            'target_role' => 'student',
+        ]);
+
+        return false;
     }
 
     public function render()

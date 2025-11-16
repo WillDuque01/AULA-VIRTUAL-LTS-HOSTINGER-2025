@@ -5,16 +5,30 @@
             <h4 class="text-2xl font-semibold text-slate-900 leading-tight">Haz que cada clase cuente</h4>
             <p class="text-sm text-slate-500">Sesiones cortas, enfocadas y con feedback accionable. Reserva en 30 segundos.</p>
         </div>
-        <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
             <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
                 ✅ Cupos garantizados en Discord
             </span>
             <button type="button" wire:click="$refresh" class="rounded-full border border-slate-200 px-3 py-1 hover:border-blue-300 hover:text-blue-600">
                 Actualizar lista
             </button>
+            <a href="{{ route('shop.cart', ['locale' => app()->getLocale()]) }}"
+               class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 hover:border-emerald-300 hover:text-emerald-700">
+                🛒 {{ __('Ver carrito') }}
+                @if(\App\Support\Practice\PracticeCart::count())
+                    <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-white text-[10px]">
+                        {{ \App\Support\Practice\PracticeCart::count() }}
+                    </span>
+                @endif
+            </a>
         </div>
     </div>
     <div class="px-6 py-5">
+        @if($flashMessage)
+            <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                {{ $flashMessage }}
+            </div>
+        @endif
         <div class="grid gap-4 lg:grid-cols-3 sm:grid-cols-2">
             @forelse($packages as $package)
                 @php
@@ -68,11 +82,18 @@
                             </div>
                         @endforeach
                     </div>
-                    <button type="button"
-                            wire:click="startCheckout({{ $package->id }})"
-                            class="mt-auto inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                        {{ $package->is_global ? __('Quiero acceso inmediato') : __('Reservar con mi profe') }}
-                    </button>
+                    <div class="mt-auto grid gap-2">
+                        <button type="button"
+                                wire:click="startCheckout({{ $package->id }})"
+                                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                            {{ $package->is_global ? __('Comprar ahora') : __('Reservar con mi profe') }}
+                        </button>
+                        <button type="button"
+                                wire:click="addToCart({{ $package->id }})"
+                                class="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-emerald-300 hover:text-emerald-700">
+                            🛒 {{ __('Agregar al carrito') }}
+                        </button>
+                    </div>
                 </div>
             @empty
                 <div class="col-span-full text-center text-sm text-slate-500">
