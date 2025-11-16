@@ -6,7 +6,24 @@
                 <h1 class="text-2xl font-semibold text-slate-900">{{ $page->title }}</h1>
                 <p class="text-sm text-slate-500">{{ __('Arrastra bloques o usa los botones para construir la landing.') }}</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500">
+                    <button type="button"
+                            wire:click="setPreviewMode('desktop')"
+                            class="{{ $previewMode === 'desktop' ? 'text-slate-900' : '' }}">
+                        🖥
+                    </button>
+                    <button type="button"
+                            wire:click="setPreviewMode('tablet')"
+                            class="{{ $previewMode === 'tablet' ? 'text-slate-900' : '' }}">
+                        📱
+                    </button>
+                    <button type="button"
+                            wire:click="setPreviewMode('mobile')"
+                            class="{{ $previewMode === 'mobile' ? 'text-slate-900' : '' }}">
+                        📲
+                    </button>
+                </div>
                 <button type="button"
                         wire:click="saveDraft"
                         class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-400">
@@ -44,13 +61,22 @@
             </div>
         </aside>
 
-        <section class="space-y-4">
+        @php
+            $previewClass = match($previewMode) {
+                'tablet' => 'max-w-3xl mx-auto',
+                'mobile' => 'max-w-md mx-auto',
+                default => ''
+            };
+        @endphp
+        <section class="space-y-4 {{ $previewClass }}" wire:sortable="reorderBlocks">
             @forelse($blocks as $index => $block)
-                <article class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4">
+                <article class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4"
+                         wire:sortable.item="{{ $block['uid'] ?? $index }}"
+                         wire:key="builder-block-{{ $block['uid'] ?? $index }}">
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-                                {{ \Illuminate\Support\Str::headline(__('builder.block.'.$block['type'])) }}
+                                {{ \Illuminate\Support\Str::headline($block['type']) }}
                             </p>
                             <p class="text-sm text-slate-500">{{ __('Kit: :kit', ['kit' => $block['kit'] ?? __('Custom')]) }}</p>
                         </div>
@@ -59,6 +85,7 @@
                             <button type="button" wire:click="moveBlock({{ $index }}, 'down')" class="rounded-full border border-slate-200 px-2 py-1 text-slate-500 hover:border-slate-400">↓</button>
                             <button type="button" wire:click="duplicateBlock({{ $index }})" class="rounded-full border border-slate-200 px-2 py-1 text-slate-500 hover:border-slate-400">⎘</button>
                             <button type="button" wire:click="removeBlock({{ $index }})" class="rounded-full border border-rose-200 px-2 py-1 text-rose-600 hover:border-rose-300">✕</button>
+                            <span class="cursor-move rounded-full border border-slate-200 px-2 py-1 text-slate-500" wire:sortable.handle>☰</span>
                         </div>
                     </div>
 
@@ -67,6 +94,9 @@
                     @includeWhen($block['type'] === 'pricing', 'livewire.admin.page-builder.blocks.pricing-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'testimonials', 'livewire.admin.page-builder.blocks.testimonials-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'featured-products', 'livewire.admin.page-builder.blocks.featured-products-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'gallery', 'livewire.admin.page-builder.blocks.gallery-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'team', 'livewire.admin.page-builder.blocks.team-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'faq', 'livewire.admin.page-builder.blocks.faq-editor', ['index' => $index, 'block' => $block])
                 </article>
             @empty
                 <div class="rounded-3xl border border-dashed border-slate-200 bg-white/50 p-6 text-center text-sm text-slate-500">

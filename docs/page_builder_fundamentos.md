@@ -61,11 +61,18 @@ Este servicio se usará por el futuro constructor Livewire para encapsular la l�
   - Vistas `resources/views/page/blocks/*` (Hero, CTA, Pricing, Testimonials, Featured Products).
   - Controlador `PageController@show` + rutas `/landing/{slug}` y Home dinámico.
 
-## 6. Próximos pasos
+## 6. Kit UI y fase 3
 
-- Añadir drag & drop real (o hotkeys) y vista previa responsiva dentro del builder.
-- Soportar bloques adicionales (Galería, Equipo, FAQ) y variables globales (paleta).
-- Conectar el constructor con la Home pública por defecto y landings múltiples.
+- Nuevos kits: `gallery_masonry`, `team_grid`, `faq_list` y `featured_products` ampliado (categoría + ids personalizados).
+- Editor incorpora preview responsivo (desktop/tablet/mobile) y reordenamiento con `wire:sortable`.
+- Bloques renderizados en `resources/views/page/blocks` y pueden añadirse sin tocar código backend.
+- Panel `livewire:admin.page-manager` gestiona creación/duplicado de Home/Landings y enlaza al builder.
 
-Con esta base el motor ya permite crear, editar y publicar páginas sin tocar código; las siguientes iteraciones se enfocarán en UX avanzada y sincronización con marketing.
+## 7. Próximos pasos
+
+- Añadir drag & drop visual con arrastre directo en el canvas (actualmente botones/handles).
+- Variables globales de estilo (paleta por página) y más bloques (FAQ avanzado, testimonios con video).
+- Integrar analítica directa (vista previa de conversiones por landing).
+
+Con esto el constructor ya cubre la experiencia mínima viable para crear/publish Homes y Landings desde el dashboard.
 

@@ -87,6 +87,42 @@ return [
                 'title' => 'Programas recomendados',
                 'max_items' => 3,
                 'show_badges' => true,
+                'category' => null,
+                'product_ids' => null,
+            ],
+        ],
+        'gallery_masonry' => [
+            'label' => 'Galería',
+            'type' => 'gallery',
+            'props' => [
+                'title' => 'Momentos destacados',
+                'items' => [
+                    ['image' => null, 'caption' => 'Sesión de práctica'],
+                    ['image' => null, 'caption' => 'Mentoría uno a uno'],
+                    ['image' => null, 'caption' => 'Demo pública'],
+                ],
+            ],
+        ],
+        'team_grid' => [
+            'label' => 'Equipo docente',
+            'type' => 'team',
+            'props' => [
+                'title' => 'Conoce al equipo',
+                'members' => [
+                    ['name' => 'Alex R.', 'role' => 'Lead Mentor', 'avatar' => null, 'bio' => '10 años impulsando cohortes globales.'],
+                    ['name' => 'Sara M.', 'role' => 'Coach Conversacional', 'avatar' => null, 'bio' => 'Especialista en sesiones live.'],
+                ],
+            ],
+        ],
+        'faq_list' => [
+            'label' => 'Preguntas frecuentes',
+            'type' => 'faq',
+            'props' => [
+                'title' => 'FAQ',
+                'items' => [
+                    ['question' => '¿Cómo accedo a las cohortes?', 'answer' => 'Recibirás un enlace en tu panel y en tu correo.'],
+                    ['question' => '¿Hay reembolsos?', 'answer' => 'Ofrecemos garantía de 7 días sin preguntas.'],
+                ],
             ],
         ],
     ],

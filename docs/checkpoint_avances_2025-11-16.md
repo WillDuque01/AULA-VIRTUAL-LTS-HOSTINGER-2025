@@ -49,8 +49,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 9. **CI/CD extendido (90 % → 100 %)**  
    `workflow_dispatch` en Deploy, encadenar smoke.yml y publicar resultados (Slack/Discord) con documentación del procedimiento.
 
-10. **Landing/Page Builder (20 % → 60 %)**  
-    Constructor Livewire listo: motor drag & drop (botones de reordenar/duplicar), kits Hero/CTA/Pricing/Testimonios, bloque de productos destacados y rutas `/admin/pages/{page}/builder` + `/landing/{slug}`. Falta pulir d&d completo y home editable en producción.
+10. **Landing/Page Builder (60 % → 85 %)**  
+    Drag & drop real con `wire:sortable`, preview responsivo (desktop/tablet/móvil), kits extendidos (Galería, Equipo, FAQ), widget destacado configurable (categoría/IDs), render público de todos los bloques y módulo `PageManager` para crear/duplicar páginas antes de abrir el builder. Falta drag and drop visual completo y variables globales.
 
 ## Próximas acciones inmediatas
 - Desarrollar el **Page/Landing Builder** con kits responsivos y bloque de productos destacados conectado al catálogo.

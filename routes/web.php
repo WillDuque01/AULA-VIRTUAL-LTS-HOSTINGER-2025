@@ -21,6 +21,7 @@ use App\Livewire\Admin\IntegrationOutbox;
 use App\Livewire\Admin\PageBuilderEditor;
 use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\ProductCatalog;
+use App\Livewire\Admin\PageManager;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
@@ -129,6 +130,10 @@ Route::prefix('{locale}')
             Route::get('/admin/pages/{page}/builder', PageBuilderEditor::class)
                 ->middleware('role:Admin|teacher_admin')
                 ->name('admin.pages.builder');
+
+            Route::get('/admin/pages', PageManager::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.pages');
 
             Route::get('/admin/products', ProductCatalog::class)
                 ->middleware('role:Admin|teacher_admin')

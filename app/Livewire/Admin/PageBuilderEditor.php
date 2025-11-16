@@ -21,6 +21,8 @@ class PageBuilderEditor extends Component
 
     public bool $isPublishing = false;
 
+    public string $previewMode = 'desktop';
+
     public function mount(Page $page): void
     {
         $this->page = $page->load(['revisions' => fn ($q) => $q->latest(), 'publishedRevision']);
@@ -123,18 +125,26 @@ class PageBuilderEditor extends Component
         return view('livewire.admin.page-builder-editor', [
             'blocks' => $this->blocks,
             'kits' => $this->kits,
+            'previewMode' => $this->previewMode,
         ]);
     }
 
     protected function prepareBlocks(array $blocks): array
     {
         foreach ($blocks as &$block) {
+            if (! isset($block['uid'])) {
+                $block['uid'] = (string) Str::uuid();
+            }
             if (($block['type'] ?? null) === 'pricing') {
                 $items = Arr::get($block, 'props.items', []);
                 foreach ($items as $idx => $item) {
                     $items[$idx]['features_text'] = implode(PHP_EOL, Arr::get($item, 'features', []));
                 }
                 Arr::set($block, 'props.items', $items);
+            }
+            if (($block['type'] ?? null) === 'featured-products') {
+                $ids = Arr::get($block, 'props.product_ids', null);
+                Arr::set($block, 'props.product_ids_text', is_array($ids) ? implode(',', $ids) : $ids);
             }
         }
 
@@ -159,9 +169,37 @@ class PageBuilderEditor extends Component
                 }
                 Arr::set($block, 'props.items', $items);
             }
+            if (($block['type'] ?? null) === 'featured-products') {
+                $text = Arr::get($block, 'props.product_ids_text');
+                $ids = collect(explode(',', (string) $text))
+                    ->map(fn ($value) => (int) trim($value))
+                    ->filter()
+                    ->values()
+                    ->all();
+                Arr::set($block, 'props.product_ids', $ids);
+                unset($block['props']['product_ids_text']);
+            }
         }
 
         return $blocks;
+    }
+
+    public function reorderBlocks(array $order): void
+    {
+        $lookup = collect($this->blocks)->keyBy(fn ($block, $index) => $block['uid'] ?? (string) $index);
+        $this->blocks = collect($order)
+            ->pluck('value')
+            ->map(fn ($key) => $lookup[$key] ?? null)
+            ->filter()
+            ->values()
+            ->toArray();
+    }
+
+    public function setPreviewMode(string $mode): void
+    {
+        if (in_array($mode, ['desktop', 'tablet', 'mobile'], true)) {
+            $this->previewMode = $mode;
+        }
     }
 }
 

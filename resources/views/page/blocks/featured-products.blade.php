@@ -1,7 +1,18 @@
 @php($title = $props['title'] ?? '')
 @php($max = (int) ($props['max_items'] ?? 3))
 @php($showBadges = $props['show_badges'] ?? true)
-@php($products = \App\Models\Product::featured()->published()->limit($max)->get())
+@php
+    $query = \App\Models\Product::query()->published();
+    if (!empty($props['product_ids'])) {
+        $ids = $props['product_ids'];
+        $products = $query->whereIn('id', $ids)->get()->sortBy(fn($p) => array_search($p->id, $ids))->values();
+    } else {
+        if (!empty($props['category'])) {
+            $query->where('category', $props['category']);
+        }
+        $products = $query->featured()->limit($max)->get();
+    }
+@endphp
 
 @if($products->isNotEmpty())
     <section class="bg-white py-16">
@@ -27,7 +38,7 @@
                         <p class="mt-4 text-2xl font-bold text-slate-900">
                             ${{ number_format($product->price_amount, 2) }} {{ $product->price_currency }}
                         </p>
-                        <a href="{{ route('shop.cart', ['locale' => app()->getLocale()]) }}"
+                        <a href="{{ route('shop.catalog', ['locale' => app()->getLocale()]) }}"
                            class="mt-4 inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
                             {{ __('Agregar') }}
                         </a>
