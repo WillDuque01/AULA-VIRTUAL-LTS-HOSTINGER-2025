@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\TelemetrySyncLog;
 use App\Models\VideoPlayerEvent;
 use App\Support\DataPorter\DataPorter;
-use Illuminate\Support\Facades\Artisan;
+use App\Support\Telemetry\TelemetrySyncService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
@@ -103,7 +104,7 @@ class DataPorterHub extends Component
         $this->dispatch('notify', message: __('Generando archivo…'));
     }
 
-    public function syncTelemetry(): void
+    public function syncTelemetry(TelemetrySyncService $service): void
     {
         $user = Auth::user();
         abort_unless($user && $user->can('manage-settings'), 403);
@@ -111,9 +112,10 @@ class DataPorterHub extends Component
         $this->syncingTelemetry = true;
 
         try {
-            Artisan::call('telemetry:sync', ['--limit' => 500]);
-            $output = trim(Artisan::output() ?? '');
-            $this->lastSyncMessage = $output !== '' ? $output : __('Sincronización ejecutada.');
+            $processed = $service->syncVideoEvents(500, $user->id);
+            $this->lastSyncMessage = $processed > 0
+                ? trans_choice('{1} :count evento sincronizado.|[2,*] :count eventos sincronizados.', $processed, ['count' => $processed])
+                : __('No se encontraron eventos pendientes o no hay drivers habilitados.');
             $this->dispatch('notify', message: $this->lastSyncMessage);
         } catch (\Throwable $exception) {
             $this->lastSyncMessage = $exception->getMessage();
@@ -211,6 +213,10 @@ class DataPorterHub extends Component
             'pending' => $pendingEvents,
             'last_synced_at' => $lastSyncedAt ? $lastSyncedAt->copy()->timezone(config('app.timezone', 'UTC')) : null,
             'drivers' => $drivers,
+            'logs' => TelemetrySyncLog::with('user:id,name,email')
+                ->latest()
+                ->limit(5)
+                ->get(),
         ];
     }
 }

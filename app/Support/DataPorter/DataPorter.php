@@ -3,6 +3,8 @@
 namespace App\Support\DataPorter;
 
 use App\Models\CourseTeacher;
+use App\Models\DiscordPractice;
+use App\Models\PracticePackageOrder;
 use App\Models\StudentActivitySnapshot;
 use App\Models\TeacherActivitySnapshot;
 use App\Models\TeacherSubmission;
@@ -272,6 +274,115 @@ class DataPorter
                     ];
                 },
             ],
+            'discord_practices' => [
+                'label' => 'Prácticas Discord',
+                'description' => 'Sesiones planificadas, estado, reservas y asignaciones de packs.',
+                'model' => DiscordPractice::class,
+                'date_column' => 'start_at',
+                'order_column' => 'start_at',
+                'with' => ['lesson.chapter.course', 'package', 'creator'],
+                'with_count' => ['reservations'],
+                'filters' => [
+                    'date_from' => ['label' => 'Desde', 'type' => 'date', 'column' => 'start_at', 'operator' => '>='],
+                    'date_to' => ['label' => 'Hasta', 'type' => 'date', 'column' => 'start_at', 'operator' => '<='],
+                    'status' => ['label' => 'Estado', 'type' => 'text', 'column' => 'status'],
+                    'type' => ['label' => 'Tipo', 'type' => 'text', 'column' => 'type'],
+                    'lesson_id' => ['label' => 'ID lección', 'type' => 'number', 'column' => 'lesson_id'],
+                    'course_id' => [
+                        'label' => 'ID curso',
+                        'type' => 'number',
+                        'apply' => function (Builder $query, $value): void {
+                            $query->whereHas('lesson.chapter.course', function (Builder $builder) use ($value): void {
+                                $builder->where('courses.id', $value);
+                            });
+                        },
+                    ],
+                    'creator_id' => ['label' => 'ID creador', 'type' => 'number', 'column' => 'created_by'],
+                ],
+                'columns' => [
+                    'practice_id' => 'id',
+                    'course_id' => fn (DiscordPractice $practice) => $practice->lesson?->chapter?->course?->id,
+                    'course_slug' => fn (DiscordPractice $practice) => $practice->lesson?->chapter?->course?->slug,
+                    'lesson_id' => 'lesson_id',
+                    'lesson_title' => fn (DiscordPractice $practice) => data_get($practice->lesson?->config, 'title'),
+                    'type' => 'type',
+                    'status' => 'status',
+                    'start_at' => fn (DiscordPractice $practice) => optional($practice->start_at)->toIso8601String(),
+                    'end_at' => fn (DiscordPractice $practice) => optional($practice->end_at)->toIso8601String(),
+                    'capacity' => 'capacity',
+                    'reservations' => fn (DiscordPractice $practice) => $practice->reservations_count ?? $practice->reservations()->count(),
+                    'requires_package' => fn (DiscordPractice $practice) => $practice->requires_package,
+                    'practice_package_id' => 'practice_package_id',
+                    'package_title' => fn (DiscordPractice $practice) => $practice->package?->title,
+                    'creator_id' => 'created_by',
+                    'creator_email' => fn (DiscordPractice $practice) => $practice->creator?->email,
+                    'cohort_label' => 'cohort_label',
+                    'discord_channel_url' => 'discord_channel_url',
+                ],
+                'teacher_allowed' => true,
+                'teacher_scope_fields' => ['course_id', 'lesson_id'],
+                'importable' => false,
+            ],
+            'practice_package_orders' => [
+                'label' => 'Pedidos de packs de práctica',
+                'description' => 'Órdenes con estado, sesiones y trazabilidad de pago.',
+                'model' => PracticePackageOrder::class,
+                'date_column' => 'created_at',
+                'order_column' => 'created_at',
+                'with' => [
+                    'user:id,name,email',
+                    'package:id,title,lesson_id,creator_id,sessions_count,price_amount,price_currency',
+                    'package.lesson.chapter.course',
+                    'package.creator:id,name,email',
+                ],
+                'filters' => [
+                    'date_from' => ['label' => 'Desde', 'type' => 'date', 'column' => 'created_at', 'operator' => '>='],
+                    'date_to' => ['label' => 'Hasta', 'type' => 'date', 'column' => 'created_at', 'operator' => '<='],
+                    'status' => ['label' => 'Estado', 'type' => 'text', 'column' => 'status'],
+                    'practice_package_id' => ['label' => 'ID pack', 'type' => 'number', 'column' => 'practice_package_id'],
+                    'user_id' => ['label' => 'ID estudiante', 'type' => 'number', 'column' => 'user_id'],
+                    'course_id' => [
+                        'label' => 'ID curso',
+                        'type' => 'number',
+                        'apply' => function (Builder $query, $value): void {
+                            $query->whereHas('package.lesson.chapter.course', function (Builder $builder) use ($value): void {
+                                $builder->where('courses.id', $value);
+                            });
+                        },
+                    ],
+                    'lesson_id' => [
+                        'label' => 'ID lección',
+                        'type' => 'number',
+                        'apply' => function (Builder $query, $value): void {
+                            $query->whereHas('package', function (Builder $builder) use ($value): void {
+                                $builder->where('lesson_id', $value);
+                            });
+                        },
+                    ],
+                ],
+                'columns' => [
+                    'order_id' => 'id',
+                    'user_id' => 'user_id',
+                    'user_email' => fn (PracticePackageOrder $order) => $order->user?->email,
+                    'practice_package_id' => 'practice_package_id',
+                    'package_title' => fn (PracticePackageOrder $order) => $order->package?->title,
+                    'teacher_id' => fn (PracticePackageOrder $order) => $order->package?->creator_id,
+                    'teacher_email' => fn (PracticePackageOrder $order) => $order->package?->creator?->email,
+                    'course_id' => fn (PracticePackageOrder $order) => $order->package?->lesson?->chapter?->course?->id,
+                    'course_slug' => fn (PracticePackageOrder $order) => $order->package?->lesson?->chapter?->course?->slug,
+                    'lesson_id' => fn (PracticePackageOrder $order) => $order->package?->lesson_id,
+                    'status' => 'status',
+                    'sessions_remaining' => 'sessions_remaining',
+                    'paid_at' => fn (PracticePackageOrder $order) => optional($order->paid_at)->toIso8601String(),
+                    'payment_reference' => 'payment_reference',
+                    'created_at' => fn (PracticePackageOrder $order) => optional($order->created_at)->toIso8601String(),
+                    'updated_at' => fn (PracticePackageOrder $order) => optional($order->updated_at)->toIso8601String(),
+                    'meta' => fn (PracticePackageOrder $order) => $order->meta ?? [],
+                ],
+                'teacher_allowed' => true,
+                'teacher_scope_fields' => ['course_id', 'lesson_id'],
+                'importable' => false,
+            ],
             'teacher_submissions' => [
                 'label' => 'Propuestas docentes',
                 'description' => 'Historial de módulos, lecciones y packs enviados por los docentes.',
@@ -377,6 +488,10 @@ class DataPorter
             $query->with($definition['with']);
         }
 
+        if (! empty($definition['with_count'])) {
+            $query->withCount($definition['with_count']);
+        }
+
         $orderColumn = $definition['order_column'] ?? $definition['date_column'] ?? 'id';
         $orderDirection = $definition['order_direction'] ?? 'desc';
 
@@ -389,6 +504,12 @@ class DataPorter
             $filter = $definition['filters'][$key] ?? null;
 
             if (! $filter) {
+                continue;
+            }
+
+            if (isset($filter['apply']) && is_callable($filter['apply'])) {
+                $filter['apply']($query, $value);
+
                 continue;
             }
 

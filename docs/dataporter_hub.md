@@ -33,18 +33,21 @@ Componente: `App\Livewire\Admin\DataPorterHub`.
 1. **Eventos del reproductor** (`video_player_events`): filtros por fecha, curso, lección, evento y proveedor.
 2. **Snapshots de estudiantes** (`student_activity_snapshots`): filtros por fecha, curso, lección, pack y categoría. Importable.
 3. **Snapshots de Teacher Admin** (`teacher_activity_snapshots`): filtros por fecha/curso/lección/categoría. Solo Admin (teacher_admin no puede exportar este dataset). Importable.
-4. **Propuestas docentes** (`teacher_submissions`): historial completo de módulos/lecciones/packs enviados. Admin y Teacher Admin pueden exportarlo; estos últimos deben indicar `course_id`.
-5. **Asignaciones curso-docente** (`course_teacher_assignments`): estado actual del pivote `course_teacher` con trazabilidad del asignador. Requiere `course_id` para Teacher Admin.
+4. **Prácticas Discord** (`discord_practices`): sesiones planificadas con estado, capacidad, cohorte y paquete asociado. Teacher Admin debe indicar `course_id` o `lesson_id`.
+5. **Pedidos de packs** (`practice_package_orders`): órdenes con estado, sesiones restantes, pago y docente creador. Teacher Admin debe filtrar por curso o lección.
+6. **Propuestas docentes** (`teacher_submissions`): historial completo de módulos/lecciones/packs enviados. Admin y Teacher Admin pueden exportarlo; estos últimos deben indicar `course_id`.
+7. **Asignaciones curso-docente** (`course_teacher_assignments`): estado actual del pivote `course_teacher` con trazabilidad del asignador. Requiere `course_id` para Teacher Admin.
 
 ### Flujo de exportación
 1. Seleccionar dataset y formato (CSV/JSON).
 2. Aplicar filtros (Teacher Admin debe indicar `course_id` o `lesson_id`).
 3. DataPorter genera URL firmada (`/admin/data-porter/export?signature=...`) y abre la descarga.
 4. CSV contempla encabezados legibles y convierte `payload/metadata` a JSON inline; JSON stream mantiene arrays nativos.
-5. **Estado de sincronización** (nuevo panel):
-   - Muestra `events_pending` (`video_player_events` sin `synced_at`).
-   - Indica si GA4/Mixpanel están habilitados (ícono verde/ámbar).
-   - Botón `Ejecutar telemetry:sync` lanza el comando vía UI (requiere permiso `manage-settings`), registrando la última ejecución.
+5. **Estado de sincronización** (panel ampliado):
+   - Muestra `events_pending` (`video_player_events` sin `synced_at`) y la última sync en la zona horaria de la app.
+   - Indica si GA4/Mixpanel están habilitados (ícono verde/ámbar) y cuántos drivers se ejecutaron.
+   - Botón `Ejecutar telemetry:sync` lanza la sincronización desde el Hub (requiere permiso `manage-settings`).
+   - Historial de las últimas 5 ejecuciones (`telemetry_sync_logs`) con estado, eventos procesados, duración y usuario que detonó la acción.
 
 ### Flujo de importación
 1. Seleccionar dataset importable (por ahora snapshots de estudiantes/teachers).
@@ -73,9 +76,12 @@ Componente: `App\Livewire\Admin\DataPorterHub`.
 ## 7. Snapshots automáticos
 - **Reservas Discord**: el listener `RecordPracticeReservationSnapshot` captura cada `DiscordPracticeReserved` y genera un snapshot `practice_reservation` con curso/lección y metadata (cohorte, inicio, estado de reserva).
 - **Compras de packs**: `RecordPracticePackPurchaseSnapshot` escucha `PracticePackagePurchased` y guarda `practice_pack_purchase` incluyendo pack, sesiones, precio y orden (`order_id`, `paid_at`).
-- Ambos usan `TelemetryRecorder`, por lo que las entradas aparecen al instante en DataPorter sin carga manual.
+- **Consumo de sesiones**: `RecordPracticeSessionConsumedSnapshot` toma `PracticePackageSessionConsumed` y registra `practice_pack_consumption` con sesiones restantes, orden y paquete.
+- **Solicitudes escaladas**: `RecordPracticeRequestEscalationSnapshot` captura `DiscordPracticeRequestEscalated` y crea snapshots `practice_request_escalated` en `teacher_activity_snapshots` con backlog pendiente y destinatarios.
+- Todos usan `TelemetryRecorder`, por lo que las entradas aparecen al instante en DataPorter sin carga manual.
 
 ## 8. Próximos pasos
-- Extender snapshots para consumos (sesiones gastadas) y solicitudes escaladas.
-- Agregar dataset para prácticas Discord y pedidos de packs (fuente `practice_packages` / `DiscordPractice`).
+- Añadir snapshots para asistencia efectiva (sesiones realizadas vs. reservadas) y cancelaciones tardías.
+- Exponer alertas automáticas (Slack/Discord) cuando `events_pending` supere umbrales definidos.
+- Documentar guías rápidas para interpretar los nuevos datasets (`discord_practices`, `practice_package_orders`) desde Analytics/BI.
 

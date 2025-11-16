@@ -14,6 +14,7 @@ use App\Events\DiscordPracticeReserved;
 use App\Events\DiscordPracticeScheduled;
 use App\Events\PracticePackagePublished;
 use App\Events\PracticePackagePurchased;
+use App\Events\PracticePackageSessionConsumed;
 use App\Events\SubscriptionExpiring;
 use App\Events\SubscriptionExpired;
 use App\Events\TierUpdated;
@@ -39,6 +40,8 @@ use App\Listeners\SendAssignmentRejectedNotification;
 use App\Listeners\SendPracticePackagePublishedNotification;
 use App\Listeners\RecordPracticePackPurchaseSnapshot;
 use App\Listeners\RecordPracticeReservationSnapshot;
+use App\Listeners\RecordPracticeRequestEscalationSnapshot;
+use App\Listeners\RecordPracticeSessionConsumedSnapshot;
 use App\Listeners\SendPracticePackagePurchasedNotification;
 use App\Listeners\SendSimulatedPaymentNotification;
 use App\Listeners\SendSubscriptionExpiringNotification;
@@ -95,6 +98,9 @@ class EventServiceProvider extends ServiceProvider
             EnqueuePracticePackagePurchasedEvent::class,
             RecordPracticePackPurchaseSnapshot::class,
         ],
+        PracticePackageSessionConsumed::class => [
+            RecordPracticeSessionConsumedSnapshot::class,
+        ],
         DiscordPracticeScheduled::class => [
             SendDiscordPracticeScheduledNotification::class,
             EnqueueDiscordPracticeScheduledEvent::class,
@@ -107,6 +113,7 @@ class EventServiceProvider extends ServiceProvider
         DiscordPracticeRequestEscalated::class => [
             SendDiscordPracticeRequestEscalatedNotification::class,
             EnqueueDiscordPracticeRequestEscalatedEvent::class,
+            RecordPracticeRequestEscalationSnapshot::class,
         ],
     ];
 }

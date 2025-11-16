@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\PracticePackagePurchased;
 use App\Models\PracticePackage;
 use App\Models\PracticePackageOrder;
+use App\Events\PracticePackageSessionConsumed;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -51,6 +52,8 @@ class PracticePackageOrderService
         if ($order->sessions_remaining <= 0) {
             $order->update(['status' => 'completed']);
         }
+
+        PracticePackageSessionConsumed::dispatch($order->fresh(['package.lesson.chapter.course']));
     }
 }
 

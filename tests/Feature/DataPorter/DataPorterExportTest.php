@@ -4,7 +4,10 @@ namespace Tests\Feature\DataPorter;
 
 use App\Models\Chapter;
 use App\Models\Course;
+use App\Models\DiscordPractice;
 use App\Models\Lesson;
+use App\Models\PracticePackage;
+use App\Models\PracticePackageOrder;
 use App\Models\TeacherSubmission;
 use App\Models\User;
 use App\Models\VideoPlayerEvent;
@@ -134,6 +137,150 @@ class DataPorterExportTest extends TestCase
         $this->get($urlWithScope)->assertOk();
     }
 
+    public function test_admin_can_export_practice_package_orders_dataset(): void
+    {
+        Gate::define('manage-settings', fn () => true);
+        $admin = User::factory()->create();
+        $lesson = $this->createLesson();
+        $package = $this->createPracticePackage($lesson);
+
+        PracticePackageOrder::create([
+            'practice_package_id' => $package->id,
+            'user_id' => $admin->id,
+            'status' => 'paid',
+            'sessions_remaining' => 2,
+            'payment_reference' => 'ref_001',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($admin);
+
+        $url = URL::temporarySignedRoute('admin.data-porter.export', now()->addMinutes(5), [
+            'locale' => 'es',
+            'dataset' => 'practice_package_orders',
+            'format' => 'csv',
+        ]);
+
+        $this->get($url)->assertOk();
+    }
+
+    public function test_teacher_admin_requires_scope_for_practice_package_orders(): void
+    {
+        Role::findOrCreate('teacher_admin');
+        $teacherAdmin = User::factory()->create();
+        $teacherAdmin->assignRole('teacher_admin');
+        $lesson = $this->createLesson();
+        $package = $this->createPracticePackage($lesson);
+
+        PracticePackageOrder::create([
+            'practice_package_id' => $package->id,
+            'user_id' => $teacherAdmin->id,
+            'status' => 'paid',
+            'sessions_remaining' => 1,
+            'payment_reference' => 'ref_002',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($teacherAdmin);
+
+        $unsigned = URL::temporarySignedRoute('admin.data-porter.export', now()->addMinutes(5), [
+            'locale' => 'es',
+            'dataset' => 'practice_package_orders',
+            'format' => 'csv',
+        ]);
+
+        $this->get($unsigned)->assertForbidden();
+
+        $scoped = URL::temporarySignedRoute('admin.data-porter.export', now()->addMinutes(5), [
+            'locale' => 'es',
+            'dataset' => 'practice_package_orders',
+            'format' => 'csv',
+            'course_id' => $lesson->chapter->course->id,
+        ]);
+
+        $this->get($scoped)->assertOk();
+    }
+
+    public function test_admin_can_export_discord_practices_dataset(): void
+    {
+        Gate::define('manage-settings', fn () => true);
+        $admin = User::factory()->create();
+        $lesson = $this->createLesson();
+
+        DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'type' => 'coaching',
+            'title' => 'Intensivo',
+            'description' => 'QA',
+            'cohort_label' => 'A1',
+            'practice_package_id' => null,
+            'start_at' => now()->addDay(),
+            'end_at' => now()->addDays(2),
+            'duration_minutes' => 45,
+            'capacity' => 8,
+            'discord_channel_url' => 'https://discord.test',
+            'meeting_token' => null,
+            'status' => 'scheduled',
+            'created_by' => $admin->id,
+            'requires_package' => false,
+        ]);
+
+        $this->actingAs($admin);
+
+        $url = URL::temporarySignedRoute('admin.data-porter.export', now()->addMinutes(5), [
+            'locale' => 'es',
+            'dataset' => 'discord_practices',
+            'format' => 'csv',
+        ]);
+
+        $this->get($url)->assertOk();
+    }
+
+    public function test_teacher_admin_requires_scope_for_discord_practices(): void
+    {
+        Role::findOrCreate('teacher_admin');
+        $teacherAdmin = User::factory()->create();
+        $teacherAdmin->assignRole('teacher_admin');
+        $lesson = $this->createLesson();
+
+        DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'type' => 'laboratorio',
+            'title' => 'QA lab',
+            'description' => 'Lab',
+            'cohort_label' => 'B2',
+            'practice_package_id' => null,
+            'start_at' => now()->addHours(6),
+            'end_at' => now()->addHours(7),
+            'duration_minutes' => 60,
+            'capacity' => 6,
+            'discord_channel_url' => 'https://discord.test/lab',
+            'meeting_token' => null,
+            'status' => 'scheduled',
+            'created_by' => $teacherAdmin->id,
+            'requires_package' => false,
+        ]);
+
+        $this->actingAs($teacherAdmin);
+
+        $urlWithoutScope = URL::temporarySignedRoute('admin.data-porter.export', now()->addMinutes(5), [
+            'locale' => 'es',
+            'dataset' => 'discord_practices',
+            'format' => 'csv',
+        ]);
+
+        $this->get($urlWithoutScope)->assertForbidden();
+
+        $urlWithScope = URL::temporarySignedRoute('admin.data-porter.export', now()->addMinutes(5), [
+            'locale' => 'es',
+            'dataset' => 'discord_practices',
+            'format' => 'csv',
+            'course_id' => $lesson->chapter->course->id,
+        ]);
+
+        $this->get($urlWithScope)->assertOk();
+    }
+
     private function createLesson(): Lesson
     {
         $course = Course::create([
@@ -159,6 +306,25 @@ class DataPorterExportTest extends TestCase
                 'video_id' => 'xyz',
                 'length' => 180,
             ],
+        ]);
+    }
+
+    private function createPracticePackage(Lesson $lesson): PracticePackage
+    {
+        return PracticePackage::create([
+            'creator_id' => User::factory()->create()->id,
+            'lesson_id' => $lesson->id,
+            'title' => 'Pack QA',
+            'subtitle' => '4 sesiones',
+            'description' => 'Pack para pruebas',
+            'sessions_count' => 4,
+            'price_amount' => 120.00,
+            'price_currency' => 'USD',
+            'is_global' => false,
+            'visibility' => 'private',
+            'delivery_platform' => 'discord',
+            'delivery_url' => null,
+            'status' => 'published',
         ]);
     }
 }

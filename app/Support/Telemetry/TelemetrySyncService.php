@@ -2,6 +2,7 @@
 
 namespace App\Support\Telemetry;
 
+use App\Models\TelemetrySyncLog;
 use App\Models\VideoPlayerEvent;
 use App\Support\Telemetry\Drivers\TelemetryDriver;
 use Illuminate\Support\Collection;
@@ -16,8 +17,11 @@ class TelemetrySyncService
     {
     }
 
-    public function syncVideoEvents(int $limit = 200): int
+    public function syncVideoEvents(int $limit = 200, ?int $triggeredBy = null): int
     {
+        $startedAt = microtime(true);
+        $processed = 0;
+
         $events = VideoPlayerEvent::query()
             ->whereNull('synced_at')
             ->orderBy('recorded_at')
@@ -25,6 +29,8 @@ class TelemetrySyncService
             ->get();
 
         if ($events->isEmpty()) {
+            $this->logSync('skipped', 0, 0, 'Sin eventos pendientes.', $triggeredBy, $startedAt);
+
             return 0;
         }
 
@@ -32,20 +38,48 @@ class TelemetrySyncService
             ->filter(fn (TelemetryDriver $driver) => $driver->enabled())
             ->values();
 
-        if ($activeDrivers->isEmpty()) {
+        $driverCount = $activeDrivers->count();
+
+        if ($driverCount === 0) {
+            $message = 'No hay drivers habilitados.';
             Log::warning('Telemetry sync skipped: no drivers enabled.');
+            $this->logSync('skipped', 0, 0, $message, $triggeredBy, $startedAt);
 
             return 0;
         }
 
-        $activeDrivers->each(function (TelemetryDriver $driver) use ($events): void {
-            $driver->send($events);
-        });
+        try {
+            $activeDrivers->each(function (TelemetryDriver $driver) use ($events): void {
+                $driver->send($events);
+            });
 
-        VideoPlayerEvent::whereIn('id', $events->pluck('id'))
-            ->update(['synced_at' => now()]);
+            VideoPlayerEvent::whereIn('id', $events->pluck('id'))
+                ->update(['synced_at' => now()]);
 
-        return $events->count();
+            $processed = $events->count();
+            $message = sprintf('Eventos sincronizados: %d', $processed);
+
+            $this->logSync('success', $processed, $driverCount, $message, $triggeredBy, $startedAt);
+
+            return $processed;
+        } catch (\Throwable $exception) {
+            $message = $exception->getMessage();
+            $this->logSync('failed', $processed, $driverCount, $message, $triggeredBy, $startedAt);
+
+            throw $exception;
+        }
+    }
+
+    private function logSync(string $status, int $processed, int $driverCount, ?string $message, ?int $triggeredBy, float $startedAt): void
+    {
+        TelemetrySyncLog::create([
+            'status' => $status,
+            'processed' => $processed,
+            'driver_count' => $driverCount,
+            'duration_ms' => (int) ((microtime(true) - $startedAt) * 1000),
+            'message' => $message,
+            'triggered_by' => $triggeredBy,
+        ]);
     }
 }
 

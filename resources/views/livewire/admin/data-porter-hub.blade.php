@@ -67,6 +67,52 @@
                 @enderror
             </div>
         </div>
+
+        @if(!empty($telemetryStatus['logs']) && $telemetryStatus['logs']->count() > 0)
+            <div class="rounded-2xl border border-slate-100 bg-white/60 p-4">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Historial de sincronizaciones') }}</p>
+                    <span class="text-[11px] text-slate-400">{{ __('Últimos :count registros', ['count' => $telemetryStatus['logs']->count()]) }}</span>
+                </div>
+                <div class="mt-3 space-y-3">
+                    @foreach($telemetryStatus['logs'] as $log)
+                        @php
+                            $badgeClasses = match($log->status) {
+                                'success' => 'border-emerald-100 bg-emerald-50 text-emerald-700',
+                                'failed' => 'border-rose-100 bg-rose-50 text-rose-700',
+                                default => 'border-amber-100 bg-amber-50 text-amber-700',
+                            };
+                        @endphp
+                        <div class="flex flex-col gap-2 rounded-2xl border border-slate-100 bg-white/70 p-4 shadow-sm shadow-slate-100/60 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">
+                                    {{ optional($log->created_at)->timezone(config('app.timezone'))->format('d M, H:i') }}
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    {{ $log->message ?? __('Sin detalles adicionales') }}
+                                </p>
+                                @if($log->user)
+                                    <p class="text-xs text-slate-400">
+                                        {{ __('Ejecutado por :name', ['name' => $log->user->name]) }}
+                                    </p>
+                                @endif
+                            </div>
+                            <div class="flex flex-col items-start gap-1 text-right lg:items-end">
+                                <span class="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide {{ $badgeClasses }}">
+                                    {{ __($log->status === 'success' ? 'OK' : ($log->status === 'failed' ? 'Error' : 'Saltado')) }}
+                                </span>
+                                <p class="text-xs font-semibold text-slate-700">
+                                    {{ trans_choice('{0}Sin eventos|{1}1 evento|[2,*]:count eventos', $log->processed, ['count' => $log->processed]) }}
+                                </p>
+                                <p class="text-[11px] text-slate-400">
+                                    {{ __('Drivers: :count · :seconds s', ['count' => $log->driver_count, 'seconds' => $log->duration_ms ? number_format($log->duration_ms / 1000, 2) : '0']) }}
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 
     <div class="grid gap-6 lg:grid-cols-2">
