@@ -2,13 +2,13 @@
 
 namespace App\Support\Practice;
 
-use App\Models\PracticePackage;
+use App\Models\Product;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Session;
 
 class PracticeCart
 {
-    private const SESSION_KEY = 'practice_cart';
+    private const SESSION_KEY = 'commerce_cart';
 
     public static function ids(): array
     {
@@ -18,7 +18,7 @@ class PracticeCart
         )));
     }
 
-    public static function packages(): Collection
+    public static function products(): Collection
     {
         $ids = self::ids();
 
@@ -28,29 +28,35 @@ class PracticeCart
 
         $order = array_flip($ids);
 
-        return PracticePackage::query()
+        return Product::query()
             ->whereIn('id', $ids)
+            ->with('productable')
             ->get()
-            ->sortBy(fn (PracticePackage $package) => $order[$package->id] ?? PHP_INT_MAX)
+            ->sortBy(fn (Product $product) => $order[$product->id] ?? PHP_INT_MAX)
             ->values();
     }
 
-    public static function add(int $packageId): void
+    public static function add(int $productId): void
+    {
+        self::addProduct($productId);
+    }
+
+    public static function addProduct(int $productId): void
     {
         $ids = self::ids();
 
-        if (! in_array($packageId, $ids, true)) {
-            $ids[] = $packageId;
+        if (! in_array($productId, $ids, true)) {
+            $ids[] = $productId;
         }
 
         Session::put(self::SESSION_KEY, $ids);
     }
 
-    public static function remove(int $packageId): void
+    public static function remove(int $productId): void
     {
         $filtered = array_values(array_filter(
             self::ids(),
-            fn ($id) => (int) $id !== $packageId
+            fn ($id) => (int) $id !== $productId
         ));
 
         Session::put(self::SESSION_KEY, $filtered);
@@ -68,8 +74,7 @@ class PracticeCart
 
     public static function subtotal(): float
     {
-        return self::packages()->sum('price_amount');
+        return (float) self::products()->sum('price_amount');
     }
 }
-
 

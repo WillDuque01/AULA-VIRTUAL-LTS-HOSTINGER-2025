@@ -19,7 +19,7 @@
                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-400">
                     {{ __('Ver planner') }}
                 </a>
-                <a href="{{ route('shop.packs', ['locale' => app()->getLocale()]) }}"
+                <a href="{{ route('shop.catalog', ['locale' => app()->getLocale()]) }}"
                    class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-800">
                     {{ __('Volver al catálogo') }}
                 </a>

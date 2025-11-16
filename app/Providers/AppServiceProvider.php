@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\PracticePackage;
+use App\Observers\PracticePackageObserver;
 use App\Support\Integrations\IntegrationConfigurator;
 use App\Support\Telemetry\Drivers\Ga4Driver;
 use App\Support\Telemetry\Drivers\MixpanelDriver;
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
     {
         IntegrationConfigurator::apply();
         URL::defaults(['locale' => config('app.locale', 'es')]);
+        PracticePackage::observe(PracticePackageObserver::class);
     }
 }
 

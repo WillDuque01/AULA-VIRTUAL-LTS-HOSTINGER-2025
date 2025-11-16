@@ -11,14 +11,14 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 
 | Frente                                        | % aprox. | Comentarios clave |
 |----------------------------------------------|---------:|-------------------|
-| Backend & dominio (modelos, integraciones)   | ~90 %    | Discord Practices, packs, notificaciones, outbox y now pivotes `course_teacher` + submissions docentes. |
+| Backend & dominio (modelos, integraciones)   | ~93 %    | Nuevo modelo `Product` con observer automático, carrito unificado por producto y base lista para cohortes/servicios. |
 | UI/UX general (dashboard, browser, builder)   | ~95 %    | Builder con métricas + hotkeys reales (N, Ctrl/⌘+S, Shift+?) y filtro de estado, microinteracciones accesibles y paneles responsivos; player UIX 2030 solo requiere pulido final. |
 | Player avanzado (heatmap, CTAs, celebraciones)| ~100 %   | Panel insights ahora muestra racha/XP/último logro, CTA inteligente, celebraciones con fallback motion-safe y documentación QA (`docs/player_signals_playbook.md`). |
 | HelpHub contextual                           | ~100 %   | Nuevo sistema de guías: wizard, dashboards y layout consumen `config/integration_guides.php` + `experience_guides.php`, con paneles interactivos y botón flotante por ruta (player, builder, planner, DataPorter). |
 | Planner Discord & Packs                       | ~100 %   | Planner con plantillas multi-slot, presets de cohorte, checklist Make y guía operativa (`docs/planner_operativa_make.md`) completada. |
 | DataPorter & Telemetría                       | ~100 %   | Hub con datasets nuevos, snapshots de consumo/asistencia/cancelaciones y monitoreo con alertas (`telemetry:monitor-backlog`, `practices:sync-attendance`) + historial `telemetry_sync_logs`. |
 | Perfiles completos                            | ~100 %   | Checklist docente (headline, bio, idiomas, especialidades, certificaciones, LinkedIn/notas) + recordatorios automáticos `profile:remind-incomplete` (cooldown 7 d) corriendo a diario. |
-| Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente con historial de aprobación, filtros por estado en builder y nuevo reporte de desempeño (tiempos, tasas, backlog) disponible para Admin/Teacher Admin. |
+| Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente + reporte de desempeño y ahora catálogo centralizado (Admin/Teacher Admin) para editar/destacar productos y cohortes. |
 | Documentación & Playbooks                     | ~100 %   | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md`, nuevo `ui-playbook.md`, guía de cohortes y checklist smoke Hostinger listos. |
 | CI/CD extendido                               | ~90 %    | Workflows OK; falta `workflow_dispatch` manual y reporte integrado de smoke tests. |
 
@@ -49,9 +49,12 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 9. **CI/CD extendido (90 % → 100 %)**  
    `workflow_dispatch` en Deploy, encadenar smoke.yml y publicar resultados (Slack/Discord) con documentación del procedimiento.
 
+10. **Landing/Page Builder (0 % → 0 %)**  
+   Próxima fase: constructor drag & drop tipo Elementor con kits (Hero, CTA, Pricing, Testimonials), widget de productos destacados y publicación versionada para Home/Landings.
+
 ## Próximas acciones inmediatas
-- Completar **UIX Course Builder 100 %**: hotkeys contextuales, microinteracciones y documentación del focus panel.
-- Mantener guías y playbooks al día (`experience_guides.php`, UI playbook 2030 y guía de cohortes).
+- Desarrollar el **Page/Landing Builder** con kits responsivos y bloque de productos destacados conectado al catálogo.
+- Extender el catálogo a cohortes/productos personalizados y enlazarlo al checkout generalizado.
 - Activar `workflow_dispatch` + smoke tests encadenados en CI/CD y documentar el runbook Hostinger.
 - Tras completar cada bloque, actualizar este checkpoint y comunicar cuando el frente llegue al 100 %.
 

@@ -22,9 +22,11 @@ class PracticeCheckoutTest extends TestCase
             'price_currency' => 'USD',
             'sessions_count' => 4,
         ]);
+        $productId = $package->product?->id;
+        $this->assertNotNull($productId, 'Expected practice package to have an associated product.');
 
         $this->actingAs($user);
-        session(['practice_cart' => [$package->id]]);
+        session(['commerce_cart' => [$productId]]);
 
         Livewire::test(PracticeCheckout::class)
             ->set('paymentMethod', 'card')
@@ -37,7 +39,7 @@ class PracticeCheckoutTest extends TestCase
             'status' => 'paid',
         ]);
 
-        $this->assertEmpty(session('practice_cart', []));
+        $this->assertEmpty(session('commerce_cart', []));
     }
 }
 

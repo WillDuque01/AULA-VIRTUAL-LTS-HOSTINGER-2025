@@ -49,10 +49,13 @@ class PracticeCheckout extends Component
             DB::transaction(function () use ($service): void {
                 $user = Auth::user();
 
-                foreach ($this->items as $package) {
-                    /** @var PracticePackage $package */
-                    $order = $service->createPendingOrder($user->id, $package);
-                    $service->markAsPaid($order, 'SHOP-'.Str::upper(Str::random(8)));
+                foreach ($this->items as $product) {
+                    $resource = $product->productable;
+
+                    if ($resource instanceof PracticePackage) {
+                        $order = $service->createPendingOrder($user->id, $resource);
+                        $service->markAsPaid($order, 'SHOP-'.Str::upper(Str::random(8)));
+                    }
                 }
             });
         } catch (\Throwable $exception) {
@@ -79,20 +82,7 @@ class PracticeCheckout extends Component
 
     protected function loadCart(): void
     {
-        $ids = PracticeCart::ids();
-        if (empty($ids)) {
-            $this->items = collect();
-            $this->total = 0.0;
-
-            return;
-        }
-
-        $order = array_flip($ids);
-
-        $this->items = PracticePackage::whereIn('id', $ids)
-            ->get()
-            ->sortBy(fn (PracticePackage $package) => $order[$package->id] ?? PHP_INT_MAX)
-            ->values();
+        $this->items = PracticeCart::products();
         $this->total = (float) $this->items->sum('price_amount');
     }
 }

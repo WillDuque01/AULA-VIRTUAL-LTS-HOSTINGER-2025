@@ -37,6 +37,7 @@ class PracticePackagesCatalog extends Component
         $user = auth()->user();
 
         $query = PracticePackage::query()
+            ->with('product')
             ->where('status', 'published')
             ->orderByDesc('is_global')
             ->orderBy('price_amount');
@@ -130,7 +131,13 @@ class PracticePackagesCatalog extends Component
             return;
         }
 
-        PracticeCart::add($packageId);
+        if (! $package->product) {
+            $this->addError('cart', __('Este pack aún no está disponible en el catálogo.'));
+
+            return;
+        }
+
+        PracticeCart::addProduct($package->product->id);
         $this->flashMessage = __('Pack agregado al carrito.');
         $this->dispatch('notify', message: $this->flashMessage);
     }

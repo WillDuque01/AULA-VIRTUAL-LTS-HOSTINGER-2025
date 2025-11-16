@@ -6,7 +6,7 @@
                 <h1 class="text-2xl font-semibold text-slate-900">{{ __('Tus packs seleccionados') }}</h1>
                 <p class="text-sm text-slate-500">{{ __('Cada pack desbloquea sesiones privadas o grupales dentro del planner Discord.') }}</p>
             </div>
-            <a href="{{ route('shop.packs', ['locale' => app()->getLocale()]) }}"
+            <a href="{{ route('shop.catalog', ['locale' => app()->getLocale()]) }}"
                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-400">
                 ← {{ __('Volver al catálogo') }}
             </a>
@@ -23,8 +23,18 @@
                         <div>
                             <p class="text-sm font-semibold text-slate-900">{{ $item->title }}</p>
                             <p class="text-xs text-slate-500">
-                                {{ $item->sessions_count }} {{ __('sesiones') }} · ${{ number_format($item->price_amount, 2) }} {{ $item->price_currency }}
+                                ${{ number_format($item->price_amount, 2) }} {{ $item->price_currency }}
+                                @if($item->compare_at_amount)
+                                    <span class="ml-2 text-[11px] text-rose-500 line-through">
+                                        ${{ number_format($item->compare_at_amount, 2) }}
+                                    </span>
+                                @endif
                             </p>
+                            @if($item->productable?->sessions_count)
+                                <p class="text-[11px] text-slate-400">
+                                    {{ trans_choice(':count sesión incluida|:count sesiones incluidas', $item->productable->sessions_count, ['count' => $item->productable->sessions_count]) }}
+                                </p>
+                            @endif
                         </div>
                         <div class="flex items-center gap-3">
                             <button type="button"

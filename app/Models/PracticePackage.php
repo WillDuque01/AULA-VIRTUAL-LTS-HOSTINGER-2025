@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class PracticePackage extends Model
 {
@@ -32,6 +33,7 @@ class PracticePackage extends Model
         'is_global' => 'boolean',
         'price_amount' => 'decimal:2',
         'meta' => 'array',
+        'status' => 'string',
     ];
 
     public function creator(): BelongsTo
@@ -47,6 +49,11 @@ class PracticePackage extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(PracticePackageOrder::class);
+    }
+
+    public function product(): MorphOne
+    {
+        return $this->morphOne(Product::class, 'productable');
     }
 
     public function scopePublished($query)

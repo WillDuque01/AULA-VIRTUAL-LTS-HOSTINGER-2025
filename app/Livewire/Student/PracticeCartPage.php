@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Student;
 
-use App\Models\PracticePackage;
 use App\Support\Practice\PracticeCart;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -19,9 +18,9 @@ class PracticeCartPage extends Component
         $this->refreshCart();
     }
 
-    public function remove(int $packageId): void
+    public function remove(int $productId): void
     {
-        PracticeCart::remove($packageId);
+        PracticeCart::remove($productId);
         $this->refreshCart();
         $this->dispatch('cart:updated');
     }
@@ -51,27 +50,8 @@ class PracticeCartPage extends Component
 
     protected function refreshCart(): void
     {
-        $ids = PracticeCart::ids();
-        if (empty($ids)) {
-            $this->items = new Collection();
-            $this->subtotal = 0.0;
-
-            return;
-        }
-
-        $order = array_flip($ids);
-
-        $this->items = PracticePackage::query()
-            ->whereIn('id', $ids)
-            ->with([
-                'lesson.chapter.course',
-            ])
-            ->get()
-            ->sortBy(fn (PracticePackage $package) => $order[$package->id] ?? PHP_INT_MAX)
-            ->values();
-
+        $this->items = PracticeCart::products();
         $this->subtotal = (float) $this->items->sum('price_amount');
     }
 }
-
 

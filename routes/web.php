@@ -18,6 +18,7 @@ use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
 use App\Livewire\Admin\IntegrationOutbox;
 use App\Livewire\Admin\PaymentSimulator;
+use App\Livewire\Admin\ProductCatalog;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
@@ -27,6 +28,7 @@ use App\Livewire\Student\PracticeCheckout;
 use App\Livewire\Student\PracticePackagesCatalog;
 use App\Livewire\Professor\DiscordPracticePlanner;
 use App\Livewire\Professor\PracticePackagesManager;
+use App\Livewire\Shop\ProductGallery;
 use App\Livewire\Teacher\Dashboard as TeacherDashboard;
 use App\Livewire\Admin\TeacherManager;
 use App\Livewire\Admin\TeacherSubmissionsHub;
@@ -69,6 +71,9 @@ Route::prefix('{locale}')
             return view('dashboard');
         })->middleware(['auth', 'verified', 'role:student_free|student_paid|student_vip'])->name('dashboard.student');
 
+        Route::get('/catalogo', ProductGallery::class)
+            ->name('shop.catalog');
+
         Route::middleware('auth')->group(function (): void {
             Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
             Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -99,6 +104,10 @@ Route::prefix('{locale}')
             Route::get('/admin/branding', BrandingDesigner::class)
                 ->middleware('can:manage-settings')
                 ->name('admin.branding');
+
+            Route::get('/admin/products', ProductCatalog::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.products');
 
             Route::get('/admin/assignments', AssignmentsManager::class)
                 ->middleware('can:manage-settings')
