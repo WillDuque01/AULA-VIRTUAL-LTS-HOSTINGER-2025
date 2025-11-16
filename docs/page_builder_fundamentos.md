@@ -48,13 +48,24 @@ Este servicio se usará por el futuro constructor Livewire para encapsular la l�
 - `tests/Feature/Page/PageBuilderServiceTest.php` verifica:
   - Creación de página con revisión inicial.
   - Publicación de una revisión y actualización del estado.
+- `tests/Feature/Admin/PageBuilderEditorTest.php` valida el flujo Livewire (agregar bloque + guardar borrador).
 
-## 5. Próximos pasos
+## 5. UI del builder (fase 2)
 
-- Construir el lienzo drag & drop (Livewire) que consuma `PageBuilderService`.
-- Definir kits/bloques (`hero`, `cta`, `pricing`, etc.) que se serialicen dentro de `layout`.
-- Añadir endpoint público para renderizar la versión publicada (`Page::published()` + `publishedRevision`).
-- Integrar bloque de productos destacados reutilizando `Product`.
+- `livewire:admin.page-builder-editor`:
+  - Panel de kits definido en `config/page_builder.php`.
+  - Acciones por bloque: mover, duplicar, eliminar.
+  - Formularios especializados en `resources/views/livewire/admin/page-builder/blocks`.
+  - Botones “Guardar borrador” y “Publicar” conectados al servicio.
+- Render público:
+  - Vistas `resources/views/page/blocks/*` (Hero, CTA, Pricing, Testimonials, Featured Products).
+  - Controlador `PageController@show` + rutas `/landing/{slug}` y Home dinámico.
 
-Con esta base podemos iterar el constructor visual sin tocar repetidamente la capa de datos.
+## 6. Próximos pasos
+
+- Añadir drag & drop real (o hotkeys) y vista previa responsiva dentro del builder.
+- Soportar bloques adicionales (Galería, Equipo, FAQ) y variables globales (paleta).
+- Conectar el constructor con la Home pública por defecto y landings múltiples.
+
+Con esta base el motor ya permite crear, editar y publicar páginas sin tocar código; las siguientes iteraciones se enfocarán en UX avanzada y sincronización con marketing.
 

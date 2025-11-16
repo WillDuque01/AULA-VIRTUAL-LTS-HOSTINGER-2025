@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DataPorterExportController;
 use App\Http\Controllers\Api\PlayerEventController;
 use App\Http\Controllers\Api\VideoProgressController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvisionerController;
 use App\Http\Controllers\SeoController;
@@ -17,6 +18,7 @@ use App\Livewire\Admin\DataPorterHub;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
 use App\Livewire\Admin\IntegrationOutbox;
+use App\Livewire\Admin\PageBuilderEditor;
 use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\ProductCatalog;
 use App\Livewire\Admin\TierManager;
@@ -33,7 +35,9 @@ use App\Livewire\Teacher\Dashboard as TeacherDashboard;
 use App\Livewire\Admin\TeacherManager;
 use App\Livewire\Admin\TeacherSubmissionsHub;
 use App\Livewire\Admin\TeacherPerformanceReport;
+use App\Models\Page;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/es');
@@ -44,7 +48,24 @@ Route::middleware('auth')->get('/whatsapp/redirect', WhatsAppRedirectController:
 Route::prefix('{locale}')
     ->whereIn('locale', ['es', 'en'])
     ->group(function (): void {
-        Route::get('/', function () {
+        Route::get('/', function ($locale) {
+            $page = null;
+
+            if (Schema::hasTable('pages')) {
+                $page = Page::query()
+                    ->where('type', 'home')
+                    ->where('locale', $locale)
+                    ->published()
+                    ->with('publishedRevision')
+                    ->first();
+            }
+
+            if ($page) {
+                $blocks = $page->publishedRevision?->layout ?? [];
+
+                return view('page.show', compact('page', 'blocks'));
+            }
+
             return view('welcome');
         })->name('welcome');
 
@@ -104,6 +125,10 @@ Route::prefix('{locale}')
             Route::get('/admin/branding', BrandingDesigner::class)
                 ->middleware('can:manage-settings')
                 ->name('admin.branding');
+
+            Route::get('/admin/pages/{page}/builder', PageBuilderEditor::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.pages.builder');
 
             Route::get('/admin/products', ProductCatalog::class)
                 ->middleware('role:Admin|teacher_admin')
@@ -175,6 +200,9 @@ Route::prefix('{locale}')
             Route::view('/shop/checkout/failed', 'shop.checkout-failed')
                 ->middleware('role:student_free|student_paid|student_vip')
                 ->name('shop.checkout.failed');
+
+            Route::get('/landing/{slug}', [PageController::class, 'show'])
+                ->name('landing.show');
 
             Route::get('/professor/practices', DiscordPracticePlanner::class)
                 ->middleware('role:Profesor|teacher_admin')

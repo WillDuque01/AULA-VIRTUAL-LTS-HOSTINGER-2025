@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Page extends Model
 {
@@ -35,9 +36,21 @@ class Page extends Model
         return $this->belongsTo(PageRevision::class, 'published_revision_id');
     }
 
+    public function latestRevision(): HasOne
+    {
+        return $this->hasOne(PageRevision::class)->latestOfMany();
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    public function currentLayout(): array
+    {
+        $revision = $this->revisions()->latest()->first() ?? $this->publishedRevision;
+
+        return $revision?->layout ?? [];
     }
 }
 
