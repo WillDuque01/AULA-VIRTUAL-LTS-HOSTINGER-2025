@@ -49,8 +49,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 9. **CI/CD extendido (90 % → 100 %)**  
    `workflow_dispatch` en Deploy, encadenar smoke.yml y publicar resultados (Slack/Discord) con documentación del procedimiento.
 
-10. **Landing/Page Builder (85 % → 95 %)**  
-    Sumamos variables globales (paleta/fuente), kits adicionales (Galería, Equipo, FAQ avanzada, Timeline), widget destacado con filtros manuales, panel `PageManager` con duplicado y vistas, y logging `page_views` con ruta pública para Home/Landings. Queda pendiente drag & drop visual full/in-line editing.
+10. **Landing/Page Builder (95 % → 100 %)**  
+    Inline editing (Hero) + preview responsivo, presets de tema, nuevos kits (Lead form, Video testimonial, Countdown), métricas de landing (views + conversions + top productos) usando `page_views`/`page_conversions`, atribución automática desde checkout y panel de métricas en PageManager. Próximo paso: drag & drop en canvas e inline extendido.
 
 ## Próximas acciones inmediatas
 - Desarrollar el **Page/Landing Builder** con kits responsivos y bloque de productos destacados conectado al catálogo.

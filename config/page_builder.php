@@ -1,6 +1,29 @@
 <?php
 
 return [
+    'theme_presets' => [
+        'noir' => [
+            'label' => 'Noir',
+            'primary' => '#0f172a',
+            'secondary' => '#14b8a6',
+            'background' => '#f8fafc',
+            'font_family' => 'Inter, sans-serif',
+        ],
+        'sunset' => [
+            'label' => 'Sunset',
+            'primary' => '#be123c',
+            'secondary' => '#f97316',
+            'background' => '#fff7ed',
+            'font_family' => 'Poppins, sans-serif',
+        ],
+        'matcha' => [
+            'label' => 'Matcha',
+            'primary' => '#064e3b',
+            'secondary' => '#65a30d',
+            'background' => '#f0fdf4',
+            'font_family' => 'Nunito, sans-serif',
+        ],
+    ],
     'kits' => [
         'hero_simple' => [
             'label' => 'Hero básico',
@@ -135,6 +158,40 @@ return [
                     ['title' => 'Sprints', 'description' => 'Trabaja con cohortes y retos semanales.', 'badge' => 'Semanas 1-4'],
                     ['title' => 'Demo Day', 'description' => 'Presenta tu proyecto y recibe feedback.', 'badge' => 'Semana 5'],
                 ],
+            ],
+        ],
+        'lead_form' => [
+            'label' => 'Formulario de lead',
+            'type' => 'lead-form',
+            'props' => [
+                'title' => 'Solicita más información',
+                'description' => 'Déjanos tu correo y nos pondremos en contacto.',
+                'fields' => [
+                    ['label' => 'Nombre', 'placeholder' => 'Tu nombre', 'type' => 'text'],
+                    ['label' => 'Correo', 'placeholder' => 'correo@ejemplo.com', 'type' => 'email'],
+                ],
+                'cta_label' => 'Enviar',
+            ],
+        ],
+        'video_testimonial' => [
+            'label' => 'Testimonio en video',
+            'type' => 'video-testimonial',
+            'props' => [
+                'title' => 'Lo que dicen nuestros alumnos',
+                'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+                'quote' => 'Este programa cambió la forma en la que opero mi negocio.',
+                'author' => 'Laura P.',
+                'role' => 'Cohorte Growth 2025',
+            ],
+        ],
+        'countdown' => [
+            'label' => 'Countdown',
+            'type' => 'countdown',
+            'props' => [
+                'title' => 'Próxima cohorte comienza en',
+                'target_date' => now()->addDays(7)->toDateTimeString(),
+                'cta_label' => 'Reservar mi lugar',
+                'cta_url' => '#',
             ],
         ],
     ],

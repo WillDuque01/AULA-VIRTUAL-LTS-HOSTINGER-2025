@@ -74,11 +74,18 @@ Este servicio se usará por el futuro constructor Livewire para encapsular la l�
 - `PageController@show` registra visitas (session, referer, user agent) antes de renderizar.
 - `Page` expone `views()`/`views_count` y el manager los despliega para priorizar landings.
 
-## 8. Próximos pasos
+## 8. Fase 5 (inline + presets + conversions)
 
-- Drag & drop visual directo sobre el canvas e inline editing.
-- Variables globales extendidas (paleta avanzada, tamaños de fuente) y kits con inputs ricos (formularios, video, countdown).
-- Integrar analítica de conversiones/ventas (landing → carrito) y exponerlo en dashboards/ DataPorter.
+- **Inline editing**: bloques como Hero soportan edición directa (`contenteditable`) sincronizada con Livewire (`inlineUpdate`). Se mantiene el formulario clásico para ajustes finos.
+- **Theme presets**: `config/page_builder.php` expone `theme_presets` (Noir/Sunset/Matcha). El sidebar permite aplicarlos y luego ajustar colores/tipografía.
+- **Nuevos kits**: `lead-form`, `video-testimonial`, `countdown` añaden formularios ligeros, testimonios en video y contadores con CTA.
+- **Landing analytics**: tabla/modelo `page_conversions`, hook en `PracticeCheckout` que toma `session('landing_ref')` (set por `PageController`) y registra monto/productos vendidos por landing. `PageManager` muestra vistas, conversiones y top productos por página.
 
-Con esto el constructor ya cubre la experiencia mínima viable para crear/publish Homes y Landings desde el dashboard y empezar a medir desempeño.
+## 9. Próximos pasos
+
+- Extender inline editing a más bloques (CTA, Pricing) + drag & drop directo en canvas.
+- Presets avanzados (grid, tamaños tipográficos) y guardado como "Tema" reutilizable entre landings.
+- Dashboard consolidado con funnels (views → clicks → checkout) e integración DataPorter/telemetría externa.
+
+Con esto el constructor ya permite crear/publish Homes y Landings, ajustar estilos en caliente y medir impacto (vistas + conversiones) directamente desde el dashboard.
 

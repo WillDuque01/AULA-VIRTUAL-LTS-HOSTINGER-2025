@@ -137,6 +137,7 @@ class PageBuilderEditor extends Component
             'kits' => $this->kits,
             'previewMode' => $this->previewMode,
             'theme' => $this->settings['theme'] ?? [],
+            'presets' => config('page_builder.theme_presets', []),
         ]);
     }
 
@@ -211,6 +212,30 @@ class PageBuilderEditor extends Component
         if (in_array($mode, ['desktop', 'tablet', 'mobile'], true)) {
             $this->previewMode = $mode;
         }
+    }
+
+    public function inlineUpdate(int $index, string $path, string $value): void
+    {
+        if (! isset($this->blocks[$index])) {
+            return;
+        }
+
+        data_set($this->blocks[$index], $path, $value);
+    }
+
+    public function applyPreset(string $key): void
+    {
+        $preset = config("page_builder.theme_presets.$key");
+        if (! $preset) {
+            return;
+        }
+
+        $this->settings['theme'] = [
+            'primary' => $preset['primary'],
+            'secondary' => $preset['secondary'],
+            'background' => $preset['background'],
+            'font_family' => $preset['font_family'],
+        ];
     }
 }
 

@@ -50,6 +50,17 @@
         <aside class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-6">
             <div class="space-y-3">
                 <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Tema') }}</h2>
+                @if(!empty($presets))
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($presets as $key => $preset)
+                            <button type="button"
+                                    wire:click="applyPreset('{{ $key }}')"
+                                    class="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400">
+                                {{ $preset['label'] }}
+                            </button>
+                        @endforeach
+                    </div>
+                @endif
                 <label class="block text-xs font-semibold text-slate-600">
                     {{ __('Color primario') }}
                     <input type="color" wire:model.defer="settings.theme.primary" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
@@ -122,6 +133,9 @@
                     @includeWhen($block['type'] === 'team', 'livewire.admin.page-builder.blocks.team-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'faq', 'livewire.admin.page-builder.blocks.faq-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'timeline', 'livewire.admin.page-builder.blocks.timeline-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'lead-form', 'livewire.admin.page-builder.blocks.lead-form-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'video-testimonial', 'livewire.admin.page-builder.blocks.video-testimonial-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'countdown', 'livewire.admin.page-builder.blocks.countdown-editor', ['index' => $index, 'block' => $block])
                 </article>
             @empty
                 <div class="rounded-3xl border border-dashed border-slate-200 bg-white/50 p-6 text-center text-sm text-slate-500">

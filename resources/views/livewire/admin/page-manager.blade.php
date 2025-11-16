@@ -44,7 +44,23 @@
                             <span class="rounded-full border border-amber-200 px-2 py-0.5 text-amber-600">
                                 👀 {{ $page->views_count }}
                             </span>
+                            <span class="rounded-full border border-emerald-200 px-2 py-0.5 text-emerald-700">
+                                ⚡ {{ $page->conversions_count }}
+                            </span>
                         </div>
+                        @php
+                            $topProducts = collect($page->conversions)
+                                ->flatMap(fn ($conversion) => $conversion->meta['items'] ?? [])
+                                ->countBy()
+                                ->sortDesc()
+                                ->take(2);
+                        @endphp
+                        @if($topProducts->isNotEmpty())
+                            <p class="text-xs text-slate-500">
+                                {{ __('Top productos:') }}
+                                {{ $topProducts->map(fn ($count, $title) => $title.' ('.$count.')')->join(' · ') }}
+                            </p>
+                        @endif
                         <div class="flex flex-wrap items-center gap-2 pt-2 text-xs font-semibold">
                             <a href="{{ route('admin.pages.builder', ['locale' => app()->getLocale(), 'page' => $page->id]) }}"
                                class="rounded-full border border-slate-200 px-3 py-1 text-slate-600 hover:border-slate-400">

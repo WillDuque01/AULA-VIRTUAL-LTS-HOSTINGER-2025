@@ -20,6 +20,8 @@ class PageController extends Controller
         $blocks = $page->publishedRevision?->layout ?? [];
         $settings = $page->publishedRevision?->settings ?? [];
 
+        session(['landing_ref' => $page->slug]);
+
         if (Schema::hasTable('page_views')) {
             PageView::create([
                 'page_id' => $page->id,

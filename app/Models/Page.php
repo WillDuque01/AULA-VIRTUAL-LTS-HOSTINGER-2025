@@ -46,6 +46,11 @@ class Page extends Model
         return $this->hasMany(PageView::class);
     }
 
+    public function conversions(): HasMany
+    {
+        return $this->hasMany(PageConversion::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');

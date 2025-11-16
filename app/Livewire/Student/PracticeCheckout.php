@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Student;
 
+use App\Models\Page;
+use App\Models\PageConversion;
 use App\Models\PracticePackage;
 use App\Services\PracticePackageOrderService;
 use App\Support\Practice\PracticeCart;
@@ -57,6 +59,8 @@ class PracticeCheckout extends Component
                         $service->markAsPaid($order, 'SHOP-'.Str::upper(Str::random(8)));
                     }
                 }
+
+                $this->logLandingConversion();
             });
         } catch (\Throwable $exception) {
             report($exception);
@@ -84,6 +88,32 @@ class PracticeCheckout extends Component
     {
         $this->items = PracticeCart::products();
         $this->total = (float) $this->items->sum('price_amount');
+    }
+
+    protected function logLandingConversion(): void
+    {
+        $slug = session('landing_ref');
+
+        if (! $slug || $this->items->isEmpty() || $this->total <= 0) {
+            return;
+        }
+
+        $page = Page::query()->where('slug', $slug)->first();
+
+        if (! $page) {
+            return;
+        }
+
+        PageConversion::create([
+            'page_id' => $page->id,
+            'amount' => $this->total,
+            'currency' => $this->items->first()->price_currency ?? 'USD',
+            'meta' => [
+                'items' => $this->items->pluck('title')->all(),
+            ],
+        ]);
+
+        session()->forget('landing_ref');
     }
 }
 
