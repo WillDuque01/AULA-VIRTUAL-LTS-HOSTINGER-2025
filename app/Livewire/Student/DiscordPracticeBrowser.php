@@ -11,18 +11,19 @@ use App\Models\Lesson;
 use App\Models\PracticePackageOrder;
 use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use App\Services\PracticePackageOrderService;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
+use Illuminate\Support\Collection as SupportCollection;
 
 class DiscordPracticeBrowser extends Component
 {
-    public Collection $availableLessons;
-    public Collection $practices;
+    public SupportCollection $availableLessons;
+    public SupportCollection $practices;
 
     public ?int $selectedLesson = null;
 
@@ -32,8 +33,13 @@ class DiscordPracticeBrowser extends Component
 
     public ?string $packNotificationId = null;
 
+    public string $packsUrl = '';
+
     public function mount(): void
     {
+        $locale = request()->route('locale') ?? app()->getLocale();
+        $this->packsUrl = route('dashboard', ['locale' => $locale]).'#practice-packs';
+
         $this->availableLessons = DiscordPractice::with('lesson.chapter.course')
             ->where('start_at', '>=', now())
             ->where('status', 'scheduled')
@@ -162,6 +168,17 @@ class DiscordPracticeBrowser extends Component
 
     private function loadPractices(): void
     {
+        $user = auth()->user();
+        $activeOrders = collect();
+
+        if ($user) {
+            $activeOrders = PracticePackageOrder::with('package')
+                ->where('user_id', $user->id)
+                ->whereIn('status', ['paid', 'completed'])
+                ->where('sessions_remaining', '>', 0)
+                ->get();
+        }
+
         $query = DiscordPractice::with(['lesson.chapter.course'])
             ->where('start_at', '>=', now())
             ->where('status', 'scheduled');
@@ -174,9 +191,20 @@ class DiscordPracticeBrowser extends Component
             ->orderBy('start_at')
             ->limit(10)
             ->get()
-            ->map(function (DiscordPractice $practice) {
+            ->map(function (DiscordPractice $practice) use ($user, $activeOrders) {
                 $reserved = $practice->reservations()->count();
                 $hasReservation = $practice->reservations()->where('user_id', auth()->id())->exists();
+
+                $hasRequiredPack = false;
+                if ($practice->requires_package && $user) {
+                    $hasRequiredPack = $activeOrders->contains(function (PracticePackageOrder $order) use ($practice) {
+                        if ($practice->practice_package_id) {
+                            return $order->practice_package_id === $practice->practice_package_id;
+                        }
+
+                        return $order->package && (int) $order->package->creator_id === (int) $practice->created_by;
+                    });
+                }
 
                 return [
                     'id' => $practice->id,
@@ -191,6 +219,7 @@ class DiscordPracticeBrowser extends Component
                     'discord_channel_url' => $practice->discord_channel_url,
                     'lesson_id' => $practice->lesson_id,
                     'requires_package' => $practice->requires_package,
+                    'has_required_pack' => $hasRequiredPack,
                     'practice_package_id' => $practice->practice_package_id,
                 ];
             });
@@ -280,7 +309,9 @@ class DiscordPracticeBrowser extends Component
 
     public function render()
     {
-        return view('livewire.student.discord-practice-browser');
+        return view('livewire.student.discord-practice-browser', [
+            'packsUrl' => $this->packsUrl,
+        ]);
     }
 }
 

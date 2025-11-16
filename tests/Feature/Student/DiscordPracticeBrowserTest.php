@@ -3,8 +3,14 @@
 namespace Tests\Feature\Student;
 
 use App\Livewire\Student\DiscordPracticeBrowser;
-use App\Notifications\DiscordPracticeSlotAvailableNotification;
+use App\Models\Chapter;
+use App\Models\Course;
+use App\Models\DiscordPractice;
+use App\Models\Lesson;
+use App\Models\PracticePackage;
+use App\Models\PracticePackageOrder;
 use App\Models\User;
+use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -30,6 +36,76 @@ class DiscordPracticeBrowserTest extends TestCase
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
+    }
+
+    public function test_practice_requires_pack_and_shows_cta_when_user_has_none(): void
+    {
+        $user = User::factory()->create();
+        $teacher = User::factory()->create();
+        $lesson = $this->createLesson();
+
+        DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'title' => 'Pronunciación crítica',
+            'type' => 'global',
+            'start_at' => now()->addDay(),
+            'end_at' => now()->addDay()->addMinutes(45),
+            'duration_minutes' => 45,
+            'capacity' => 5,
+            'status' => 'scheduled',
+            'created_by' => $teacher->id,
+            'requires_package' => true,
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(DiscordPracticeBrowser::class)
+            ->assertSet('practices.0.requires_package', true)
+            ->assertSet('practices.0.has_required_pack', false);
+    }
+
+    public function test_practice_detects_active_pack_when_user_has_order(): void
+    {
+        $user = User::factory()->create();
+        $teacher = User::factory()->create();
+        $lesson = $this->createLesson();
+
+        $package = PracticePackage::create([
+            'creator_id' => $teacher->id,
+            'lesson_id' => $lesson->id,
+            'title' => 'Pack premium',
+            'sessions_count' => 4,
+            'price_amount' => 120,
+            'price_currency' => 'USD',
+            'is_global' => true,
+            'status' => 'published',
+        ]);
+
+        DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'title' => 'Pronunciación crítica',
+            'type' => 'global',
+            'start_at' => now()->addDay(),
+            'end_at' => now()->addDay()->addMinutes(45),
+            'duration_minutes' => 45,
+            'capacity' => 5,
+            'status' => 'scheduled',
+            'created_by' => $teacher->id,
+            'requires_package' => true,
+            'practice_package_id' => $package->id,
+        ]);
+
+        PracticePackageOrder::create([
+            'practice_package_id' => $package->id,
+            'user_id' => $user->id,
+            'status' => 'paid',
+            'sessions_remaining' => 2,
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(DiscordPracticeBrowser::class)
+            ->assertSet('practices.0.has_required_pack', true);
     }
 
     public function test_pack_reminder_is_exposed_when_notification_exists(): void
@@ -93,6 +169,20 @@ class DiscordPracticeBrowserTest extends TestCase
             ->assertSet('packReminder', null);
 
         $this->assertNotNull($notification->fresh()->read_at);
+    }
+
+    private function createLesson(): Lesson
+    {
+        $course = Course::create(['slug' => 'demo-course', 'level' => 'B1', 'published' => true]);
+        $chapter = Chapter::create(['course_id' => $course->id, 'title' => 'Unidad 1', 'position' => 1]);
+
+        return Lesson::create([
+            'chapter_id' => $chapter->id,
+            'type' => 'text',
+            'position' => 1,
+            'config' => ['title' => 'Lección demo'],
+            'locked' => false,
+        ]);
     }
 }
 
