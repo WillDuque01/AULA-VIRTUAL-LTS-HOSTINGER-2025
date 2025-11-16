@@ -403,7 +403,38 @@
                     </div>
                     <p class="text-sm text-gray-500">Proveedor: {{ ucfirst($provider) }}</p>
                 </div>
-                    <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                    @php
+                        $streak = (int) data_get($playerStats, 'streak', 0);
+                        $xp = (int) data_get($playerStats, 'xp', 0);
+                        $lastCompletionLabel = data_get($playerStats, 'last_completion_label');
+                    @endphp
+                    @if($streak || $xp || $lastCompletionLabel)
+                        <div class="w-full">
+                            <div class="grid gap-3 sm:grid-cols-3" aria-live="polite">
+                                <div class="rounded-2xl border border-amber-100 bg-amber-50/60 px-3 py-2">
+                                    <p class="text-[11px] uppercase font-semibold tracking-wide text-amber-600">{{ __('Racha actual') }}</p>
+                                    <p class="mt-1 text-lg font-semibold text-amber-900 flex items-baseline gap-1">
+                                        <span>{{ $streak }}</span>
+                                        <span class="text-xs font-semibold text-amber-700">{{ __('días') }}</span>
+                                    </p>
+                                </div>
+                                <div class="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3 py-2">
+                                    <p class="text-[11px] uppercase font-semibold tracking-wide text-emerald-600">{{ __('XP acumulado') }}</p>
+                                    <p class="mt-1 text-lg font-semibold text-emerald-900">
+                                        {{ number_format($xp, 0, ',', '.') }}
+                                        <span class="text-xs font-semibold text-emerald-700">XP</span>
+                                    </p>
+                                </div>
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2">
+                                    <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-500">{{ __('Último logro') }}</p>
+                                    <p class="mt-1 text-sm font-semibold text-slate-900">
+                                        {{ $lastCompletionLabel ?? __('Todavía no registrado') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     <div class="w-full" aria-live="polite">
                         <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Avance') }}</span>
                         <div class="mt-2 relative h-3 rounded-full bg-slate-100 overflow-hidden motion-safe:transition-all motion-safe:duration-500 motion-reduce:transition-none">

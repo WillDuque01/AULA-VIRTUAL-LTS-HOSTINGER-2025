@@ -99,6 +99,24 @@ class PlayerContextualUiTest extends TestCase
             ->assertSet('heatmapHighlights.0.bucket', 60);
     }
 
+    public function test_insights_panel_displays_user_stats(): void
+    {
+        [$lessonCurrent, $user] = $this->createCourseStructure(withUser: true);
+
+        $user->forceFill([
+            'current_streak' => 7,
+            'experience_points' => 1850,
+            'last_completion_at' => Carbon::now()->subHours(6),
+        ])->save();
+
+        Livewire::actingAs($user)
+            ->test(Player::class, ['lesson' => $lessonCurrent])
+            ->assertSee('Racha actual', false)
+            ->assertSee('7', false)
+            ->assertSee('XP acumulado', false)
+            ->assertSee((string) number_format(1850, 0, ',', '.'), false);
+    }
+
     /**
      * @return array{Lesson, User|null}
      */

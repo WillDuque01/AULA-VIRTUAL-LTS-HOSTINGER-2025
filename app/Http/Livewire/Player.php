@@ -41,6 +41,7 @@ class Player extends Component
     public array $progressMarkers = [];
     public ?array $returnHint = null;
     public ?array $ctaHighlight = null;
+    public array $playerStats = [];
 
     protected ?VideoProgress $progressRecord = null;
 
@@ -69,6 +70,7 @@ class Player extends Component
         $this->loadHeatmap();
         $this->calculateProgressPercent();
         $this->buildReturnHint();
+        $this->loadPlayerStats();
     }
 
     public function render()
@@ -97,6 +99,7 @@ class Player extends Component
             'returnHint' => $this->returnHint,
             'ctaHighlight' => $this->ctaHighlight,
             'heatmapHighlights' => $this->heatmapHighlights,
+            'playerStats' => $this->playerStats,
         ]);
     }
 
@@ -552,6 +555,26 @@ class Player extends Component
             })
             ->values()
             ->toArray();
+    }
+
+    private function loadPlayerStats(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            $this->playerStats = [];
+
+            return;
+        }
+
+        $lastCompletion = $user->last_completion_at;
+
+        $this->playerStats = [
+            'streak' => (int) $user->current_streak,
+            'xp' => (int) $user->experience_points,
+            'last_completion_label' => $lastCompletion
+                ? $lastCompletion->locale(app()->getLocale())->translatedFormat('d M · H:i')
+                : null,
+        ];
     }
 }
 

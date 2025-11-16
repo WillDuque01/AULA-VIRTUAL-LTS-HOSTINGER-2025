@@ -1,5 +1,13 @@
 import confetti from 'canvas-confetti';
 
+const prefersReducedMotion = () => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+        return false;
+    }
+
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
 const ensureToast = () => {
     if (window.toast) {
         return window.toast;
@@ -53,6 +61,10 @@ const ensureToast = () => {
 };
 
 const fireConfetti = () => {
+    if (prefersReducedMotion()) {
+        return;
+    }
+
     confetti({
         particleCount: 140,
         spread: 70,
