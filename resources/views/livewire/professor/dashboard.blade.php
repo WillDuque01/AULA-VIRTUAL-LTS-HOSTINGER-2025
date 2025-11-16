@@ -1,4 +1,14 @@
 <div class="space-y-6">
+    @php
+        $profGuides = $guideContext['cards'] ?? [];
+        $teacherPlaybook = $integrationPlaybook ?? [];
+    @endphp
+    @if(!empty($profGuides))
+        <x-help.contextual-panel
+            :guides="$profGuides"
+            :title="$guideContext['title'] ?? __('Guía rápida')"
+            :subtitle="$guideContext['subtitle'] ?? null" />
+    @endif
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Estudiantes activos (7d)</p>
@@ -13,6 +23,129 @@
             <p class="text-3xl font-bold text-slate-900 mt-2">{{ $metrics['avg_completion'] }}%</p>
         </div>
     </div>
+
+    @if(!empty($submissionStats))
+        <div class="grid gap-4 sm:grid-cols-3">
+            <div class="bg-white border border-amber-200 rounded-2xl p-4 shadow-sm">
+                <p class="text-xs uppercase font-semibold text-amber-600 tracking-wide">{{ __('Propuestas pendientes') }}</p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">{{ $submissionStats['pending'] ?? 0 }}</p>
+            </div>
+            <div class="bg-white border border-emerald-200 rounded-2xl p-4 shadow-sm">
+                <p class="text-xs uppercase font-semibold text-emerald-600 tracking-wide">{{ __('Aprobadas (7d)') }}</p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">{{ $submissionStats['approved_7d'] ?? 0 }}</p>
+            </div>
+            <div class="bg-white border border-rose-200 rounded-2xl p-4 shadow-sm">
+                <p class="text-xs uppercase font-semibold text-rose-600 tracking-wide">{{ __('Rechazadas (7d)') }}</p>
+                <p class="text-3xl font-bold text-slate-900 mt-2">{{ $submissionStats['rejected_7d'] ?? 0 }}</p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('Revisión de contenido docente') }}</p>
+                    <p class="text-sm text-slate-500">{{ __('Resumen de propuestas recientes y tendencia (7 días).') }}</p>
+                </div>
+                <a href="{{ route('admin.teacher-submissions', ['locale' => app()->getLocale()]) }}"
+                   class="text-xs font-semibold text-blue-600 hover:underline">
+                    {{ __('Abrir bandeja') }} →
+                </a>
+            </div>
+            <div class="px-6 py-5 grid gap-4 lg:grid-cols-2">
+                <div class="space-y-3">
+                    @forelse($submissionFeed ?? collect() as $submission)
+                        <div class="rounded-2xl border border-slate-100 px-4 py-3">
+                            <p class="text-sm font-semibold text-slate-900">{{ $submission->title }}</p>
+                            <p class="text-xs text-slate-500">
+                                {{ ucfirst($submission->type) }} ·
+                                {{ $submission->author?->name ?? $submission->author?->email ?? __('Docente') }}
+                                @if($submission->course)
+                                    · {{ $submission->course->slug }}
+                                @endif
+                            </p>
+                            <div class="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
+                                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5
+                                    @class([
+                                        'border border-amber-200 bg-amber-50 text-amber-700' => $submission->status === 'pending',
+                                        'border border-emerald-200 bg-emerald-50 text-emerald-700' => $submission->status === 'approved',
+                                        'border border-rose-200 bg-rose-50 text-rose-700' => $submission->status === 'rejected',
+                                    ])
+                                ">
+                                    {{ ucfirst(__($submission->status)) }}
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-slate-500">
+                                    {{ optional($submission->created_at)->format('d M H:i') }}
+                                </span>
+                            </div>
+                            @if($submission->feedback && $submission->status !== 'pending')
+                                <p class="mt-2 text-xs text-slate-500">{{ __('Feedback: :feedback', ['feedback' => $submission->feedback]) }}</p>
+                            @endif
+                        </div>
+                    @empty
+                        <p class="text-sm text-slate-500">{{ __('No hay propuestas recientes.') }}</p>
+                    @endforelse
+                </div>
+                <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+                    <p class="text-xs uppercase font-semibold text-slate-500">{{ __('Tendencia semanal') }}</p>
+                    <div class="mt-3 space-y-2 text-sm text-slate-600 max-h-64 overflow-y-auto">
+                        @forelse($submissionTrend ?? collect() as $entry)
+                            <div class="flex items-center justify-between rounded-xl bg-white px-3 py-2">
+                                <span class="text-xs font-semibold text-slate-500">{{ $entry['day'] }}</span>
+                                <div class="flex items-center gap-3 text-[11px] font-semibold">
+                                    <span class="text-slate-600">{{ __('E: :count', ['count' => $entry['submitted']]) }}</span>
+                                    <span class="text-emerald-600">{{ __('A: :count', ['count' => $entry['approved']]) }}</span>
+                                    <span class="text-rose-600">{{ __('R: :count', ['count' => $entry['rejected']]) }}</span>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-xs text-slate-500">{{ __('Sin datos suficientes todavía.') }}</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if(!empty($teacherPlaybook))
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-1">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('Integraciones críticas para Teacher Admin') }}</p>
+                <p class="text-sm text-slate-500">{{ __('Asegúrate de que los bots y CTA estén listos antes de agendar cohortes.') }}</p>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @foreach($teacherPlaybook as $group)
+                    @foreach($group['items'] as $item)
+                        <div class="px-6 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ $item['label'] }}</p>
+                                @if(!empty($item['status_hint']))
+                                    <p class="text-xs text-slate-500">{{ $item['status_hint'] }}</p>
+                                @endif
+                                @if(!empty($item['next_steps']))
+                                    <ul class="mt-1 list-disc space-y-1 pl-4 text-xs text-slate-500">
+                                        @foreach($item['next_steps'] as $step)
+                                            <li>{{ $step }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $item['ok'] ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                                    {{ $item['status'] }}
+                                </span>
+                                @if(!empty($item['docs']))
+                                    <a href="{{ $item['docs'] }}" target="_blank" rel="noopener"
+                                       class="inline-flex items-center gap-2 rounded-full border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-700 hover:border-blue-300">
+                                        {{ __('Ver docs') }} ↗
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">

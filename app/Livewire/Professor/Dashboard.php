@@ -4,11 +4,15 @@ namespace App\Livewire\Professor;
 
 use App\Models\Assignment;
 use App\Models\Certificate;
-use App\Models\Lesson;
 use App\Models\DiscordPractice;
+use App\Models\Lesson;
+use App\Models\TeacherSubmission;
 use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
+use App\Support\Guides\IntegrationPlaybook;
+use App\Support\Guides\GuideRegistry;
 use App\Support\Integrations\WhatsAppMetrics;
+use App\Support\Teachers\TeacherPerformance;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -51,6 +55,16 @@ class Dashboard extends Component
 
     public Collection $upcomingPractices;
 
+    public array $guideContext = [];
+
+    public array $integrationPlaybook = [];
+
+    public array $submissionStats = [];
+
+    public Collection $submissionFeed;
+
+    public Collection $submissionTrend;
+
     public function mount(): void
     {
         $this->lessonInsights = collect();
@@ -59,7 +73,11 @@ class Dashboard extends Component
         $this->recentCertificates = collect();
         $this->assignmentAlerts = collect();
         $this->upcomingPractices = collect();
+        $this->submissionFeed = collect();
+        $this->submissionTrend = collect();
         $this->loadData();
+        $this->guideContext = GuideRegistry::context('professor.dashboard');
+        $this->integrationPlaybook = IntegrationPlaybook::grouped('teacher');
     }
 
     private function loadData(): void
@@ -150,6 +168,7 @@ class Dashboard extends Component
         $this->practiceStats = $this->loadPracticeStats();
         $this->upcomingPractices = $this->loadUpcomingPractices();
         $this->whatsappStats = WhatsAppMetrics::summary();
+        $this->loadSubmissionInsights();
     }
 
     private function loadHeatmapData(): void
@@ -233,7 +252,9 @@ class Dashboard extends Component
 
     public function render()
     {
-        return view('livewire.professor.dashboard');
+        return view('livewire.professor.dashboard', [
+            'guideContext' => $this->guideContext,
+        ]);
     }
 
     private function loadPracticeStats(): array
@@ -277,5 +298,33 @@ class Dashboard extends Component
                     'cohort' => $practice->cohort_label,
                 ];
             });
+    }
+
+    private function loadSubmissionInsights(): void
+    {
+        $user = auth()->user();
+
+        if (! $user || ! $user->hasRole('teacher_admin')) {
+            $this->submissionStats = [];
+            $this->submissionFeed = collect();
+            $this->submissionTrend = collect();
+
+            return;
+        }
+
+        $sevenDaysAgo = now()->subDays(7);
+
+        $this->submissionStats = [
+            'pending' => TeacherSubmission::where('status', 'pending')->count(),
+            'approved_7d' => TeacherSubmission::where('status', 'approved')->where('approved_at', '>=', $sevenDaysAgo)->count(),
+            'rejected_7d' => TeacherSubmission::where('status', 'rejected')->where('approved_at', '>=', $sevenDaysAgo)->count(),
+        ];
+
+        $this->submissionFeed = TeacherSubmission::with(['author:id,name,email', 'course:id,slug'])
+            ->latest()
+            ->limit(6)
+            ->get();
+
+        $this->submissionTrend = TeacherPerformance::statusTrend(7);
     }
 }

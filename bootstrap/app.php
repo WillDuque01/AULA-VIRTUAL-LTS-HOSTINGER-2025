@@ -57,6 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'csrf' => \App\Http\Middleware\VerifyCsrfToken::class,
+            'append.outbox.events' => \App\Http\Middleware\AppendOutboxEvents::class,
         ]);
 
         $middleware->removeFromGroup('web', [

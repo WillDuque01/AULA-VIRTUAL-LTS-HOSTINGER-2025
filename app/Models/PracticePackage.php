@@ -48,6 +48,11 @@ class PracticePackage extends Model
     {
         return $this->hasMany(PracticePackageOrder::class);
     }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
 }
 
 

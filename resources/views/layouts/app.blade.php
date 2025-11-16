@@ -63,6 +63,13 @@
         <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
             @include('layouts.navigation')
             @auth
+                @php($__profileSummary = auth()->user()->profileSummary())
+                @if(!($__profileSummary['is_complete'] ?? false))
+                    <span class="sr-only" aria-hidden="true">{{ __('Completa tu perfil') }}</span>
+                @endif
+                @if(auth()->user()->hasAnyRole(['teacher','teacher_admin','Profesor']))
+                    <!-- Teacher profile -->
+                @endif
                 <livewire:profile.completion-banner />
             @endauth
 
@@ -80,6 +87,13 @@
                 {{ $slot }}
             </main>
         </div>
+        @php
+            $audience = \App\Support\Guides\GuideRegistry::audienceFromUser(auth()->user());
+            $floatingGuides = \App\Support\Guides\GuideRegistry::routeGuides($routeName ?? null, $audience);
+        @endphp
+        @if(!empty($floatingGuides))
+            <x-help.floating :cards="$floatingGuides" />
+        @endif
         @livewireScripts
     </body>
 </html>

@@ -1,4 +1,13 @@
 <div class="space-y-6">
+    @php
+        $studentGuides = $guideContext['cards'] ?? [];
+    @endphp
+    @if(!empty($studentGuides))
+        <x-help.contextual-panel
+            :guides="$studentGuides"
+            :title="$guideContext['title'] ?? __('Consejos rápidos')"
+            :subtitle="$guideContext['subtitle'] ?? null" />
+    @endif
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Progreso</p>
@@ -134,7 +143,7 @@
                 ['course' => $course?->slug]
             );
         @endphp
-        @if($whatsappSummaryLink)
+        @if(!empty($whatsappSummaryLink))
             <div class="px-6 py-3 border-b border-slate-100 bg-slate-50/60">
                 <a href="{{ $whatsappSummaryLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-semibold text-emerald-700 hover:border-emerald-300">
                     {{ __('whatsapp.assignment.summary_cta') }} <span aria-hidden="true">↗</span>

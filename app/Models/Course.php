@@ -6,6 +6,7 @@ use App\Events\CourseUnlocked;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Course extends Model
 {
@@ -78,5 +79,12 @@ class Course extends Model
     public function tiers(): MorphToMany
     {
         return $this->morphToMany(Tier::class, 'tierable')->withTimestamps();
+    }
+
+    public function teachers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'course_teacher', 'course_id', 'teacher_id')
+            ->withPivot(['assigned_by'])
+            ->withTimestamps();
     }
 }

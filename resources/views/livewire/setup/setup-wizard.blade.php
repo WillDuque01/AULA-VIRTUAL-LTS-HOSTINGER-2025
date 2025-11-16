@@ -20,7 +20,10 @@
                 @if($step === 1)
                     @include('setup.partials.step-admin')
                 @elseif($step === 2)
-                    @include('setup.partials.step-integrations')
+                    @include('setup.partials.step-integrations', [
+                        'integrationGuides' => $integrationGuides ?? [],
+                        'wizardGuide' => $wizardGuide ?? [],
+                    ])
                 @else
                     @include('setup.partials.step-payments')
                 @endif

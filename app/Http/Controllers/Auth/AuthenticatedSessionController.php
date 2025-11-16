@@ -14,9 +14,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request, ?string $targetRole = null): View
     {
-        return view('auth.login');
+        $role = $targetRole ?? $request->string('target_role')->toString();
+
+        return view('auth.login', [
+            'targetRole' => $role,
+        ]);
     }
 
     /**
@@ -28,7 +32,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(
+            $this->resolveDashboardRedirect($request)
+        );
     }
 
     /**
@@ -43,5 +49,43 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    protected function resolveDashboardRedirect(Request $request): string
+    {
+        $user = $request->user();
+        $targetRole = $request->string('target_role')->lower()->value();
+        $locale = $request->route('locale') ?? app()->getLocale();
+
+        $map = [
+            'admin' => [
+                'roles' => ['Admin'],
+                'route' => 'dashboard.admin',
+            ],
+            'teacher_admin' => [
+                'roles' => ['teacher_admin', 'Profesor'],
+                'route' => 'dashboard',
+            ],
+            'teacher' => [
+                'roles' => ['teacher'],
+                'route' => 'dashboard.teacher',
+            ],
+            'student' => [
+                'roles' => ['student_free', 'student_paid', 'student_vip'],
+                'route' => 'dashboard.student',
+            ],
+        ];
+
+        if ($targetRole && isset($map[$targetRole]) && $user?->hasAnyRole($map[$targetRole]['roles'])) {
+            return route($map[$targetRole]['route'], ['locale' => $locale], false);
+        }
+
+        foreach ($map as $entry) {
+            if ($user?->hasAnyRole($entry['roles'])) {
+                return route($entry['route'], ['locale' => $locale], false);
+            }
+        }
+
+        return route('dashboard', ['locale' => $locale], false);
     }
 }

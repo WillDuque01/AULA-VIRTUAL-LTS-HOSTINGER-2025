@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Setup;
 
 use App\Models\SetupState;
 use App\Models\User;
+use App\Support\Guides\GuideRegistry;
 use App\Support\Provisioning\CredentialProvisioner;
 use App\Support\Provisioning\Dto\ProvisioningMeta;
 use Illuminate\Support\Facades\Auth;
@@ -61,6 +62,8 @@ class SetupWizard extends Component
     {
         return view('livewire.setup.setup-wizard', [
             'steps' => $this->steps(),
+            'integrationGuides' => GuideRegistry::integrationGuides(),
+            'wizardGuide' => GuideRegistry::context('setup.integrations'),
         ]);
     }
 
@@ -175,7 +178,7 @@ class SetupWizard extends Component
 
         $marketing = $this->integrations['marketing'] ?? [];
         foreach ($marketing as $key => $value) {
-            $credentials[$key] = $value;
+            $credentials[$key] = is_bool($value) ? ($value ? 'true' : 'false') : $value;
         }
 
         $automation = $this->integrations['automation'] ?? [];
@@ -255,8 +258,12 @@ class SetupWizard extends Component
                 'MAIL_FROM_NAME' => '',
             ],
             'marketing' => [
+                'GA4_ENABLED' => false,
                 'GA4_MEASUREMENT_ID' => '',
                 'GA4_API_SECRET' => '',
+                'MIXPANEL_ENABLED' => false,
+                'MIXPANEL_PROJECT_TOKEN' => '',
+                'MIXPANEL_API_SECRET' => '',
                 'RECAPTCHA_SITE_KEY' => '',
                 'RECAPTCHA_SECRET_KEY' => '',
             ],
@@ -273,6 +280,8 @@ class SetupWizard extends Component
                 'DISCORD_WEBHOOK_USERNAME' => '',
                 'DISCORD_WEBHOOK_AVATAR' => '',
                 'DISCORD_WEBHOOK_THREAD_ID' => '',
+                'DISCORD_PRACTICES_REQUEST_THRESHOLD' => 5,
+                'DISCORD_PRACTICES_REQUEST_COOLDOWN_MINUTES' => 60,
                 'WHATSAPP_DEEPLINK' => '',
             ],
             'observability' => [

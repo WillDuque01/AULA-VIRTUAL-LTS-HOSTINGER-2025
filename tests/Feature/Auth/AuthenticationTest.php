@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Spatie\Permission\Models\Role;
 
 class AuthenticationTest extends TestCase
 {
@@ -28,6 +29,22 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', ['locale' => $this->testingLocale], false));
+    }
+
+    public function test_admin_target_role_redirects_to_admin_dashboard(): void
+    {
+        Role::findOrCreate('Admin');
+        $user = User::factory()->create();
+        $user->assignRole('Admin');
+
+        $response = $this->post($this->localized('/login'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'target_role' => 'admin',
+        ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('dashboard.admin', ['locale' => $this->testingLocale], false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

@@ -9,6 +9,7 @@ use App\Models\Lesson;
 use App\Models\VideoProgress;
 use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use App\Support\Certificates\CertificateGenerator;
+use App\Support\Guides\GuideRegistry;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -67,6 +68,8 @@ class Dashboard extends Component
 
     public bool $autoOpenHighlight = false;
 
+    public array $guideContext = [];
+
     public function mount(): void
     {
         $locale = request()->route('locale') ?? app()->getLocale();
@@ -89,6 +92,7 @@ class Dashboard extends Component
         $this->certificateDownloadUrl = null;
         $this->loadProgress();
         $this->loadPackReminder();
+        $this->guideContext = GuideRegistry::context('student.dashboard');
     }
 
     private function loadProgress(): void
@@ -202,6 +206,7 @@ class Dashboard extends Component
         return view('livewire.student.dashboard', [
             'highlightPackageId' => $this->highlightPackageId,
             'autoOpenHighlight' => $this->autoOpenHighlight,
+            'guideContext' => $this->guideContext,
         ]);
     }
 

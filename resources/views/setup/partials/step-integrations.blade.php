@@ -1,144 +1,139 @@
+@php
+    $categories = $integrationGuides ?? [];
+    $wizardGuide = $wizardGuide ?? [];
+@endphp
+
 <div class="space-y-10">
     <div>
-        <h2 class="text-xl font-semibold">{{ __('Conecta tus integraciones esenciales') }}</h2>
-        <p class="text-sm text-slate-400">{{ __('Puedes dejar las credenciales en blanco si prefieres trabajar en modo gratuito y completarlas más tarde desde el panel de administración.') }}</p>
+        <h2 class="text-xl font-semibold text-white">{{ __('Conecta tus integraciones esenciales') }}</h2>
+        <p class="text-sm text-slate-400">
+            {{ __('Puedes dejar los campos vacíos para trabajar en modo gratuito y completarlos después desde el panel de administración. Cada bloque incluye las instrucciones resumidas para conseguir los tokens correctos.') }}
+        </p>
     </div>
 
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 class="text-lg font-semibold text-slate-100">{{ __('Video y streaming') }}</h3>
-        <p class="text-xs text-slate-400">{{ __('YouTube funciona como fallback gratuito. Completa las otras credenciales si quieres habilitar proveedores premium.') }}</p>
-        <div class="mt-4 grid gap-4 md:grid-cols-2">
-            <label class="text-xs uppercase text-slate-400">YouTube origin
-                <input type="text" wire:model.defer="integrations.video.YOUTUBE_ORIGIN" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="{{ config('app.url') }}">
-            </label>
-            <label class="text-xs uppercase text-slate-400">Vimeo token
-                <input type="text" wire:model.defer="integrations.video.VIMEO_TOKEN" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            </label>
-            <label class="text-xs uppercase text-slate-400">Cloudflare Stream token
-                <input type="text" wire:model.defer="integrations.video.CLOUDFLARE_STREAM_TOKEN" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            </label>
-            <label class="text-xs uppercase text-slate-400">Cloudflare Account ID
-                <input type="text" wire:model.defer="integrations.video.CLOUDFLARE_ACCOUNT_ID" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-            </label>
-        </div>
-    </section>
+    @if(!empty($wizardGuide['cards'] ?? []))
+        <x-help.contextual-panel
+            :guides="$wizardGuide['cards']"
+            :title="$wizardGuide['title'] ?? __('Checklist')"
+            :subtitle="$wizardGuide['subtitle'] ?? null" />
+    @endif
 
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6 space-y-4">
-        <h3 class="text-lg font-semibold text-slate-100">{{ __('Storage & realtime') }}</h3>
-        <p class="text-xs text-slate-400">{{ __('Activa los toggles gratuitos para trabajar en modo local mientras preparas tus credenciales S3/Pusher.') }}</p>
-        <div class="grid gap-4 md:grid-cols-3">
-            <label class="flex items-center gap-2 text-xs uppercase text-slate-300">
-                <input type="checkbox" wire:model.defer="integrations.storage.FORCE_FREE_STORAGE" class="rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500" />
-                {{ __('Forzar almacenamiento local') }}
-            </label>
-            <label class="flex items-center gap-2 text-xs uppercase text-slate-300">
-                <input type="checkbox" wire:model.defer="integrations.storage.FORCE_FREE_REALTIME" class="rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500" />
-                {{ __('Forzar realtime local') }}
-            </label>
-            <label class="flex items-center gap-2 text-xs uppercase text-slate-300">
-                <input type="checkbox" wire:model.defer="integrations.storage.FORCE_YOUTUBE_ONLY" class="rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500" />
-                {{ __('Solo YouTube') }}
-            </label>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2">
-            @foreach([
-                'AWS_ACCESS_KEY_ID' => 'AWS access key',
-                'AWS_SECRET_ACCESS_KEY' => 'AWS secret',
-                'AWS_BUCKET' => 'Bucket',
-                'AWS_ENDPOINT' => 'Endpoint',
-                'AWS_DEFAULT_REGION' => 'Región',
-            ] as $field => $label)
-                <label class="text-xs uppercase text-slate-400">{{ __($label) }}
-                    <input type="text" wire:model.defer="integrations.storage.$field" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-                </label>
-            @endforeach
-            <label class="flex items-center gap-2 text-xs uppercase text-slate-300">
-                <input type="checkbox" wire:model.defer="integrations.storage.AWS_USE_PATH_STYLE_ENDPOINT" class="rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500" />
-                {{ __('Usar path style endpoint') }}
-            </label>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2">
-            @foreach([
-                'PUSHER_APP_ID' => 'Pusher app id',
-                'PUSHER_APP_KEY' => 'Pusher key',
-                'PUSHER_APP_SECRET' => 'Pusher secret',
-                'PUSHER_APP_CLUSTER' => 'Cluster',
-            ] as $field => $label)
-                <label class="text-xs uppercase text-slate-400">{{ __($label) }}
-                    <input type="text" wire:model.defer="integrations.storage.$field" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-                </label>
-            @endforeach
-        </div>
-    </section>
+    @foreach($categories as $category)
+        @php($providers = $category['providers'] ?? [])
+        <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 space-y-6">
+            <div>
+                <p class="text-xs uppercase font-semibold tracking-[0.35em] text-slate-500">{{ data_get($category, 'title') }}</p>
+                <p class="text-sm text-slate-400">{{ data_get($category, 'description') }}</p>
+            </div>
 
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 class="text-lg font-semibold text-slate-100">{{ __('Correo y notificaciones') }}</h3>
-        <div class="mt-4 grid gap-4 md:grid-cols-2">
-            @foreach([
-                'MAIL_MAILER' => 'Mailer',
-                'MAIL_HOST' => 'Host',
-                'MAIL_PORT' => 'Puerto',
-                'MAIL_USERNAME' => 'Usuario',
-                'MAIL_PASSWORD' => 'Contraseña',
-                'MAIL_ENCRYPTION' => 'Encriptación',
-                'MAIL_FROM_ADDRESS' => 'Correo remitente',
-                'MAIL_FROM_NAME' => 'Nombre remitente',
-            ] as $field => $label)
-                <label class="text-xs uppercase text-slate-400">{{ __($label) }}
-                    <input type="{{ $field === 'MAIL_PASSWORD' ? 'password' : 'text' }}" wire:model.defer="integrations.mail.$field" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-                </label>
-            @endforeach
-        </div>
-    </section>
+            @foreach($providers as $provider)
+                @php($fields = $provider['fields'] ?? [])
+                <article class="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-5 space-y-4">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ $provider['name'] }}</p>
+                            <p class="text-sm text-slate-300">{{ $provider['summary'] ?? '' }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-400">
+                            @foreach($provider['tokens'] ?? [] as $token)
+                                <span class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/40 px-3 py-1">
+                                    {{ $token['label'] ?? '' }}
+                                    @if(!empty($token['hint']))
+                                        <span class="text-slate-500 font-normal">{{ $token['hint'] }}</span>
+                                    @endif
+                                </span>
+                            @endforeach
+                            @if(!empty($provider['docs']))
+                                <a href="{{ $provider['docs'] }}" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-1 rounded-full border border-blue-500/30 px-3 py-1 text-blue-300 text-[11px] font-semibold hover:border-blue-400">
+                                    {{ __('Ver docs') }} ↗
+                                </a>
+                            @endif
+                        </div>
+                    </div>
 
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 class="text-lg font-semibold text-slate-100">{{ __('Marketing & SEO') }}</h3>
-        <div class="mt-4 grid gap-4 md:grid-cols-2">
-            @foreach([
-                'GA4_MEASUREMENT_ID' => 'GA4 Measurement ID',
-                'GA4_API_SECRET' => 'GA4 API Secret',
-                'RECAPTCHA_SITE_KEY' => 'reCAPTCHA site key',
-                'RECAPTCHA_SECRET_KEY' => 'reCAPTCHA secret key',
-            ] as $field => $label)
-                <label class="text-xs uppercase text-slate-400">{{ __($label) }}
-                    <input type="text" wire:model.defer="integrations.marketing.$field" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-                </label>
-            @endforeach
-        </div>
-    </section>
+                    @if(!empty($fields))
+                        <div class="grid gap-4 md:grid-cols-2">
+                            @foreach($fields as $field)
+                                @php($binding = $field['binding'] ?? null)
+                                @if(! $binding)
+                                    @continue
+                                @endif
+                                @php($type = $field['type'] ?? 'text')
+                                @if($type === 'toggle')
+                                    <label class="flex items-center gap-3 rounded-xl border border-slate-800/80 bg-slate-950/40 px-3 py-2 text-xs uppercase font-semibold text-slate-300">
+                                        <input type="checkbox" wire:model.defer="{{ $binding }}"
+                                               class="rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500" />
+                                        <span>
+                                            {{ $field['label'] ?? $binding }}
+                                            @if(!empty($field['hint']))
+                                                <span class="block text-[11px] font-normal normal-case text-slate-500">{{ $field['hint'] }}</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                @else
+                                    <label class="text-xs uppercase text-slate-400">
+                                        {{ $field['label'] ?? $binding }}
+                                        <input
+                                            type="{{ $type }}"
+                                            wire:model.defer="{{ $binding }}"
+                                            @if(!empty($field['placeholder'])) placeholder="{{ $field['placeholder'] }}" @endif
+                                            class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:border-blue-500 focus:ring-blue-500" />
+                                        @if(!empty($field['hint']))
+                                            <span class="mt-1 block text-[11px] font-semibold text-slate-500 normal-case">
+                                                {{ $field['hint'] }}
+                                            </span>
+                                        @endif
+                                    </label>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
 
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 class="text-lg font-semibold text-slate-100">{{ __('Automatización & Integraciones') }}</h3>
-        <div class="mt-4 grid gap-4 md:grid-cols-2">
-            @foreach([
-                'GOOGLE_CLIENT_ID' => 'Google OAuth Client ID',
-                'GOOGLE_CLIENT_SECRET' => 'Google OAuth Secret',
-                'GOOGLE_REDIRECT_URI' => 'Redirect URI',
-                'GOOGLE_SERVICE_ACCOUNT_JSON_PATH' => 'Service account json path',
-                'SHEET_ID' => 'Google Sheet ID',
-                'WEBHOOKS_MAKE_SECRET' => 'Make secret',
-                'MAKE_WEBHOOK_URL' => 'Make webhook URL',
-                'DISCORD_WEBHOOK_URL' => 'Discord webhook',
-                'DISCORD_WEBHOOK_USERNAME' => 'Discord username',
-                'DISCORD_WEBHOOK_AVATAR' => 'Discord avatar URL',
-                'DISCORD_WEBHOOK_THREAD_ID' => 'Discord thread ID',
-                'WHATSAPP_DEEPLINK' => 'WhatsApp deeplink',
-            ] as $field => $label)
-                <label class="text-xs uppercase text-slate-400">{{ __($label) }}
-                    <input type="text" wire:model.defer="integrations.automation.$field" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-                </label>
-            @endforeach
-        </div>
-        <label class="mt-4 flex items-center gap-2 text-xs uppercase text-slate-300">
-            <input type="checkbox" wire:model.defer="integrations.automation.GOOGLE_SHEETS_ENABLED" class="rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500" />
-            {{ __('Habilitar Google Sheets') }}
-        </label>
-    </section>
+                    @if(!empty($provider['steps']))
+                        <div class="rounded-2xl border border-slate-800/60 bg-slate-950/30 px-4 py-3">
+                            <p class="text-[11px] uppercase font-semibold text-slate-500">{{ __('Cómo obtener estas credenciales') }}</p>
+                            <ol class="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-300">
+                                @foreach($provider['steps'] as $step)
+                                    <li>{{ $step }}</li>
+                                @endforeach
+                            </ol>
+                        </div>
+                    @endif
 
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-        <h3 class="text-lg font-semibold text-slate-100">{{ __('Observabilidad') }}</h3>
-        <label class="mt-4 block text-xs uppercase text-slate-400">Sentry DSN
-            <input type="text" wire:model.defer="integrations.observability.SENTRY_LARAVEL_DSN" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-        </label>
-    </section>
+                    @if(!empty($provider['validation']))
+                        <div class="rounded-2xl border border-emerald-900/40 bg-emerald-950/30 px-4 py-3">
+                            <p class="text-[11px] uppercase font-semibold text-emerald-400">{{ __('Validación rápida') }}</p>
+                            <ul class="mt-2 space-y-2 text-sm text-emerald-100">
+                                @foreach($provider['validation'] as $check)
+                                    <li>
+                                        <p class="font-semibold">{{ $check['label'] ?? __('Prueba') }}</p>
+                                        @if(!empty($check['command']))
+                                            <code class="mt-1 inline-flex w-full overflow-x-auto rounded-xl border border-emerald-800/60 bg-emerald-900/40 px-3 py-1 text-xs font-mono text-emerald-200">
+                                                {{ $check['command'] }}
+                                            </code>
+                                        @endif
+                                        @if(!empty($check['description']))
+                                            <p class="text-xs text-emerald-200/80 mt-1">{{ $check['description'] }}</p>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if(!empty($provider['troubleshooting']))
+                        <div class="rounded-2xl border border-amber-900/50 bg-amber-950/20 px-4 py-3">
+                            <p class="text-[11px] uppercase font-semibold text-amber-400">{{ __('Tips de diagnóstico') }}</p>
+                            <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-100">
+                                @foreach($provider['troubleshooting'] as $tip)
+                                    <li>{{ $tip }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </article>
+            @endforeach
+        </section>
+    @endforeach
 </div>

@@ -80,9 +80,16 @@
             </div>
         </div>
 
-        @if($user->hasAnyRole(['teacher','teacher_admin']))
-            <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 space-y-4">
-                <p class="text-sm font-semibold text-slate-800">{{ __('Teacher profile') }}</p>
+        @php($canEditTeacherFields = $user->hasAnyRole(['teacher','teacher_admin','Profesor']))
+        <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 space-y-4">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-semibold text-slate-800">Teacher profile</p>
+                @unless($canEditTeacherFields)
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Disponible para Teacher Admin') }}</span>
+                @endunless
+            </div>
+
+            @if($canEditTeacherFields)
                 <div>
                     <x-input-label for="headline" :value="__('Headline')" />
                     <x-text-input id="headline" name="headline" type="text" class="mt-1 block w-full" :value="old('headline', $user->headline)" />
@@ -124,8 +131,12 @@
                     <textarea id="teacher_notes" name="teacher_notes" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('teacher_notes', $user->teacher_notes) }}</textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('teacher_notes')" />
                 </div>
-            </div>
-        @endif
+            @else
+                <p class="text-xs text-slate-500">
+                    {{ __('Esta sección se activa automáticamente cuando el usuario tiene rol Teacher Admin o Profesor. Solicita acceso al equipo académico si necesitas completar tu bio docente.') }}
+                </p>
+            @endif
+        </div>
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>

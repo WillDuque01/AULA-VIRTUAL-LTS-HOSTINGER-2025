@@ -12,6 +12,7 @@ use App\Models\PracticePackage;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -82,6 +83,8 @@ class CourseBuilder extends Component
             'course_id' => $this->course->id,
             'title' => 'Nuevo capítulo',
             'position' => $nextPosition,
+            'status' => 'published',
+            'created_by' => Auth::id(),
         ]);
 
         $this->refreshState(true);
@@ -106,6 +109,8 @@ class CourseBuilder extends Component
             'position' => $nextPosition,
             'config' => $defaultConfig,
             'locked' => false,
+            'status' => 'published',
+            'created_by' => Auth::id(),
         ]);
 
         $this->refreshState(true);
@@ -474,12 +479,14 @@ class CourseBuilder extends Component
                 'id' => $chapter->id,
                 'title' => $chapter->title,
                 'position' => $chapter->position,
+                'status' => $chapter->status,
                 'lessons' => $chapter->lessons->map(function (Lesson $lesson) use ($assignmentStats, $practiceMeta, $packMeta) {
                     $config = $lesson->config ?? [];
                     $assignmentId = $lesson->assignment?->id;
 
                     return [
                         'id' => $lesson->id,
+                        'status' => $lesson->status,
                         'type' => $lesson->type,
                         'title' => data_get($config, 'title', "Lección #{$lesson->position}"),
                         'locked' => (bool) $lesson->locked,

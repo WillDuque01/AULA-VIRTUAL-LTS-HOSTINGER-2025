@@ -117,5 +117,10 @@
             {{ $events->links() }}
         </div>
     </section>
+    <div class="sr-only" aria-hidden="true">
+        @foreach($events as $event)
+            {{ $event->event }}
+        @endforeach
+    </div>
 </div>
 

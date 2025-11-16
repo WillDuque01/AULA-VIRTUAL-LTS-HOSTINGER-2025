@@ -9,7 +9,17 @@ class Chapter extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['course_id','title','position'];
+    protected $fillable = [
+        'course_id',
+        'title',
+        'position',
+        'status',
+        'created_by',
+    ];
+
+    protected $attributes = [
+        'status' => 'published',
+    ];
 
     public function course()
     {
@@ -19,6 +29,16 @@ class Chapter extends Model
     public function lessons()
     {
         return $this->hasMany(Lesson::class)->orderBy('position');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 }
 

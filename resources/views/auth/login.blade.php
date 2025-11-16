@@ -1,9 +1,54 @@
+@php
+    use Illuminate\Support\Facades\Route;
+
+    $currentLocale = request()->route('locale') ?? app()->getLocale();
+    $alternateLocale = $currentLocale === 'es' ? 'en' : 'es';
+    $routeParameters = request()->route()?->parameters() ?? [];
+    $alternateRoute = route(Route::currentRouteName(), array_merge($routeParameters, ['locale' => $alternateLocale]));
+
+    $roleMessages = [
+        'admin' => __('Accede al panel administrativo para gestionar integraciones, DataPorter y branding.'),
+        'teacher_admin' => __('Administra cohortes, aprueba contenido y coordina a tu equipo docente.'),
+        'teacher' => __('Inicia sesión para enviar propuestas y gestionar tus módulos asignados.'),
+        'student' => __('Ingresa para continuar tu progreso, prácticas y packs recomendados.'),
+    ];
+    $roleLabels = [
+        'admin' => 'Admin',
+        'teacher_admin' => 'Teacher Admin',
+        'teacher' => 'Teacher Admin',
+        'student' => 'Student',
+    ];
+@endphp
+
 <x-guest-layout>
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Idioma') }}</p>
+            <div class="mt-2 flex items-center gap-2 text-sm">
+                <span class="inline-flex rounded-full bg-slate-900/10 px-3 py-1 font-semibold text-slate-700">
+                    {{ strtoupper($currentLocale) }}
+                </span>
+                <a href="{{ $alternateRoute }}"
+                   class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:border-slate-400 hover:text-slate-700">
+                    {{ __('Cambiar a :locale', ['locale' => strtoupper($alternateLocale)]) }}
+                </a>
+            </div>
+        </div>
+
+        @if(!empty($targetRole) && isset($roleMessages[$targetRole]))
+            <div class="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-900 max-w-md">
+                <p class="font-semibold">{{ __('Modo :role', ['role' => $roleLabels[$targetRole] ?? ucfirst($targetRole)]) }}</p>
+                <p class="mt-1 text-indigo-800">{{ $roleMessages[$targetRole] }}</p>
+            </div>
+        @endif
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login', array_merge($routeParameters, ['locale' => $currentLocale])) }}">
         @csrf
+        <input type="hidden" name="target_role" value="{{ $targetRole }}">
 
         <!-- Email Address -->
         <div>

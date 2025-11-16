@@ -48,6 +48,10 @@ class Player extends Component
     public function mount(Lesson $lesson): void
     {
         $this->lesson = $lesson;
+        $user = Auth::user();
+        if ($lesson->status !== 'published' && ! $user?->hasAnyRole(['Admin', 'teacher_admin', 'teacher'])) {
+            abort(403, __('Esta lección está pendiente de publicación.'));
+        }
         $this->lesson->loadMissing([
             'assignment',
             'chapter.course.chapters.lessons.assignment',

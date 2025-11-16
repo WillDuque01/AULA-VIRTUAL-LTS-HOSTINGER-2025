@@ -106,6 +106,12 @@
         @forelse($state['chapters'] as $chapterIndex => $chapter)
             @php
                 $chapterMetrics = $metrics['chapters'][$chapter['id']] ?? null;
+                $chapterStatus = $chapter['status'] ?? 'published';
+                $chapterStatusClasses = match($chapterStatus) {
+                    'pending' => 'border-amber-200 bg-amber-50 text-amber-700',
+                    'rejected' => 'border-rose-200 bg-rose-50 text-rose-700',
+                    default => 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                };
             @endphp
             <div class="bg-white border border-gray-200 rounded-2xl shadow-lg shadow-slate-100/60 p-4 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
@@ -127,6 +133,9 @@
                             @error("state.chapters.$chapterIndex.title")
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
+                            <span class="mt-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold {{ $chapterStatusClasses }}">
+                                {{ __('Estado: :status', ['status' => __($chapterStatus)]) }}
+                            </span>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
@@ -165,6 +174,12 @@
                         @php
                             $isFocused = $focus && data_get($focus, 'lesson.id') === $lesson['id'];
                             $isSaving = ($savingLessonId ?? null) === ($lesson['id'] ?? null);
+                            $lessonStatus = $lesson['status'] ?? 'published';
+                            $lessonStatusClasses = match($lessonStatus) {
+                                'pending' => 'border-amber-200 bg-amber-50 text-amber-700',
+                                'rejected' => 'border-rose-200 bg-rose-50 text-rose-700',
+                                default => 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                            };
                         @endphp
                         <div @class([
                                 'relative border rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent transition data-[state=saving]:opacity-80',
@@ -202,6 +217,9 @@
                                         @error("state.chapters.$chapterIndex.lessons.$lessonIndex.title")
                                             <span class="text-xs text-red-500">{{ $message }}</span>
                                         @enderror
+                                        <span class="mt-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold {{ $lessonStatusClasses }}">
+                                            {{ __('Estado: :status', ['status' => __($lessonStatus)]) }}
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-4 text-sm">

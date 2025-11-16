@@ -24,6 +24,9 @@ use App\Livewire\Student\MessageCenter as StudentMessageCenter;
 use App\Livewire\Student\DiscordPracticeBrowser;
 use App\Livewire\Professor\DiscordPracticePlanner;
 use App\Livewire\Professor\PracticePackagesManager;
+use App\Livewire\Teacher\Dashboard as TeacherDashboard;
+use App\Livewire\Admin\TeacherManager;
+use App\Livewire\Admin\TeacherSubmissionsHub;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +48,22 @@ Route::prefix('{locale}')
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->middleware(['auth', 'verified'])->name('dashboard');
+
+        Route::get('/admin/dashboard', function () {
+            return view('dashboard');
+        })->middleware(['auth', 'verified', 'role:Admin'])->name('dashboard.admin');
+
+        Route::get('/teacher/dashboard', TeacherDashboard::class)
+            ->middleware(['auth', 'verified', 'role:teacher'])
+            ->name('dashboard.teacher');
+
+        Route::get('/teacher-admin/dashboard', function () {
+            return view('dashboard');
+        })->middleware(['auth', 'verified', 'role:teacher_admin|Profesor'])->name('dashboard.teacher-admin');
+
+        Route::get('/student/dashboard', function () {
+            return view('dashboard');
+        })->middleware(['auth', 'verified', 'role:student_free|student_paid|student_vip'])->name('dashboard.student');
 
         Route::middleware('auth')->group(function (): void {
             Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -94,7 +113,7 @@ Route::prefix('{locale}')
                 ->name('admin.messages');
 
             Route::get('/admin/integrations/outbox', IntegrationOutbox::class)
-                ->middleware('can:manage-settings')
+                ->middleware(['can:manage-settings', 'append.outbox.events'])
                 ->name('admin.integrations.outbox');
 
             Route::get('/admin/data-porter', DataPorterHub::class)
@@ -103,6 +122,14 @@ Route::prefix('{locale}')
             Route::get('/admin/data-porter/export', DataPorterExportController::class)
                 ->middleware('signed')
                 ->name('admin.data-porter.export');
+
+            Route::get('/admin/teachers', TeacherManager::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.teachers');
+
+            Route::get('/admin/teacher-submissions', TeacherSubmissionsHub::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.teacher-submissions');
 
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')

@@ -72,6 +72,18 @@ class User extends Authenticatable
         return $this->hasOne(UserNotificationPreference::class);
     }
 
+    public function teachingCourses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'course_teacher', 'teacher_id', 'course_id')
+            ->withPivot(['assigned_by'])
+            ->withTimestamps();
+    }
+
+    public function teacherSubmissions(): HasMany
+    {
+        return $this->hasMany(TeacherSubmission::class);
+    }
+
     public function tiers(): BelongsToMany
     {
         return $this->belongsToMany(Tier::class)

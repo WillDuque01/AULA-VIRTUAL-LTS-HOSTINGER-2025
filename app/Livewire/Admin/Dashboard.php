@@ -2,15 +2,22 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Chapter;
 use App\Models\Certificate;
 use App\Models\CertificateVerificationLog;
 use App\Models\IntegrationEvent;
+use App\Models\Lesson;
 use App\Models\PaymentEvent;
+use App\Models\PracticePackage;
 use App\Models\Subscription;
+use App\Models\TeacherSubmission;
 use App\Models\User;
 use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
+use App\Support\Guides\IntegrationPlaybook;
+use App\Support\Guides\GuideRegistry;
 use App\Support\Integrations\WhatsAppMetrics;
+use App\Support\Teachers\TeacherPerformance;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -59,6 +66,35 @@ class Dashboard extends Component
         'contexts' => [],
     ];
 
+    public array $guideContext = [];
+
+    public array $integrationPlaybook = [];
+
+    public int $pendingTeacherSubmissions = 0;
+
+    public array $pendingContent = [
+        'modules' => 0,
+        'lessons' => 0,
+        'packs' => 0,
+    ];
+
+    public array $pendingApprovals = [
+        'submissions' => 0,
+        'modules' => 0,
+        'lessons' => 0,
+        'packs' => 0,
+    ];
+
+    public Collection $teacherBacklog;
+
+    public Collection $approvalTrend;
+
+    public array $contentStatusTotals = [
+        'modules' => [],
+        'lessons' => [],
+        'packs' => [],
+    ];
+
     public function mount(): void
     {
         $this->revenueTrend = collect();
@@ -68,7 +104,11 @@ class Dashboard extends Component
         $this->topStreaks = collect();
         $this->recentCertificates = collect();
         $this->recentVerifications = collect();
+        $this->teacherBacklog = collect();
+        $this->approvalTrend = collect();
         $this->loadMetrics();
+        $this->guideContext = GuideRegistry::context('admin.dashboard');
+        $this->integrationPlaybook = IntegrationPlaybook::grouped('admin');
     }
 
     private function loadMetrics(): void
@@ -115,11 +155,34 @@ class Dashboard extends Component
         $this->recentCertificates = $this->loadRecentCertificates();
         $this->recentVerifications = $this->loadRecentVerifications();
         $this->whatsappStats = WhatsAppMetrics::summary();
+        $this->pendingTeacherSubmissions = TeacherSubmission::where('status', 'pending')->count();
+        $this->pendingContent = [
+            'modules' => Chapter::where('status', 'pending')->count(),
+            'lessons' => Lesson::where('status', 'pending')->count(),
+            'packs' => PracticePackage::where('status', 'pending')->count(),
+        ];
+
+        $this->pendingApprovals = [
+            'submissions' => $this->pendingTeacherSubmissions,
+            'modules' => $this->pendingContent['modules'],
+            'lessons' => $this->pendingContent['lessons'],
+            'packs' => $this->pendingContent['packs'],
+        ];
+
+        $this->teacherBacklog = TeacherPerformance::backlogByTeacher();
+        $this->approvalTrend = TeacherPerformance::statusTrend();
+        $this->contentStatusTotals = TeacherPerformance::contentStatusTotals();
     }
 
     public function render()
     {
-        return view('livewire.admin.dashboard');
+        return view('livewire.admin.dashboard', [
+            'guideContext' => $this->guideContext,
+            'pendingApprovals' => $this->pendingApprovals,
+            'teacherBacklog' => $this->teacherBacklog,
+            'approvalTrend' => $this->approvalTrend,
+            'contentStatusTotals' => $this->contentStatusTotals,
+        ]);
     }
 
     private function loadOutboxStats(): array

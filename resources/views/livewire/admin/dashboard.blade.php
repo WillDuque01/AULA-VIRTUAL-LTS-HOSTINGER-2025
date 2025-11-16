@@ -1,4 +1,14 @@
 <div class="space-y-6">
+    @php
+        $adminGuides = $guideContext['cards'] ?? [];
+        $playbookGroups = $integrationPlaybook ?? [];
+    @endphp
+    @if(!empty($adminGuides))
+        <x-help.contextual-panel
+            :guides="$adminGuides"
+            :title="$guideContext['title'] ?? __('Guía rápida')"
+            :subtitle="$guideContext['subtitle'] ?? null" />
+    @endif
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Usuarios</p>
@@ -16,7 +26,98 @@
             <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Horas vistas</p>
             <p class="text-3xl font-bold text-slate-900 mt-2">{{ $metrics['watch_hours'] }}</p>
         </div>
+        <div class="bg-white border border-indigo-200 rounded-2xl p-4 shadow-sm sm:col-span-2 lg:col-span-1">
+            <p class="text-xs uppercase font-semibold text-indigo-600 tracking-wide">{{ __('Revisiones docentes') }}</p>
+            <p class="text-3xl font-bold text-slate-900 mt-2">{{ $pendingApprovals['submissions'] }}</p>
+            <p class="text-xs text-slate-500">{{ __('Propuestas pendientes de aprobación') }}</p>
+            <div class="mt-4 space-y-2 text-[11px] font-semibold text-slate-500">
+                @foreach(['modules' => 'Módulos', 'lessons' => 'Lecciones', 'packs' => 'Packs'] as $key => $label)
+                    @php
+                        $totals = $contentStatusTotals[$key] ?? [];
+                    @endphp
+                    <div class="flex flex-col rounded-2xl border border-slate-100 bg-white/60 px-3 py-2">
+                        <div class="flex items-center justify-between">
+                            <span>{{ $label }}</span>
+                            <span class="text-xs text-slate-400">{{ __('Pendientes: :count', ['count' => $pendingApprovals[$key] ?? 0]) }}</span>
+                        </div>
+                        <div class="mt-1 flex flex-wrap gap-2 text-[10px]">
+                            <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 px-2 py-0.5 text-emerald-700">
+                                {{ __('Publicados: :count', ['count' => $totals['published'] ?? 0]) }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 px-2 py-0.5 text-amber-700">
+                                {{ __('Pendientes: :count', ['count' => $totals['pending'] ?? 0]) }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 px-2 py-0.5 text-rose-700">
+                                {{ __('Rechazados: :count', ['count' => $totals['rejected'] ?? 0]) }}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <a href="{{ route('admin.teacher-submissions', ['locale' => app()->getLocale()]) }}"
+               class="mt-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
+                {{ __('Ir a la bandeja') }} →
+            </a>
+        </div>
     </div>
+
+    @if($teacherBacklog->isNotEmpty())
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('Backlog por docente') }}</p>
+                    <h4 class="text-lg font-semibold text-slate-900">{{ __('Top 5 con más pendientes') }}</h4>
+                </div>
+                <a href="{{ route('admin.teachers', ['locale' => app()->getLocale()]) }}"
+                   class="text-xs font-semibold text-blue-600 hover:underline">
+                    {{ __('Gestionar docentes') }} →
+                </a>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @foreach($teacherBacklog as $entry)
+                    <div class="px-6 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">
+                                {{ $entry->author?->name ?? ('Docente #'.$entry->user_id) }}
+                            </p>
+                            <p class="text-xs text-slate-500">{{ $entry->author?->email }}</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700">
+                                {{ __('Pendientes: :count', ['count' => $entry->pending]) }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                                {{ __('Aprobados: :count', ['count' => $entry->approved]) }}
+                            </span>
+                            <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-700">
+                                {{ __('Rechazados: :count', ['count' => $entry->rejected]) }}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    @if($approvalTrend->isNotEmpty())
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('Tendencia de envíos/aprobaciones (14d)') }}</p>
+            </div>
+            <div class="px-6 py-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm text-slate-600">
+                @foreach($approvalTrend as $entry)
+                    <div class="rounded-2xl border border-slate-100 bg-white/70 px-4 py-3">
+                        <p class="text-xs uppercase text-slate-400">{{ $entry['day'] }}</p>
+                        <div class="mt-2 flex flex-col gap-1 text-[12px] font-semibold">
+                            <span class="text-slate-700">{{ __('Enviadas: :count', ['count' => $entry['submitted']]) }}</span>
+                            <span class="text-emerald-600">{{ __('Aprobadas: :count', ['count' => $entry['approved']]) }}</span>
+                            <span class="text-rose-600">{{ __('Rechazadas: :count', ['count' => $entry['rejected']]) }}</span>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-1">
@@ -308,4 +409,63 @@
             @endforeach
         </div>
     </div>
+
+    @if(!empty($playbookGroups))
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('Playbook de integraciones') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('Checklist operativo') }}</h4>
+                <p class="text-xs text-slate-500">{{ __('Confirma qué servicios están listos antes de cada deploy.') }}</p>
+            </div>
+            <div class="divide-y divide-slate-100">
+                @foreach($playbookGroups as $group)
+                    <div class="px-6 py-3 bg-slate-50/60">
+                        <p class="text-[11px] uppercase font-semibold text-slate-500 tracking-[0.3em]">{{ $group['title'] }}</p>
+                    </div>
+                    @foreach($group['items'] as $item)
+                        <div class="px-6 py-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ $item['label'] }}</p>
+                                @if(!empty($item['status_hint']))
+                                    <p class="text-xs text-slate-500">{{ $item['status_hint'] }}</p>
+                                @endif
+                                @if(!empty($item['missing']))
+                                    <p class="text-xs text-amber-600 font-semibold">
+                                        {{ __('Variables pendientes: :vars', ['vars' => implode(', ', $item['missing'])]) }}
+                                    </p>
+                                @endif
+                                @if(!empty($item['next_steps']))
+                                    <ul class="mt-1 list-disc space-y-1 pl-4 text-xs text-slate-500">
+                                        @foreach($item['next_steps'] as $step)
+                                            <li>{{ $step }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                            <div class="flex flex-col items-start gap-2 lg:items-end">
+                                <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ $item['ok'] ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                                    {{ $item['status'] }}
+                                </span>
+                                @if(!empty($item['tokens']))
+                                    <div class="flex flex-wrap gap-2 text-[11px] text-slate-500">
+                                        @foreach($item['tokens'] as $token)
+                                            <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                                {{ $token['label'] ?? __('ENV') }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                @if(!empty($item['docs']))
+                                    <a href="{{ $item['docs'] }}" target="_blank" rel="noopener"
+                                       class="inline-flex items-center gap-2 rounded-full border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-700 hover:border-blue-300">
+                                        {{ __('Ver documentación') }} ↗
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                @endforeach
+            </div>
+        </div>
+    @endif
 </div>

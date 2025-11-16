@@ -10,12 +10,14 @@
             @php($user = auth()->user())
             @if($user && $user->hasRole('Admin'))
                 <livewire:admin.dashboard />
-            @elseif($user && $user->hasRole('Profesor'))
+            @elseif($user && $user->hasAnyRole(['teacher_admin', 'Profesor']))
                 <livewire:professor.dashboard />
                 <div class="mt-10 space-y-10">
                     <livewire:professor.discord-practice-planner />
                     <livewire:professor.practice-packages-manager />
                 </div>
+            @elseif($user && $user->hasRole('teacher'))
+                <livewire:teacher.dashboard />
             @else
                 <livewire:student.dashboard />
             @endif

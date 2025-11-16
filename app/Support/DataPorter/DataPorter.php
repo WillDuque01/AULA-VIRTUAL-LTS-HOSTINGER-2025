@@ -2,8 +2,10 @@
 
 namespace App\Support\DataPorter;
 
+use App\Models\CourseTeacher;
 use App\Models\StudentActivitySnapshot;
 use App\Models\TeacherActivitySnapshot;
+use App\Models\TeacherSubmission;
 use App\Models\User;
 use App\Models\VideoPlayerEvent;
 use App\Support\Analytics\TelemetryRecorder;
@@ -269,6 +271,61 @@ class DataPorter
                         ],
                     ];
                 },
+            ],
+            'teacher_submissions' => [
+                'label' => 'Propuestas docentes',
+                'description' => 'Historial de módulos, lecciones y packs enviados por los docentes.',
+                'model' => TeacherSubmission::class,
+                'date_column' => 'created_at',
+                'order_column' => 'created_at',
+                'with' => ['author:id,name,email', 'course:id,slug'],
+                'filters' => [
+                    'date_from' => ['label' => 'Desde', 'type' => 'date', 'column' => 'created_at', 'operator' => '>='],
+                    'date_to' => ['label' => 'Hasta', 'type' => 'date', 'column' => 'created_at', 'operator' => '<='],
+                    'status' => ['label' => 'Estado', 'type' => 'text', 'column' => 'status'],
+                    'type' => ['label' => 'Tipo', 'type' => 'text', 'column' => 'type'],
+                    'course_id' => ['label' => 'ID curso', 'type' => 'number', 'column' => 'course_id'],
+                    'user_id' => ['label' => 'ID docente', 'type' => 'number', 'column' => 'user_id'],
+                ],
+                'columns' => [
+                    'created_at' => fn (TeacherSubmission $submission) => optional($submission->created_at)->toIso8601String(),
+                    'teacher_id' => 'user_id',
+                    'teacher_email' => fn (TeacherSubmission $submission) => $submission->author?->email,
+                    'course_id' => 'course_id',
+                    'course_slug' => fn (TeacherSubmission $submission) => $submission->course?->slug,
+                    'type' => 'type',
+                    'status' => 'status',
+                    'feedback' => 'feedback',
+                    'result_type' => 'result_type',
+                    'result_id' => 'result_id',
+                ],
+                'teacher_allowed' => true,
+                'teacher_scope_fields' => ['course_id'],
+                'importable' => false,
+            ],
+            'course_teacher_assignments' => [
+                'label' => 'Asignaciones curso-docente',
+                'description' => 'Listado del pivote course_teacher con trazabilidad de asignadores.',
+                'model' => CourseTeacher::class,
+                'date_column' => 'created_at',
+                'order_column' => 'created_at',
+                'with' => ['course:id,slug', 'teacher:id,name,email', 'assigner:id,name,email'],
+                'filters' => [
+                    'course_id' => ['label' => 'ID curso', 'type' => 'number', 'column' => 'course_id'],
+                    'teacher_id' => ['label' => 'ID docente', 'type' => 'number', 'column' => 'teacher_id'],
+                ],
+                'columns' => [
+                    'assigned_at' => fn (CourseTeacher $assignment) => optional($assignment->created_at)->toIso8601String(),
+                    'course_id' => 'course_id',
+                    'course_slug' => fn (CourseTeacher $assignment) => $assignment->course?->slug,
+                    'teacher_id' => 'teacher_id',
+                    'teacher_email' => fn (CourseTeacher $assignment) => $assignment->teacher?->email,
+                    'assigned_by' => 'assigned_by',
+                    'assigner_email' => fn (CourseTeacher $assignment) => $assignment->assigner?->email,
+                ],
+                'teacher_allowed' => true,
+                'teacher_scope_fields' => ['course_id'],
+                'importable' => false,
             ],
         ];
 

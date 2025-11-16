@@ -10,11 +10,23 @@ class Lesson extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['chapter_id','type','config','position','locked'];
+    protected $fillable = [
+        'chapter_id',
+        'type',
+        'config',
+        'position',
+        'locked',
+        'status',
+        'created_by',
+    ];
 
     protected $casts = [
         'config' => 'array',
         'locked' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'status' => 'published',
     ];
 
     protected static array $unlockingStates = [];
@@ -88,6 +100,16 @@ class Lesson extends Model
     public function discordPractices()
     {
         return $this->hasMany(DiscordPractice::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 }
 

@@ -33,7 +33,8 @@ Componente: `App\Livewire\Admin\DataPorterHub`.
 1. **Eventos del reproductor** (`video_player_events`): filtros por fecha, curso, lección, evento y proveedor.
 2. **Snapshots de estudiantes** (`student_activity_snapshots`): filtros por fecha, curso, lección, pack y categoría. Importable.
 3. **Snapshots de Teacher Admin** (`teacher_activity_snapshots`): filtros por fecha/curso/lección/categoría. Solo Admin (teacher_admin no puede exportar este dataset). Importable.
-4. **(Próximos)** Dataset de prácticas/pedidos: utilizará snapshots `practice_reservation` y `practice_pack_purchase` como base para CSV/JSON específicos.
+4. **Propuestas docentes** (`teacher_submissions`): historial completo de módulos/lecciones/packs enviados. Admin y Teacher Admin pueden exportarlo; estos últimos deben indicar `course_id`.
+5. **Asignaciones curso-docente** (`course_teacher_assignments`): estado actual del pivote `course_teacher` con trazabilidad del asignador. Requiere `course_id` para Teacher Admin.
 
 ### Flujo de exportación
 1. Seleccionar dataset y formato (CSV/JSON).
