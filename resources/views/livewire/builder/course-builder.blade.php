@@ -1,3 +1,13 @@
+@php
+    $currentLocale = app()->getLocale();
+    $plannerRoute = \Illuminate\Support\Facades\Route::has('professor.discord-practices')
+        ? route('professor.discord-practices', ['locale' => $currentLocale])
+        : null;
+    $packsManagerRoute = \Illuminate\Support\Facades\Route::has('professor.practice-packs')
+        ? route('professor.practice-packs', ['locale' => $currentLocale])
+        : null;
+@endphp
+
 <div class="space-y-6" data-builder-root>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -13,7 +23,9 @@
     </div>
 
     <div class="grid gap-3 md:grid-cols-3">
-        @php($totals = data_get($metrics, 'totals', []))
+        @php
+            $totals = data_get($metrics, 'totals', []);
+        @endphp
         <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <p class="text-xs uppercase font-semibold text-blue-500 tracking-wide">Capítulos</p>
             <p class="mt-1 text-2xl font-bold text-blue-700"
@@ -50,7 +62,9 @@
 
     <div class="space-y-4" data-sortable-chapters>
         @forelse($state['chapters'] as $chapterIndex => $chapter)
-            @php($chapterMetrics = $metrics['chapters'][$chapter['id']] ?? null)
+            @php
+                $chapterMetrics = $metrics['chapters'][$chapter['id']] ?? null;
+            @endphp
             <div class="bg-white border border-gray-200 rounded-2xl shadow-lg shadow-slate-100/60 p-4 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex items-center gap-3">
@@ -102,8 +116,10 @@
 
                 <div class="space-y-3" data-sortable-lessons>
                     @forelse($chapter['lessons'] as $lessonIndex => $lesson)
-                        @php($isFocused = $focus && data_get($focus, 'lesson.id') === $lesson['id'])
-                        @php($isSaving = ($savingLessonId ?? null) === ($lesson['id'] ?? null))
+                        @php
+                            $isFocused = $focus && data_get($focus, 'lesson.id') === $lesson['id'];
+                            $isSaving = ($savingLessonId ?? null) === ($lesson['id'] ?? null);
+                        @endphp
                         <div @class([
                                 'relative border rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent transition data-[state=saving]:opacity-80',
                                 'border-indigo-200 ring-2 ring-indigo-200/80 bg-white shadow-lg shadow-indigo-100/60' => $isFocused,
@@ -164,8 +180,72 @@
                                 </div>
                             </div>
 
+                            @php
+                                $practiceMeta = $lesson['practice_meta'] ?? null;
+                                $packMeta = $lesson['pack_meta'] ?? null;
+                                $nextPracticeLabel = $practiceMeta && ! empty($practiceMeta['next_start'])
+                                    ? \Illuminate\Support\Carbon::parse($practiceMeta['next_start'])->translatedFormat('d M H:i')
+                                    : null;
+                            @endphp
+
+                            <div class="mt-3 rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3 text-[11px] font-semibold text-slate-600">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    @if($practiceMeta)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-3 py-1 text-indigo-700">
+                                            🎙️ {{ __('Prácticas Discord') }} · {{ $practiceMeta['total'] }}
+                                            @if($nextPracticeLabel)
+                                                · {{ $nextPracticeLabel }}
+                                            @endif
+                                            @if($practiceMeta['requires_pack'] ?? false)
+                                                · {{ __('Pack requerido') }}
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-3 py-1 text-slate-400">
+                                            {{ __('Sin prácticas programadas') }}
+                                        </span>
+                                    @endif
+
+                                    @if($packMeta)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700">
+                                            💼 {{ $packMeta['title'] ?? __('Pack asignado') }}
+                                            @if(!empty($packMeta['sessions']))
+                                                · {{ $packMeta['sessions'] }} {{ __('sesiones') }}
+                                            @endif
+                                            @if(!empty($packMeta['price']))
+                                                · ${{ number_format($packMeta['price'], 0) }} {{ $packMeta['currency'] }}
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-3 py-1 text-slate-400">
+                                            {{ __('Sin pack vinculado') }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold text-slate-500">
+                                    @if($plannerRoute)
+                                        <a href="{{ $plannerRoute }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-3 py-1 text-indigo-700 hover:border-indigo-300 hover:text-indigo-800">
+                                            {{ __('Abrir planner Discord') }} ↗
+                                        </a>
+                                    @endif
+                                    @if($packsManagerRoute)
+                                        <a href="{{ $packsManagerRoute }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700 hover:border-emerald-300 hover:text-emerald-800">
+                                            {{ __('Gestionar packs') }} ↗
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+
                         @if(($lesson['type'] ?? '') === 'assignment')
-                            @php($assignmentStats = $lesson['stats'] ?? ['pending' => 0, 'approved' => 0, 'rejected' => 0])
+                            @php
+                                $assignmentStats = $lesson['stats'] ?? ['pending' => 0, 'approved' => 0, 'rejected' => 0];
+                            @endphp
                             <div class="mt-3 space-y-2">
                                 <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
                                     <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
@@ -193,14 +273,16 @@
                                 <p class="text-[10px] uppercase tracking-wide text-slate-400">
                                     {{ __('builder.assignments.stats.hint') }}
                                 </p>
-                                @php($builderWhatsLink = \App\Support\Integrations\WhatsAppLink::assignment(
-                                    [
-                                        'title' => $lesson['title'] ?? 'Tarea',
-                                        'status' => 'pending',
-                                    ],
-                                    'builder.course-builder',
-                                    ['lesson_id' => $lesson['id']]
-                                ))
+                                @php
+                                    $builderWhatsLink = \App\Support\Integrations\WhatsAppLink::assignment(
+                                        [
+                                            'title' => $lesson['title'] ?? 'Tarea',
+                                            'status' => 'pending',
+                                        ],
+                                        'builder.course-builder',
+                                        ['lesson_id' => $lesson['id']]
+                                    );
+                                @endphp
                                 @if($builderWhatsLink)
                                     <a href="{{ $builderWhatsLink }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-400">
                                         {{ __('whatsapp.assignment.followup_cta') }} ↗
@@ -360,8 +442,10 @@
         @endforelse
     </div>
     @if($focus)
-        @php($focusLesson = $focus['lesson'] ?? [])
-        @php($focusChapter = $focus['chapter'] ?? [])
+        @php
+            $focusLesson = $focus['lesson'] ?? [];
+            $focusChapter = $focus['chapter'] ?? [];
+        @endphp
         <div class="fixed bottom-6 right-6 w-full max-w-xl rounded-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-500/20 backdrop-blur"
              wire:key="builder-focus-panel">
             <div class="p-5 space-y-4">

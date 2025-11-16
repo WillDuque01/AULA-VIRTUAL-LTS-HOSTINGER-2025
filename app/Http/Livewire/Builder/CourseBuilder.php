@@ -6,7 +6,9 @@ use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
 use App\Models\Course;
+use App\Models\DiscordPractice;
 use App\Models\Lesson;
+use App\Models\PracticePackage;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -333,13 +335,19 @@ class CourseBuilder extends Component
             ->get();
 
         $assignmentStats = $this->resolveAssignmentStats($chapters);
+        $lessonIds = $chapters
+            ->flatMap(fn (Chapter $chapter) => $chapter->lessons->pluck('id'))
+            ->filter()
+            ->values();
+        $practiceMeta = $this->resolvePracticeMeta($lessonIds);
+        $packMeta = $this->resolvePackMeta($lessonIds);
 
-        $this->state['chapters'] = $chapters->map(function (Chapter $chapter) use ($assignmentStats) {
+        $this->state['chapters'] = $chapters->map(function (Chapter $chapter) use ($assignmentStats, $practiceMeta, $packMeta) {
             return [
                 'id' => $chapter->id,
                 'title' => $chapter->title,
                 'position' => $chapter->position,
-                'lessons' => $chapter->lessons->map(function (Lesson $lesson) use ($assignmentStats) {
+                'lessons' => $chapter->lessons->map(function (Lesson $lesson) use ($assignmentStats, $practiceMeta, $packMeta) {
                     $config = $lesson->config ?? [];
                     $assignmentId = $lesson->assignment?->id;
 
@@ -372,6 +380,8 @@ class CourseBuilder extends Component
                         'stats' => $assignmentId
                             ? ($assignmentStats[$assignmentId] ?? ['pending' => 0, 'approved' => 0, 'rejected' => 0])
                             : null,
+                        'practice_meta' => $practiceMeta[(int) $lesson->id] ?? null,
+                        'pack_meta' => $packMeta[(int) $lesson->id] ?? null,
                     ];
                 })->toArray(),
             ];
@@ -393,6 +403,85 @@ class CourseBuilder extends Component
         }
 
         $this->dispatch('builder:refresh-sortables');
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection|array  $lessonIds
+     */
+    private function resolvePracticeMeta($lessonIds): array
+    {
+        $ids = collect($lessonIds)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        $practices = DiscordPractice::query()
+            ->whereIn('lesson_id', $ids)
+            ->where('status', 'scheduled')
+            ->where('start_at', '>=', now()->subDays(7))
+            ->orderBy('start_at')
+            ->get()
+            ->groupBy('lesson_id')
+            ->map(function (Collection $items) {
+                /** @var \App\Models\DiscordPractice|null $next */
+                $next = $items->sortBy('start_at')->first();
+
+                return [
+                    'total' => $items->count(),
+                    'requires_pack' => $items->contains(fn (DiscordPractice $practice) => (bool) $practice->requires_package),
+                    'next_start' => optional($next?->start_at)->toDateTimeString(),
+                ];
+            });
+
+        return $practices->toArray();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection|array  $lessonIds
+     */
+    private function resolvePackMeta($lessonIds): array
+    {
+        $ids = collect($lessonIds)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        $packages = PracticePackage::query()
+            ->where('status', 'published')
+            ->whereIn('lesson_id', $ids)
+            ->orderByDesc('updated_at')
+            ->get()
+            ->groupBy('lesson_id')
+            ->map(function (Collection $items) {
+                /** @var PracticePackage|null $primary */
+                $primary = $items->first();
+                if (! $primary) {
+                    return null;
+                }
+
+                return [
+                    'id' => $primary->id,
+                    'title' => $primary->title,
+                    'sessions' => (int) $primary->sessions_count,
+                    'price' => (float) $primary->price_amount,
+                    'currency' => $primary->price_currency,
+                    'updated_at' => optional($primary->updated_at)->toDateTimeString(),
+                ];
+            })
+            ->filter()
+            ->toArray();
+
+        return $packages;
     }
 
     private function resequenceChapters(): void
