@@ -10,6 +10,48 @@
             Pedir más fechas
         </button>
     </div>
+    @if($packReminder)
+        <div class="px-6 py-4 border-t border-b border-amber-100 bg-amber-50/80 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-amber-600 tracking-wide">Pack recomendado</p>
+                <p class="text-sm text-slate-800 font-semibold">
+                    {{ $packReminder['practice_title'] }}
+                    @if($packReminder['start_at'])
+                        · {{ $packReminder['start_at']->translatedFormat('d M H:i') }}
+                    @endif
+                </p>
+                <p class="text-xs text-slate-600">
+                    {{ $packReminder['pack']['title'] }} · {{ $packReminder['pack']['sessions'] }} {{ __('sesiones') }}
+                    @if($packReminder['pack']['price_amount'])
+                        · ${{ number_format($packReminder['pack']['price_amount'], 0) }} {{ $packReminder['pack']['currency'] }}
+                    @endif
+                    @if($packReminder['pack']['price_per_session'])
+                        (≈ ${{ number_format($packReminder['pack']['price_per_session'], 1) }}/sesión)
+                    @endif
+                </p>
+                <p class="text-[11px] text-amber-700 font-semibold mt-1">
+                    {{ $packReminder['pack']['requires_package']
+                        ? __('Necesitas un pack activo para reservar este slot.')
+                        : __('Activa tu pack para tener prioridad permanente en la agenda.') }}
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                @if($packReminder['packs_url'])
+                    <a href="{{ $packReminder['packs_url'] }}"
+                       target="_blank"
+                       rel="noopener"
+                       class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800">
+                        {{ __('Ver packs') }} ↗
+                    </a>
+                @endif
+                <button type="button"
+                        wire:click="dismissPackReminder"
+                        class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400">
+                    {{ __('Descartar') }}
+                </button>
+            </div>
+        </div>
+    @endif
     <div class="px-6 py-5 space-y-4">
         <label class="space-y-1 text-sm text-slate-600">
             <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Lección</span>

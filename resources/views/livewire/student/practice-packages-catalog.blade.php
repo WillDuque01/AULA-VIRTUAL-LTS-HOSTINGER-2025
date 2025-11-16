@@ -1,4 +1,4 @@
-<div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+<div id="practice-packs" class="bg-white border border-slate-200 rounded-2xl shadow-sm">
     <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div>
             <p class="text-xs uppercase font-semibold text-emerald-500 tracking-[0.2em]">Prácticas premium</p>

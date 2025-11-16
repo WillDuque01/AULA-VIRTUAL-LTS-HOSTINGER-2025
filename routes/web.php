@@ -18,6 +18,7 @@ use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
+use App\Livewire\Student\DiscordPracticeBrowser;
 use App\Livewire\Professor\DiscordPracticePlanner;
 use App\Livewire\Professor\PracticePackagesManager;
 use Illuminate\Support\Facades\Broadcast;
@@ -96,6 +97,10 @@ Route::prefix('{locale}')
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')
                 ->name('student.messages');
+
+            Route::get('/student/practices', DiscordPracticeBrowser::class)
+                ->middleware('role:student_free|student_paid|student_vip')
+                ->name('student.discord-practices');
 
             Route::get('/professor/practices', DiscordPracticePlanner::class)
                 ->middleware('role:Profesor|teacher_admin')

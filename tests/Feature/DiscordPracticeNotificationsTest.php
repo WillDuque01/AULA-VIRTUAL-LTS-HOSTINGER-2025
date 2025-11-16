@@ -11,6 +11,7 @@ use App\Models\DiscordPractice;
 use App\Models\DiscordPracticeRequest;
 use App\Models\DiscordPracticeReservation;
 use App\Models\Lesson;
+use App\Models\PracticePackage;
 use App\Models\User;
 use App\Notifications\DiscordPracticeRequestEscalatedNotification;
 use App\Notifications\DiscordPracticeReservedNotification;
@@ -105,6 +106,19 @@ class DiscordPracticeNotificationsTest extends TestCase
         $watcherA = User::factory()->create();
         $watcherB = User::factory()->create();
 
+        $package = PracticePackage::create([
+            'creator_id' => $teacher->id,
+            'lesson_id' => $lesson->id,
+            'title' => 'Pack intensivo',
+            'subtitle' => '3 sesiones guiadas',
+            'description' => 'Incluye feedback y plan personalizado.',
+            'sessions_count' => 3,
+            'price_amount' => 90,
+            'price_currency' => 'USD',
+            'is_global' => true,
+            'status' => 'published',
+        ]);
+
         $practice = DiscordPractice::create([
             'lesson_id' => $lesson->id,
             'title' => 'Slot solicitado',
@@ -115,6 +129,8 @@ class DiscordPracticeNotificationsTest extends TestCase
             'capacity' => 5,
             'status' => 'scheduled',
             'created_by' => $teacher->id,
+            'practice_package_id' => $package->id,
+            'requires_package' => true,
         ]);
 
         DiscordPracticeRequest::create([
@@ -132,7 +148,16 @@ class DiscordPracticeNotificationsTest extends TestCase
         event(new DiscordPracticeScheduled($practice));
 
         Notification::assertSentTo($teacher, DiscordPracticeScheduledNotification::class);
-        Notification::assertSentTo([$watcherA, $watcherB], DiscordPracticeSlotAvailableNotification::class);
+        Notification::assertSentTo($watcherA, DiscordPracticeSlotAvailableNotification::class, function ($notification) use ($watcherA, $package) {
+            $payload = $notification->toArray($watcherA);
+            $this->assertEquals($package->id, data_get($payload, 'pack_recommendation.id'));
+            $this->assertTrue(data_get($payload, 'pack_recommendation.requires_package'));
+            $this->assertFalse(data_get($payload, 'pack_recommendation.has_order'));
+
+            return true;
+        });
+
+        Notification::assertSentTo($watcherB, DiscordPracticeSlotAvailableNotification::class);
 
         $this->assertDatabaseHas('discord_practice_requests', [
             'lesson_id' => $lesson->id,

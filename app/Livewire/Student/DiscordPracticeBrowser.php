@@ -9,10 +9,14 @@ use App\Models\DiscordPracticeRequest;
 use App\Models\DiscordPracticeReservation;
 use App\Models\Lesson;
 use App\Models\PracticePackageOrder;
+use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use App\Services\PracticePackageOrderService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Carbon;
 use Livewire\Component;
 
 class DiscordPracticeBrowser extends Component
@@ -23,6 +27,10 @@ class DiscordPracticeBrowser extends Component
     public ?int $selectedLesson = null;
 
     public array $statusMessages = [];
+
+    public ?array $packReminder = null;
+
+    public ?string $packNotificationId = null;
 
     public function mount(): void
     {
@@ -36,6 +44,7 @@ class DiscordPracticeBrowser extends Component
             ->values();
 
         $this->loadPractices();
+        $this->loadPackReminder();
     }
 
     public function updatedSelectedLesson(): void
@@ -95,6 +104,7 @@ class DiscordPracticeBrowser extends Component
 
         $this->statusMessages[$practice->id] = __('Reserva confirmada');
         $this->loadPractices();
+        $this->dismissPackReminder();
         $this->dispatch('practice-reserved');
     }
 
@@ -135,6 +145,21 @@ class DiscordPracticeBrowser extends Component
         $this->maybeEscalateRequests($lesson);
     }
 
+    public function dismissPackReminder(): void
+    {
+        if ($this->packNotificationId && auth()->check()) {
+            $notification = auth()->user()
+                ->notifications()
+                ->whereKey($this->packNotificationId)
+                ->first();
+
+            $notification?->markAsRead();
+        }
+
+        $this->packReminder = null;
+        $this->packNotificationId = null;
+    }
+
     private function loadPractices(): void
     {
         $query = DiscordPractice::with(['lesson.chapter.course'])
@@ -169,6 +194,56 @@ class DiscordPracticeBrowser extends Component
                     'practice_package_id' => $practice->practice_package_id,
                 ];
             });
+    }
+
+    private function loadPackReminder(): void
+    {
+        $user = auth()->user();
+        if (! $user || ! Schema::hasTable('notifications')) {
+            $this->packReminder = null;
+            $this->packNotificationId = null;
+
+            return;
+        }
+
+        /** @var DatabaseNotification|null $notification */
+        $notification = $user->unreadNotifications()
+            ->where('type', DiscordPracticeSlotAvailableNotification::class)
+            ->latest()
+            ->first();
+
+        if (! $notification) {
+            $this->packReminder = null;
+            $this->packNotificationId = null;
+
+            return;
+        }
+
+        $pack = data_get($notification->data, 'pack_recommendation');
+        if (! $pack || ($pack['has_order'] ?? false)) {
+            $this->packReminder = null;
+            $this->packNotificationId = null;
+
+            return;
+        }
+
+        $startAt = data_get($notification->data, 'start_at');
+
+        $this->packNotificationId = $notification->id;
+        $this->packReminder = [
+            'practice_title' => data_get($notification->data, 'title'),
+            'start_at' => $startAt ? Carbon::parse($startAt) : null,
+            'practice_url' => data_get($notification->data, 'practice_url'),
+            'packs_url' => data_get($notification->data, 'packs_url'),
+            'pack' => [
+                'title' => data_get($pack, 'title'),
+                'sessions' => data_get($pack, 'sessions'),
+                'price_amount' => data_get($pack, 'price_amount'),
+                'currency' => data_get($pack, 'currency'),
+                'price_per_session' => data_get($pack, 'price_per_session'),
+                'requires_package' => (bool) data_get($pack, 'requires_package'),
+            ],
+        ];
     }
 
     private function maybeEscalateRequests(int $lessonId): void
