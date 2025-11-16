@@ -90,7 +90,7 @@
                             @if($practice['requires_package'] && ! $practice['has_required_pack'])
                                 <p class="text-[11px] text-amber-600 font-semibold">{{ __('Necesitas un pack activo para reservar este slot.') }}</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <a href="{{ $packsUrl }}"
+                                    <a href="{{ $practice['pack_url'] ?? $packsUrl }}"
                                        target="_blank"
                                        rel="noopener"
                                        class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-600">

@@ -16,10 +16,16 @@ class PracticePackagesCatalog extends Component
     public ?int $checkoutPackageId = null;
     public bool $showCheckout = false;
 
-    public function mount(): void
+    public ?int $highlightPackageId = null;
+    public bool $autoOpenHighlight = false;
+
+    public function mount(?int $highlightPackageId = null, bool $autoOpenHighlight = false): void
     {
+        $this->highlightPackageId = $highlightPackageId;
+        $this->autoOpenHighlight = $autoOpenHighlight;
         $this->loadPackages();
         $this->loadOrders();
+        $this->maybeAutoOpenHighlight();
     }
 
     public function loadPackages(): void
@@ -109,6 +115,25 @@ class PracticePackagesCatalog extends Component
     public function render()
     {
         return view('livewire.student.practice-packages-catalog');
+    }
+
+    private function maybeAutoOpenHighlight(): void
+    {
+        if (! $this->highlightPackageId || ! $this->autoOpenHighlight) {
+            return;
+        }
+
+        if (! auth()->check()) {
+            return;
+        }
+
+        $packageExists = $this->packages->contains(fn ($package) => (int) $package->id === (int) $this->highlightPackageId);
+        if (! $packageExists) {
+            return;
+        }
+
+        $this->startCheckout($this->highlightPackageId);
+        $this->autoOpenHighlight = false;
     }
 }
 

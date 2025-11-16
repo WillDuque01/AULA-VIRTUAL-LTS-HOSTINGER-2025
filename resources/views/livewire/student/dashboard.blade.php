@@ -114,7 +114,9 @@
         </div>
     </div>
 
-    <livewire:student.practice-packages-catalog />
+    <livewire:student.practice-packages-catalog
+        :highlight-package-id="$highlightPackageId"
+        :auto-open-highlight="$autoOpenHighlight" />
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">

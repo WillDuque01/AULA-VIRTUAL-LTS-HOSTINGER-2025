@@ -30,13 +30,23 @@
                         __('Feedback accionable y seguimiento'),
                         __('Recordatorios automáticos + bonus PDF'),
                     ];
+                    $isHighlighted = $highlightPackageId === $package->id;
                 @endphp
-                <div class="rounded-2xl border border-slate-100 p-4 bg-gradient-to-b from-white to-slate-50 flex flex-col gap-4 shadow-sm ring-1 ring-transparent hover:ring-emerald-200 transition">
+                <div @class([
+                        'rounded-2xl border p-4 bg-gradient-to-b from-white to-slate-50 flex flex-col gap-4 shadow-sm transition',
+                        'border-emerald-200 ring-2 ring-emerald-200/70 shadow-emerald-100' => $isHighlighted,
+                        'border-slate-100 ring-1 ring-transparent hover:ring-emerald-200' => ! $isHighlighted,
+                    ])>
                     <div>
                         <p class="text-xs uppercase text-emerald-600 font-semibold tracking-wide">{{ $badge }}</p>
                         <h5 class="text-xl font-semibold text-slate-900 leading-snug">{{ $package->title }}</h5>
                         @if($package->subtitle)
                             <p class="text-sm text-slate-500">{{ $package->subtitle }}</p>
+                        @endif
+                        @if($isHighlighted)
+                            <span class="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                ✨ {{ __('Recomendado') }}
+                            </span>
                         @endif
                     </div>
                     <div class="flex items-baseline gap-2">

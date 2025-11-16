@@ -63,13 +63,24 @@ class Dashboard extends Component
 
     public ?string $practiceUrl = null;
 
+    public ?int $highlightPackageId = null;
+
+    public bool $autoOpenHighlight = false;
+
     public function mount(): void
     {
         $locale = request()->route('locale') ?? app()->getLocale();
-        $this->packsUrl = route('dashboard', ['locale' => $locale]).'#practice-packs';
+        $requestedPack = request()->integer('pack');
+
+        $this->packsUrl = $this->buildPackUrl();
         $this->practiceUrl = Route::has('student.discord-practices')
             ? route('student.discord-practices', ['locale' => $locale])
             : null;
+
+        if ($requestedPack) {
+            $this->highlightPackageId = $requestedPack;
+            $this->autoOpenHighlight = true;
+        }
 
         $this->upcomingLessons = collect();
         $this->gamificationFeed = collect();
@@ -188,7 +199,10 @@ class Dashboard extends Component
 
     public function render()
     {
-        return view('livewire.student.dashboard');
+        return view('livewire.student.dashboard', [
+            'highlightPackageId' => $this->highlightPackageId,
+            'autoOpenHighlight' => $this->autoOpenHighlight,
+        ]);
     }
 
     private function refreshCertificateState($user, int $percent): void
@@ -328,11 +342,13 @@ class Dashboard extends Component
         $startAt = data_get($notification->data, 'start_at');
 
         $this->packNotificationId = $notification->id;
+        $this->highlightPackageId ??= (int) data_get($pack, 'id');
+
         $this->packReminder = [
             'practice_title' => data_get($notification->data, 'title'),
             'start_at' => $startAt ? Carbon::parse($startAt) : null,
             'practice_url' => data_get($notification->data, 'practice_url') ?? $this->practiceUrl,
-            'packs_url' => data_get($notification->data, 'packs_url') ?? $this->packsUrl,
+            'packs_url' => data_get($notification->data, 'packs_url') ?? $this->buildPackUrl($this->highlightPackageId),
             'pack' => [
                 'title' => data_get($pack, 'title'),
                 'sessions' => data_get($pack, 'sessions'),
@@ -340,7 +356,17 @@ class Dashboard extends Component
                 'currency' => data_get($pack, 'currency'),
                 'price_per_session' => data_get($pack, 'price_per_session'),
                 'requires_package' => (bool) data_get($pack, 'requires_package'),
+                'id' => data_get($pack, 'id'),
             ],
         ];
+    }
+
+    private function buildPackUrl(?int $packId = null): string
+    {
+        $locale = request()->route('locale') ?? app()->getLocale();
+        $base = route('dashboard', ['locale' => $locale]);
+        $query = $packId ? '?pack='.$packId : '';
+
+        return $base.$query.'#practice-packs';
     }
 }

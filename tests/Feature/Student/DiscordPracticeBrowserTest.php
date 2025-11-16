@@ -44,6 +44,17 @@ class DiscordPracticeBrowserTest extends TestCase
         $teacher = User::factory()->create();
         $lesson = $this->createLesson();
 
+        $package = PracticePackage::create([
+            'creator_id' => $teacher->id,
+            'lesson_id' => $lesson->id,
+            'title' => 'Pack esencial',
+            'sessions_count' => 3,
+            'price_amount' => 90,
+            'price_currency' => 'USD',
+            'is_global' => true,
+            'status' => 'published',
+        ]);
+
         DiscordPractice::create([
             'lesson_id' => $lesson->id,
             'title' => 'Pronunciación crítica',
@@ -55,13 +66,17 @@ class DiscordPracticeBrowserTest extends TestCase
             'status' => 'scheduled',
             'created_by' => $teacher->id,
             'requires_package' => true,
+            'practice_package_id' => $package->id,
         ]);
 
         $this->actingAs($user);
 
+        $expectedUrl = route('dashboard', ['locale' => app()->getLocale()]).'?pack='.$package->id.'#practice-packs';
+
         Livewire::test(DiscordPracticeBrowser::class)
             ->assertSet('practices.0.requires_package', true)
-            ->assertSet('practices.0.has_required_pack', false);
+            ->assertSet('practices.0.has_required_pack', false)
+            ->assertSet('practices.0.pack_url', $expectedUrl);
     }
 
     public function test_practice_detects_active_pack_when_user_has_order(): void
@@ -104,8 +119,11 @@ class DiscordPracticeBrowserTest extends TestCase
 
         $this->actingAs($user);
 
+        $expectedUrl = route('dashboard', ['locale' => app()->getLocale()]).'?pack='.$package->id.'#practice-packs';
+
         Livewire::test(DiscordPracticeBrowser::class)
-            ->assertSet('practices.0.has_required_pack', true);
+            ->assertSet('practices.0.has_required_pack', true)
+            ->assertSet('practices.0.pack_url', $expectedUrl);
     }
 
     public function test_pack_reminder_is_exposed_when_notification_exists(): void

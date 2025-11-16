@@ -38,7 +38,7 @@ class DiscordPracticeBrowser extends Component
     public function mount(): void
     {
         $locale = request()->route('locale') ?? app()->getLocale();
-        $this->packsUrl = route('dashboard', ['locale' => $locale]).'#practice-packs';
+        $this->packsUrl = $this->buildPackUrl();
 
         $this->availableLessons = DiscordPractice::with('lesson.chapter.course')
             ->where('start_at', '>=', now())
@@ -221,6 +221,7 @@ class DiscordPracticeBrowser extends Component
                     'requires_package' => $practice->requires_package,
                     'has_required_pack' => $hasRequiredPack,
                     'practice_package_id' => $practice->practice_package_id,
+                    'pack_url' => $this->buildPackUrl($practice->practice_package_id),
                 ];
             });
     }
@@ -263,7 +264,7 @@ class DiscordPracticeBrowser extends Component
             'practice_title' => data_get($notification->data, 'title'),
             'start_at' => $startAt ? Carbon::parse($startAt) : null,
             'practice_url' => data_get($notification->data, 'practice_url'),
-            'packs_url' => data_get($notification->data, 'packs_url'),
+            'packs_url' => data_get($notification->data, 'packs_url') ?? $this->buildPackUrl((int) data_get($pack, 'id')),
             'pack' => [
                 'title' => data_get($pack, 'title'),
                 'sessions' => data_get($pack, 'sessions'),
@@ -271,6 +272,7 @@ class DiscordPracticeBrowser extends Component
                 'currency' => data_get($pack, 'currency'),
                 'price_per_session' => data_get($pack, 'price_per_session'),
                 'requires_package' => (bool) data_get($pack, 'requires_package'),
+                'id' => data_get($pack, 'id'),
             ],
         ];
     }
@@ -305,6 +307,15 @@ class DiscordPracticeBrowser extends Component
         if ($lesson) {
             event(new DiscordPracticeRequestEscalated($lesson, $pending));
         }
+    }
+
+    private function buildPackUrl(?int $packId = null): string
+    {
+        $locale = request()->route('locale') ?? app()->getLocale();
+        $base = route('dashboard', ['locale' => $locale]);
+        $query = $packId ? '?pack='.$packId : '';
+
+        return $base.$query.'#practice-packs';
     }
 
     public function render()

@@ -73,7 +73,7 @@ class DiscordPracticeSlotAvailableNotification extends Notification implements S
             }
 
             if (! $pack['has_order']) {
-                $mail->action(__('Ver packs y beneficios'), $this->packCtaUrl());
+                $mail->action(__('Ver packs y beneficios'), $this->packCtaUrl($pack['id'] ?? null));
             }
         }
 
@@ -82,14 +82,16 @@ class DiscordPracticeSlotAvailableNotification extends Notification implements S
 
     public function toArray(object $notifiable): array
     {
+        $pack = $this->packRecommendationFor($notifiable);
+
         return [
             'practice_id' => $this->practice->id,
             'lesson_id' => $this->practice->lesson_id,
             'title' => $this->practice->title,
             'start_at' => optional($this->practice->start_at)->toIso8601String(),
             'practice_url' => $this->practiceRoute(),
-            'packs_url' => $this->packCtaUrl(),
-            'pack_recommendation' => $this->packRecommendationFor($notifiable),
+            'packs_url' => $this->packCtaUrl(data_get($pack, 'id')),
+            'pack_recommendation' => $pack,
         ];
     }
 
@@ -102,9 +104,12 @@ class DiscordPracticeSlotAvailableNotification extends Notification implements S
         return route('dashboard', ['locale' => app()->getLocale()]);
     }
 
-    private function packCtaUrl(): string
+    private function packCtaUrl(?int $packId = null): string
     {
-        return route('dashboard', ['locale' => app()->getLocale()]).'#practice-packs';
+        $base = route('dashboard', ['locale' => app()->getLocale()]);
+        $query = $packId ? '?pack='.$packId : '';
+
+        return $base.$query.'#practice-packs';
     }
 
     private function packRecommendationFor(object $notifiable): ?array

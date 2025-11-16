@@ -43,7 +43,7 @@ class StudentDashboardPackReminderTest extends TestCase
                 'title' => 'Conversación B2',
                 'start_at' => now()->addDay()->toIso8601String(),
                 'practice_url' => 'https://example.com/practices',
-                'packs_url' => 'https://example.com/dashboard#practice-packs',
+                'packs_url' => 'https://example.com/dashboard?pack=10#practice-packs',
                 'pack_recommendation' => [
                     'id' => 10,
                     'title' => 'Pack intensivo',
@@ -60,7 +60,8 @@ class StudentDashboardPackReminderTest extends TestCase
         Livewire::actingAs($user)
             ->test(Dashboard::class)
             ->assertSet('packReminder.pack.title', 'Pack intensivo')
-            ->assertSee('Pack intensivo');
+            ->assertSet('highlightPackageId', 10)
+            ->assertSee('?pack=10#practice-packs', false);
     }
 
     public function test_dismissing_pack_banner_marks_notification_as_read(): void
