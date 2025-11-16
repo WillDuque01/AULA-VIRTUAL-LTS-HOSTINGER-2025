@@ -39,6 +39,20 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             EnsureSetupIsComplete::class,
         ]);
+
+        $middleware->replace(
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\VerifyCsrfToken::class
+        );
+
+        $middleware->alias([
+            'csrf' => \App\Http\Middleware\VerifyCsrfToken::class,
+        ]);
+
+        $middleware->removeFromGroup('web', [
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ]);
+
         $middleware->priority([
             \App\Http\Middleware\SetLocale::class,
         ]);
