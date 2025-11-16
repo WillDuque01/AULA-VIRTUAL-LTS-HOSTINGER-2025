@@ -12,7 +12,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | Frente                                        | % aprox. | Comentarios clave |
 |----------------------------------------------|---------:|-------------------|
 | Backend & dominio (modelos, integraciones)   | ~90 %    | Discord Practices, packs, notificaciones, outbox y now pivotes `course_teacher` + submissions docentes. |
-| UI/UX general (dashboard, browser, builder)   | ~80 %    | Builder con métricas, chips y nuevo focus panel tabulado con quick actions; restan microinteracciones UIX 2030 del player. |
+| UI/UX general (dashboard, browser, builder)   | ~95 %    | Builder con métricas + hotkeys reales (N, Ctrl/⌘+S, Shift+?) y filtro de estado, microinteracciones accesibles y paneles responsivos; player UIX 2030 solo requiere pulido final. |
 | Player avanzado (heatmap, CTAs, celebraciones)| ~100 %   | Panel insights ahora muestra racha/XP/último logro, CTA inteligente, celebraciones con fallback motion-safe y documentación QA (`docs/player_signals_playbook.md`). |
 | HelpHub contextual                           | ~100 %   | Nuevo sistema de guías: wizard, dashboards y layout consumen `config/integration_guides.php` + `experience_guides.php`, con paneles interactivos y botón flotante por ruta (player, builder, planner, DataPorter). |
 | Planner Discord & Packs                       | ~100 %   | Planner con plantillas multi-slot, presets de cohorte, checklist Make y guía operativa (`docs/planner_operativa_make.md`) completada. |
@@ -23,8 +23,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | CI/CD extendido                               | ~90 %    | Workflows OK; falta `workflow_dispatch` manual y reporte integrado de smoke tests. |
 
 ## Bloques de implementación pendientes
-1. **UIX Course Builder (80 % → 100 %)**  
-   Focus panel tabulado y quick actions listos; pendiente completar microinteracciones UIX 2030 restantes (hotkeys contextuales, tooltips accesibles), ajustes responsive y documentación final.
+1. **UIX Course Builder (100 %)**  
+   Completado: hotkeys contextuales, panel de atajos (`Shift+?`), filtro dinámico de estado, microinteracciones accesibles y documentación actualizada en blueprint/checkpoint.
 
 2. **Planner Discord & Packs (100 % → 100 %)**  
    Completo: presets de cohorte, duplicación masiva y guía operativa Make/Discord (`docs/planner_operativa_make.md`).

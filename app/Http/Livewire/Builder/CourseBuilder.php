@@ -84,6 +84,22 @@ class CourseBuilder extends Component
         $this->refreshState();
     }
 
+    public function cycleFocusTab(string $direction = 'next'): void
+    {
+        $tabs = $this->focusTabs();
+        $currentIndex = array_search($this->focusTab, $tabs, true);
+
+        if ($currentIndex === false) {
+            $this->focusTab = $tabs[0];
+
+            return;
+        }
+
+        $offset = $direction === 'prev' ? -1 : 1;
+        $newIndex = ($currentIndex + $offset + count($tabs)) % count($tabs);
+        $this->focusTab = $tabs[$newIndex];
+    }
+
     public function addChapter(): void
     {
         $nextPosition = (int) (Chapter::where('course_id', $this->course->id)->max('position') ?? 0) + 1;

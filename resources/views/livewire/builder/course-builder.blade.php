@@ -8,7 +8,17 @@
         : null;
 @endphp
 
-<div class="space-y-6" data-builder-root data-state="idle">
+<div
+    class="space-y-6"
+    data-builder-root
+    data-state="idle"
+    x-data="builderHotkeys({
+        addChapter: () => $wire.addChapter(),
+        saveFocusedLesson: () => $wire.call('saveFocusedLesson'),
+        cycleTab: (dir) => $wire.call('cycleFocusTab', dir),
+    })"
+    x-init="init()"
+>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-semibold">Builder de curso: {{ $course->slug }}</h2>
@@ -64,7 +74,7 @@
         </div>
     </div>
 
-    <div class="rounded-2xl border border-slate-200 bg-white/80 shadow-sm px-4 py-3" x-data="{ open: false }">
+    <div class="rounded-2xl border border-slate-200 bg-white/80 shadow-sm px-4 py-3" x-data="{ open: false }" x-on:builder-shortcuts:toggle.window="open = !open">
         <div class="flex flex-wrap items-center gap-3">
             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Atajos y consejos</p>
             <button type="button"
@@ -768,6 +778,65 @@
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('builderHotkeys', (actions = {}) => ({
+            init() {
+                this.boundHandler = this.handleKeydown.bind(this);
+                window.addEventListener('keydown', this.boundHandler);
+            },
+            destroy() {
+                window.removeEventListener('keydown', this.boundHandler);
+            },
+            handleKeydown(event) {
+                const activeElement = document.activeElement;
+                if (activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement.tagName)) {
+                    return;
+                }
+                if (event.target?.isContentEditable) {
+                    return;
+                }
+
+                // Guardar lección enfocada
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+                    event.preventDefault();
+                    actions.saveFocusedLesson?.();
+                    window.dispatchEvent(new CustomEvent('builder:flash', {
+                        detail: {
+                            variant: 'success',
+                            message: '{{ __('Lección guardada') }}'
+                        }
+                    }));
+
+                    return;
+                }
+
+                if (event.shiftKey && event.key === '?') {
+                    event.preventDefault();
+                    window.dispatchEvent(new CustomEvent('builder-shortcuts:toggle'));
+
+                    return;
+                }
+
+                if (event.key === '[' || event.key === ']') {
+                    event.preventDefault();
+                    actions.cycleTab?.(event.key === '[' ? 'prev' : 'next');
+
+                    return;
+                }
+
+                if (! event.metaKey && ! event.ctrlKey && ! event.altKey && event.key.toLowerCase() === 'n') {
+                    event.preventDefault();
+                    actions.addChapter?.();
+                    return;
+                }
+            },
+        }));
+    });
+</script>
+@endpush
 
 @once
     @push('scripts')
