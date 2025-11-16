@@ -29,7 +29,13 @@
 @endphp
 
 <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
-    <aside class="lg:sticky lg:top-28 space-y-4">
+    <aside
+        class="lg:sticky lg:top-28 space-y-4"
+        x-data="playerInsights({{ json_encode([
+            'progress' => $progressPercent,
+            'duration' => $durationSeconds ?? 0,
+            'resume' => $resumeSeconds,
+        ]) }})">
         <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60">
             <div class="flex items-center justify-between">
                 <div>
@@ -244,7 +250,7 @@
             </div>
         @endif
 
-        <div class="aspect-video rounded-3xl overflow-hidden bg-black relative ring-1 ring-slate-900/10 shadow-xl shadow-black/30">
+        <div class="aspect-video rounded-3xl overflow-hidden bg-black relative ring-1 ring-slate-900/10 shadow-xl shadow-black/30" data-player-video>
             @switch($provider)
                 @case('vimeo')
                     @if($videoId)
@@ -301,7 +307,7 @@
             </div>
         @endif
 
-        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100/80 p-6 space-y-4">
+        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100/80 p-6 space-y-4" data-player-metrics>
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
@@ -312,25 +318,38 @@
                     </div>
                     <p class="text-sm text-gray-500">Proveedor: {{ ucfirst($provider) }}</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
-                    @if($progressPercent > 0)
-                        <div class="w-full">
-                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Avance</span>
-                            <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
-                                <span class="block h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all duration-500"
-                                      style="width: {{ $progressPercent }}%;"></span>
-                            </div>
-                            <p class="mt-1 text-xs text-slate-500">{{ $progressPercent }}% {{ __('completado') }}</p>
+                    <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                    <div class="w-full" aria-live="polite">
+                        <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Avance') }}</span>
+                        <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden motion-safe:transition-all motion-safe:duration-500">
+                            <span class="block h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all duration-500"
+                                  style="width: {{ $progressPercent }}%;"
+                                  x-bind:style="`width: ${progressPercent}%`"
+                                  x-bind:class="{ 'shadow-[0_0_12px_rgba(16,185,129,.45)]': celebrating }"></span>
                         </div>
-                    @endif
+                        <p class="mt-1 text-xs text-slate-500"
+                           x-text="`${progressPercent}% {{ __('completado') }}`">
+                            {{ number_format($progressPercent, 1) }}% {{ __('completado') }}
+                        </p>
+                    </div>
                     <div>
-                        <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Reanudar</span>
-                        <span class="text-sm text-gray-900">{{ $resumeLabel }}</span>
+                        <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Reanudar') }}</span>
+                        <span class="text-sm text-gray-900"
+                              x-text="resumeLabel">
+                            {{ $resumeLabel }}
+                        </span>
                     </div>
                     @if($durationSeconds)
                         <div>
-                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Duración</span>
+                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Duración') }}</span>
                             <span class="text-sm text-gray-900">{{ gmdate('H:i:s', $durationSeconds) }}</span>
+                        </div>
+                        <div x-show="duration > 0">
+                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Tiempo restante') }}</span>
+                            <span class="text-sm text-gray-900"
+                                  x-text="timeRemainingLabel">
+                                --
+                            </span>
                         </div>
                     @endif
                     @if($estimation)
@@ -412,6 +431,93 @@
         <script src="https://player.vimeo.com/api/player.js" defer></script>
         <script src="https://embed.videodelivery.net/embed/sdk.latest.js" defer></script>
         <script>
+            document.addEventListener('alpine:init', () => {
+                const normalizePercent = (value) => {
+                    const num = Number(value ?? 0);
+                    return Math.min(100, Math.max(0, Math.round(num * 10) / 10));
+                };
+
+                Alpine.data('playerInsights', (initial = {}) => ({
+                    progressPercent: normalizePercent(initial.progress ?? 0),
+                    duration: Number(initial.duration ?? 0),
+                    current: Number(initial.resume ?? 0),
+                    celebrating: false,
+                    resumeLabel: '',
+                    timeRemainingLabel: '',
+                    init() {
+                        this.updateLabels();
+
+                        this.onProgress = (event) => {
+                            const detail = event.detail || {};
+                            if (typeof detail.duration === 'number' && detail.duration > 0) {
+                                this.duration = detail.duration;
+                            }
+                            if (typeof detail.current === 'number') {
+                                this.current = detail.current;
+                            }
+                            if (typeof detail.percent === 'number') {
+                                this.progressPercent = normalizePercent(detail.percent);
+                            }
+                            this.updateLabels();
+                        };
+
+                        this.onCelebrate = () => {
+                            this.celebrating = true;
+                            setTimeout(() => {
+                                this.celebrating = false;
+                            }, 1200);
+                        };
+
+                        window.addEventListener('player:progress-tick', this.onProgress);
+                        window.addEventListener('player:celebrate', this.onCelebrate);
+                    },
+                    updateLabels() {
+                        this.resumeLabel = this.current <= 0
+                            ? '{{ __('Inicio') }}'
+                            : this.formatTime(this.current);
+
+                        this.timeRemainingLabel = this.duration > 0
+                            ? this.formatTime(Math.max(0, this.duration - this.current))
+                            : '{{ __('--') }}';
+                    },
+                    formatTime(totalSeconds) {
+                        const total = Math.max(0, Math.round(totalSeconds ?? 0));
+
+                        if (total >= 3600) {
+                            const hours = Math.floor(total / 3600);
+                            const minutes = Math.floor((total % 3600) / 60);
+
+                            return `${hours}h ${minutes}m`;
+                        }
+
+                        if (total >= 60) {
+                            const minutes = Math.floor(total / 60);
+                            const seconds = total % 60;
+
+                            return `${minutes}m ${seconds}s`;
+                        }
+
+                        return `${total}s`;
+                    },
+                    destroy() {
+                        window.removeEventListener('player:progress-tick', this.onProgress);
+                        window.removeEventListener('player:celebrate', this.onCelebrate);
+                    },
+                }));
+            });
+
+            const dispatchInitialProgressEvent = () => {
+                window.dispatchEvent(new CustomEvent('player:progress-tick', {
+                    detail: {
+                        percent: {{ number_format($progressPercent, 1, '.', '') }},
+                        current: {{ $resumeSeconds }},
+                        duration: {{ $durationSeconds ?? 0 }},
+                    },
+                }));
+            };
+
+            document.addEventListener('DOMContentLoaded', dispatchInitialProgressEvent);
+
             document.addEventListener('livewire:load', () => {
                 const PlayerBridge = (() => {
                     const loadedScripts = new Set();
@@ -469,6 +575,31 @@
                         return Number.isFinite(number) ? Math.max(0, Math.floor(number)) : 0;
                     };
 
+                    const dispatchProgressEvent = (current, duration) => {
+                        const percent = duration > 0
+                            ? Math.min(100, Math.round((current / duration) * 1000) / 10)
+                            : 0;
+
+                        window.dispatchEvent(new CustomEvent('player:progress-tick', {
+                            detail: { percent, current, duration },
+                        }));
+
+                        return percent;
+                    };
+
+                    const createProgressEmitter = (duration) => {
+                        let celebrated = false;
+
+                        return (current) => {
+                            const percent = dispatchProgressEvent(current, duration);
+
+                            if (! celebrated && percent >= 90) {
+                                celebrated = true;
+                                window.dispatchEvent(new CustomEvent('player:celebrate'));
+                            }
+                        };
+                    };
+
                     const attachYouTube = (container) => {
                         const iframeId = container.querySelector('iframe')?.id;
                         if (! iframeId) {
@@ -478,7 +609,10 @@
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
                         const resumeAt = toSeconds(container.dataset.resume);
+                        const duration = toSeconds(container.dataset.duration);
                         const isStrict = container.dataset.strict === '1';
+                        const emitProgress = createProgressEmitter(duration);
+                        emitProgress(resumeAt);
 
                         const initPlayer = () => {
                             const player = new YT.Player(iframeId, {
@@ -503,6 +637,7 @@
 
                                 intervalRef = setInterval(() => {
                                     const currentTime = Math.floor(player.getCurrentTime());
+                                    emitProgress(currentTime);
                                     if (currentTime > lastValid) {
                                         lastValid = currentTime;
                                     }
@@ -541,7 +676,10 @@
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
                         const resumeAt = toSeconds(container.dataset.resume);
+                        const duration = toSeconds(container.dataset.duration);
                         const isStrict = container.dataset.strict === '1';
+                        const emitProgress = createProgressEmitter(duration);
+                        emitProgress(resumeAt);
 
                         const player = new Vimeo.Player(iframe);
                         let lastValid = resumeAt;
@@ -555,6 +693,7 @@
 
                         player.on('timeupdate', (data) => {
                             const currentTime = Math.floor(data.seconds ?? 0);
+                            emitProgress(currentTime);
                             if (currentTime > lastValid) {
                                 lastValid = currentTime;
                             }
@@ -591,7 +730,10 @@
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
                         const resumeAt = toSeconds(container.dataset.resume);
+                        const duration = toSeconds(container.dataset.duration);
                         const isStrict = container.dataset.strict === '1';
+                        const emitProgress = createProgressEmitter(duration);
+                        emitProgress(resumeAt);
 
                         let lastValid = resumeAt;
                         let lastSent = resumeAt;
@@ -604,6 +746,7 @@
 
                         element.addEventListener('timeupdate', () => {
                             const current = Math.floor(element.currentTime || 0);
+                            emitProgress(current);
                             if (current > lastValid) {
                                 lastValid = current;
                             }
@@ -631,6 +774,17 @@
                         });
                     };
 
+                    const snapshotFromShell = () => {
+                        const shell = document.querySelector('[data-player-shell]');
+                        if (! shell) {
+                            return;
+                        }
+
+                        const duration = toSeconds(shell.dataset.duration);
+                        const resumeAt = toSeconds(shell.dataset.resume);
+                        dispatchProgressEvent(resumeAt, duration);
+                    };
+
                     return {
                         attachAll() {
                             document.querySelectorAll('[data-player-shell]').forEach((container) => {
@@ -646,6 +800,7 @@
                                 }
                             });
                         },
+                        snapshot: snapshotFromShell,
                     };
                 })();
 
@@ -676,6 +831,7 @@
 
                     if (component.fingerprint?.name === 'player') {
                         requestAnimationFrame(() => focusTimeline());
+                        PlayerBridge.snapshot();
                     }
                 });
             });
