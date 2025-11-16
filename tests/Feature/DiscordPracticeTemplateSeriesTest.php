@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Events\DiscordPracticeScheduled;
 use App\Livewire\Professor\DiscordPracticePlanner;
 use App\Models\Chapter;
+use App\Models\CohortTemplate;
 use App\Models\Course;
 use App\Models\DiscordPractice;
 use App\Models\Lesson;
@@ -115,6 +116,33 @@ class DiscordPracticeTemplateSeriesTest extends TestCase
             ->assertSet('templateSlots.0.weekday', 'monday')
             ->assertSet('templateSlots.1.time', '18:30')
             ->assertSet('selectedCohortTemplate', 'demo');
+    }
+
+    public function test_apply_database_cohort_template_prefills_form(): void
+    {
+        $template = CohortTemplate::factory()->create([
+            'name' => 'Equipo B1',
+            'type' => 'cohort',
+            'cohort_label' => 'B1-AM',
+            'duration_minutes' => 55,
+            'capacity' => 14,
+            'requires_package' => true,
+            'slots' => [
+                ['weekday' => 'tuesday', 'time' => '08:00'],
+                ['weekday' => 'thursday', 'time' => '08:00'],
+            ],
+        ]);
+
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(DiscordPracticePlanner::class)
+            ->call('applyCohortTemplate', 'db:'.$template->id)
+            ->assertSet('cohort_label', 'B1-AM')
+            ->assertSet('duration_minutes', 55)
+            ->assertSet('capacity', 14)
+            ->assertSet('templateSlots.0.weekday', 'tuesday')
+            ->assertSet('selectedCohortTemplate', 'db:'.$template->id);
     }
 
     private function createLesson(): Lesson

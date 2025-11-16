@@ -3,7 +3,7 @@
 Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define los bloques de implementación necesarios para llevar cada frente al 100 %.
 
 ## Resumen ejecutivo
-- **Pruebas automáticas:** 159 tests verdes (`php artisan test --env=testing`).
+- **Pruebas automáticas:** 184 tests verdes (`php artisan test --env=testing`).
 - **Integraciones y CI/CD:** Workflows CI, Deploy y Smoke operativos; faltan ajustes de `workflow_dispatch` y encadenamiento.
 - **Foco actual:** cerrar brechas UIX (builder/player), planner Discord/packs y documentación operacional.
 
@@ -15,7 +15,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | UI/UX general (dashboard, browser, builder)   | ~95 %    | Builder con métricas + hotkeys reales (N, Ctrl/⌘+S, Shift+?) y filtro de estado, microinteracciones accesibles y paneles responsivos; player UIX 2030 solo requiere pulido final. |
 | Player avanzado (heatmap, CTAs, celebraciones)| ~100 %   | Panel insights ahora muestra racha/XP/último logro, CTA inteligente, celebraciones con fallback motion-safe y documentación QA (`docs/player_signals_playbook.md`). |
 | HelpHub contextual                           | ~100 %   | Nuevo sistema de guías: wizard, dashboards y layout consumen `config/integration_guides.php` + `experience_guides.php`, con paneles interactivos y botón flotante por ruta (player, builder, planner, DataPorter). |
-| Planner Discord & Packs                       | ~100 %   | Planner con plantillas multi-slot, presets de cohorte, checklist Make y guía operativa (`docs/planner_operativa_make.md`) completada. |
+| Planner Discord & Packs                       | ~100 %   | Planner con presets guardados (config + BD), gestor `admin/planner/templates`, duplicación de semana hacia próximas cohortes y guía operativa al día. |
 | DataPorter & Telemetría                       | ~100 %   | Hub con datasets nuevos, snapshots de consumo/asistencia/cancelaciones y monitoreo con alertas (`telemetry:monitor-backlog`, `practices:sync-attendance`) + historial `telemetry_sync_logs`. |
 | Perfiles completos                            | ~100 %   | Checklist docente (headline, bio, idiomas, especialidades, certificaciones, LinkedIn/notas) + recordatorios automáticos `profile:remind-incomplete` (cooldown 7 d) corriendo a diario. |
 | Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente + reporte de desempeño y ahora catálogo centralizado (Admin/Teacher Admin) para editar/destacar productos y cohortes. |
@@ -27,7 +27,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
    Completado: hotkeys contextuales, panel de atajos (`Shift+?`), filtro dinámico de estado, microinteracciones accesibles y documentación actualizada en blueprint/checkpoint.
 
 2. **Planner Discord & Packs (100 % → 100 %)**  
-   Completo: presets de cohorte, duplicación masiva y guía operativa Make/Discord (`docs/planner_operativa_make.md`).
+   Completo: gestor de plantillas (config + BD), presets de cohorte con badges, duplicación de semana hacia el futuro y guía operativa Make/Discord (`docs/planner_operativa_make.md`).
 
 3. **Player UIX 2030 (100 %)**  
    Completado con panel de insights (racha, XP, último logro), CTA contextual ampliado y efectos celebratorios con fallback `prefers-reduced-motion`.

@@ -3,18 +3,21 @@
 Este documento describe el flujo recomendado para profesores/admin al crear prácticas de cohorte y sincronizarlas con Discord/Make.
 
 ## 1. Plantillas de cohorte
-- Ubicadas en `config/practice.php`. Cada preset incluye:
+- Ubicadas en `config/practice.php` **y** en el panel `Admin → Planner → Plantillas`.
+- Cada preset incluye:
   - `name`, `description`
   - `type` (`cohort` o `global`), `cohort_label`
   - `duration_minutes`, `capacity`, `requires_package`
   - Bloques `slots` (weekday + hh:mm)
-- Pueden editarse sin despliegue chequeando cache (`php artisan config:clear`).
+- Las del panel se guardan en BD (`cohort_templates`) y pueden editarse sin despliegue; las de config siguen disponibles como fallback.
+- Botón “Gestionar presets” (visible para Admin / Teacher Admin) abre el manager para crear, duplicar o eliminar colecciones reutilizables.
 
 ## 2. Flujo en el planner
-1. **Selecciona plantilla** desde tarjetas “Plantillas de cohorte”.
+1. **Selecciona plantilla** desde tarjetas “Plantillas de cohorte” (puedes mezclar presets del equipo y config).
 2. Ajusta solo aquello necesario (lección, descripción específica).
 3. Usa “Bloques recurrentes” para cambios puntuales.
-4. Programa sesión individual o ejecuta “Duplicación masiva”.
+4. Programa sesión individual o ejecuta “Duplicación masiva” (por semanas) desde el formulario principal.
+5. **Nuevo:** Duplica toda la semana visible a futuras semanas con el panel “Duplicar semana al futuro” (elige offset y repeticiones).
 
 ## 3. Checklist Make/Discord
 - Confirmar webhook activo (`DISCORD_WEBHOOK_URL`).

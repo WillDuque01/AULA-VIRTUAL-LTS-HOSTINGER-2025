@@ -3,6 +3,7 @@
 namespace App\Livewire\Professor;
 
 use App\Events\DiscordPracticeScheduled;
+use App\Models\CohortTemplate;
 use App\Models\DiscordPractice;
 use App\Models\Lesson;
 use App\Models\PracticePackage;
@@ -51,6 +52,11 @@ class DiscordPracticePlanner extends Component
     public string $calendarRangeEnd;
     public array $calendarHours = [];
 
+    public array $weekDuplicationForm = [
+        'offset' => 1,
+        'repeat' => 1,
+    ];
+
     public function mount(): void
     {
         $this->lessons = Lesson::with('chapter.course')
@@ -67,7 +73,7 @@ class DiscordPracticePlanner extends Component
             ->orderBy('name')
             ->get();
 
-        $this->cohortTemplates = config('practice.cohort_templates', []);
+        $this->loadCohortTemplates();
 
         $startOfWeek = now()->startOfWeek();
         $this->calendarRangeStart = $startOfWeek->toDateString();
@@ -285,31 +291,62 @@ class DiscordPracticePlanner extends Component
     public function applyCohortTemplate(?string $templateKey): void
     {
         if (! $templateKey) {
+            $this->selectedCohortTemplate = null;
+
             return;
         }
 
-        $template = $this->cohortTemplates[$templateKey] ?? null;
-        if (! $template) {
+        if (str_contains($templateKey, ':')) {
+            [$source, $key] = explode(':', $templateKey, 2);
+        } else {
+            $source = 'config';
+            $key = $templateKey;
+        }
+
+        if ($source === 'db' && $key) {
+            $template = CohortTemplate::find($key);
+            if (! $template) {
+                return;
+            }
+            $payload = [
+                'name' => $template->name,
+                'type' => $template->type,
+                'cohort_label' => $template->cohort_label,
+                'duration_minutes' => $template->duration_minutes,
+                'capacity' => $template->capacity,
+                'requires_package' => $template->requires_package,
+                'practice_package_id' => $template->practice_package_id,
+                'description' => $template->description,
+                'slots' => $template->slots,
+            ];
+        } else {
+            $payload = $this->cohortTemplates["config:{$key}"] ?? $this->cohortTemplates[$templateKey] ?? config("practice.cohort_templates.{$key}");
+            if ($payload && ! isset($payload['name'])) {
+                $payload['name'] = $key;
+            }
+        }
+
+        if (! $payload) {
             return;
         }
 
-        $this->type = $template['type'] ?? $this->type;
-        $this->cohort_label = $template['cohort_label'] ?? $this->cohort_label;
-        $this->requires_package = (bool) ($template['requires_package'] ?? $this->requires_package);
-        $this->practice_package_id = $template['practice_package_id'] ?? $this->practice_package_id;
-        $this->duration_minutes = (int) ($template['duration_minutes'] ?? $this->duration_minutes);
-        $this->capacity = (int) ($template['capacity'] ?? $this->capacity);
-        $this->discord_channel_url = $template['discord_channel_url'] ?? $this->discord_channel_url;
-        $this->description = $template['description'] ?? $this->description;
-        $this->templateSlots = $this->normalizeTemplateSlots($template['slots'] ?? $this->templateSlots);
-        if (! empty($template['lesson_id']) && Lesson::whereKey($template['lesson_id'])->exists()) {
-            $this->selectedLesson = $template['lesson_id'];
+        $this->type = $payload['type'] ?? $this->type;
+        $this->cohort_label = $payload['cohort_label'] ?? $this->cohort_label;
+        $this->requires_package = (bool) ($payload['requires_package'] ?? $this->requires_package);
+        $this->practice_package_id = $payload['practice_package_id'] ?? $this->practice_package_id;
+        $this->duration_minutes = (int) ($payload['duration_minutes'] ?? $this->duration_minutes);
+        $this->capacity = (int) ($payload['capacity'] ?? $this->capacity);
+        $this->discord_channel_url = $payload['discord_channel_url'] ?? $this->discord_channel_url;
+        $this->description = $payload['description'] ?? $this->description;
+        $this->templateSlots = $this->normalizeTemplateSlots($payload['slots'] ?? $this->templateSlots);
+        if (! empty($payload['lesson_id']) && Lesson::whereKey($payload['lesson_id'])->exists()) {
+            $this->selectedLesson = $payload['lesson_id'];
         }
 
         $this->selectedCohortTemplate = $templateKey;
 
         $this->dispatch('practice-template-applied', [
-            'name' => $template['name'] ?? $templateKey,
+            'name' => $payload['name'] ?? $templateKey,
         ]);
     }
 
@@ -467,11 +504,111 @@ class DiscordPracticePlanner extends Component
         ));
     }
 
+    public function duplicateWeekSeries(): void
+    {
+        $data = $this->validate([
+            'weekDuplicationForm.offset' => ['required', 'integer', 'min:1', 'max:12'],
+            'weekDuplicationForm.repeat' => ['required', 'integer', 'min:1', 'max:6'],
+        ], [], [
+            'weekDuplicationForm.offset' => __('semanas hacia adelante'),
+            'weekDuplicationForm.repeat' => __('cantidad de repeticiones'),
+        ])['weekDuplicationForm'];
+
+        $weekStart = Carbon::parse($this->calendarRangeStart)->startOfDay();
+        $weekEnd = Carbon::parse($this->calendarRangeEnd)->endOfDay();
+
+        $basePractices = DiscordPractice::whereBetween('start_at', [$weekStart, $weekEnd])->get();
+
+        if ($basePractices->isEmpty()) {
+            $this->addError('weekDuplicationForm', __('No hay prácticas en la semana seleccionada para duplicar.'));
+
+            return;
+        }
+
+        $created = 0;
+
+        foreach (range(0, $data['repeat'] - 1) as $iteration) {
+            $offsetWeeks = $data['offset'] + $iteration;
+            foreach ($basePractices as $practice) {
+                $start = optional($practice->start_at)->copy()->addWeeks($offsetWeeks) ?? $weekStart->copy()->addWeeks($offsetWeeks);
+
+                if ($start->isPast()) {
+                    $start = now()->addHours(1);
+                }
+
+                $end = $practice->end_at ? $practice->end_at->copy()->addWeeks($offsetWeeks) : null;
+
+                $duplicate = DiscordPractice::create([
+                    'lesson_id' => $practice->lesson_id,
+                    'title' => $practice->title,
+                    'description' => $practice->description,
+                    'type' => $practice->type,
+                    'cohort_label' => $practice->cohort_label,
+                    'practice_package_id' => $practice->practice_package_id,
+                    'start_at' => $start,
+                    'end_at' => $end,
+                    'duration_minutes' => $practice->duration_minutes,
+                    'capacity' => $practice->capacity,
+                    'discord_channel_url' => $practice->discord_channel_url,
+                    'created_by' => auth()->id(),
+                    'requires_package' => $practice->requires_package,
+                ]);
+
+                $created++;
+
+                event(new DiscordPracticeScheduled(
+                    $duplicate->fresh(['lesson.chapter.course', 'creator'])
+                ));
+            }
+        }
+
+        $this->weekDuplicationForm = [
+            'offset' => 1,
+            'repeat' => 1,
+        ];
+
+        $this->loadPractices();
+        $this->dispatch('practice-week-duplicated', ['count' => $created]);
+    }
+
     public function render()
     {
         return view('livewire.professor.discord-practice-planner', [
             'cohortTemplates' => $this->cohortTemplates,
         ]);
+    }
+
+    private function loadCohortTemplates(): void
+    {
+        $configTemplates = collect(config('practice.cohort_templates', []))
+            ->mapWithKeys(fn ($preset, $key) => [
+                "config:{$key}" => array_merge($preset, [
+                    'source' => 'config',
+                    'key' => $key,
+                ]),
+            ]);
+
+        $databaseTemplates = CohortTemplate::orderBy('name')
+            ->get()
+            ->mapWithKeys(fn (CohortTemplate $template) => [
+                "db:{$template->id}" => [
+                    'id' => $template->id,
+                    'name' => $template->name,
+                    'description' => $template->description,
+                    'type' => $template->type,
+                    'cohort_label' => $template->cohort_label,
+                    'duration_minutes' => $template->duration_minutes,
+                    'capacity' => $template->capacity,
+                    'requires_package' => $template->requires_package,
+                    'practice_package_id' => $template->practice_package_id,
+                    'slots' => $template->slots,
+                    'source' => 'database',
+                ],
+            ]);
+
+        $this->cohortTemplates = $configTemplates
+            ->union($databaseTemplates)
+            ->all();
     }
 
     private function normalizeTemplateSlots(array $slots): array

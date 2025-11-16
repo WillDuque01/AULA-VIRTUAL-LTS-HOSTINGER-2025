@@ -23,6 +23,7 @@ use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\ProductCatalog;
 use App\Livewire\Admin\PageManager;
 use App\Livewire\Admin\TierManager;
+use App\Livewire\Admin\CohortTemplateManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
 use App\Livewire\Student\DiscordPracticeBrowser;
@@ -177,6 +178,10 @@ Route::prefix('{locale}')
             Route::get('/admin/teacher-performance', TeacherPerformanceReport::class)
                 ->middleware('role:Admin|teacher_admin')
                 ->name('admin.teacher-performance');
+
+            Route::get('/admin/planner/templates', CohortTemplateManager::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.planner.templates');
 
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')

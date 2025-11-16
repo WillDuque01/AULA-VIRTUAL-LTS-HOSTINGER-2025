@@ -55,6 +55,13 @@
                             ✕ {{ __('Limpiar selección') }}
                         </button>
                     @endif
+                    @if(auth()->user()?->hasAnyRole(['Admin', 'teacher_admin']))
+                        <a href="{{ route('admin.planner.templates', ['locale' => app()->getLocale()]) }}"
+                           target="_blank"
+                           class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300">
+                            ⚙ {{ __('Gestionar presets') }}
+                        </a>
+                    @endif
                 </div>
                 <div class="grid gap-3 md:grid-cols-3">
                     @foreach($cohortTemplates as $templateKey => $preset)
@@ -62,6 +69,7 @@
                             $slotSummary = collect($preset['slots'] ?? [])
                                 ->map(fn ($slot) => ($weekdayOptions[$slot['weekday']] ?? ucfirst($slot['weekday'])) . ' · ' . $slot['time'])
                                 ->implode(', ');
+                            $source = $preset['source'] ?? 'config';
                         @endphp
                         <button type="button"
                                 wire:key="cohort-template-{{ $templateKey }}"
@@ -74,6 +82,9 @@
                                 @if($selectedCohortTemplate === $templateKey)
                                     <span class="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">{{ __('Activo') }}</span>
                                 @endif
+                                <span class="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                                    {{ $source === 'database' ? __('Equipo') : __('Config') }}
+                                </span>
                             </p>
                             <p class="mt-1 text-[11px] text-slate-500">{{ $preset['description'] ?? '—' }}</p>
                             @if($slotSummary)
@@ -272,6 +283,35 @@
                 <button wire:click="goToNextWeek" class="rounded-full border border-slate-200 px-3 py-1 hover:border-blue-300 hover:text-blue-600">Semana siguiente →</button>
             </div>
         </div>
+        <div class="px-6 py-4 border-t border-slate-50 bg-slate-50/40">
+            <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 space-y-3">
+                <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="text-xs uppercase text-slate-400 font-semibold tracking-wide">{{ __('Duplicar semana al futuro') }}</p>
+                        <p class="text-xs text-slate-500">{{ __('Replica todos los slots visibles hacia próximas semanas.') }}</p>
+                    </div>
+                    @error('weekDuplicationForm') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                </div>
+                <div class="grid gap-3 md:grid-cols-3">
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        {{ __('Semana +N') }}
+                        <input type="number" min="1" max="12" wire:model.defer="weekDuplicationForm.offset" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </label>
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        {{ __('Repeticiones') }}
+                        <input type="number" min="1" max="6" wire:model.defer="weekDuplicationForm.repeat" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </label>
+                    <div class="flex items-end">
+                        <button type="button"
+                                wire:click="duplicateWeekSeries"
+                                class="w-full rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
+                            {{ __('Duplicar') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="px-4 pb-6 overflow-x-auto">
             <div
                 x-data="{
