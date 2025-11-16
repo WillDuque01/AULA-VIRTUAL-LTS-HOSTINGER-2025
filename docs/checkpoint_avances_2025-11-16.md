@@ -19,7 +19,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | DataPorter & Telemetría                       | ~100 %   | Hub con datasets nuevos, snapshots de consumo/asistencia/cancelaciones y monitoreo con alertas (`telemetry:monitor-backlog`, `practices:sync-attendance`) + historial `telemetry_sync_logs`. |
 | Perfiles completos                            | ~100 %   | Checklist docente (headline, bio, idiomas, especialidades, certificaciones, LinkedIn/notas) + recordatorios automáticos `profile:remind-incomplete` (cooldown 7 d) corriendo a diario. |
 | Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente con historial de aprobación, filtros por estado en builder y nuevo reporte de desempeño (tiempos, tasas, backlog) disponible para Admin/Teacher Admin. |
-| Documentación & Playbooks                     | ~85 %    | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md` y actualización roles; faltan UI playbook completo, guía de cohortes y checklists Hostinger. |
+| Documentación & Playbooks                     | ~100 %   | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md`, nuevo `ui-playbook.md`, guía de cohortes y checklist smoke Hostinger listos. |
 | CI/CD extendido                               | ~90 %    | Workflows OK; falta `workflow_dispatch` manual y reporte integrado de smoke tests. |
 
 ## Bloques de implementación pendientes
@@ -38,8 +38,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 5. **Perfiles completos (100 %)**  
    Completado: campos profesionales Teacher Admin, banner con formulario in-place y automatización `profile:remind-incomplete` (cron diario 09:00, configurable con `PROFILE_REMINDER_COOLDOWN_DAYS`).
 
-6. **Documentación & Playbooks (75 % → 100 %)**  
-   `docs/ui-playbook.md`, guía de cohortes, checklists de smoke Hostinger y ADRs UIX 2030.
+6. **Documentación & Playbooks (100 %)**  
+   Entregados: `docs/ui-playbook.md`, `docs/guia_cohortes_discord.md`, `docs/hostinger_smoke_checklist.md` y blueprint actualizado. ADRs UIX se documentan en el playbook y blueprint.
 7. **HelpHub contextual (100 %)**  
    Configuración centralizada de credenciales (`integration_guides.php`) + Experience Guides (`experience_guides.php`) integrada en wizard, dashboards y botón flotante global. Nuevos componentes `x-help.contextual-panel` y `x-help.floating`.
 
