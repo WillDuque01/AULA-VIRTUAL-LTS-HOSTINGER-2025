@@ -19,7 +19,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | DataPorter & Telemetría                       | ~100 %   | Hub con datasets nuevos, snapshots de consumo/asistencia/cancelaciones y monitoreo con alertas (`telemetry:monitor-backlog`, `practices:sync-attendance`) + historial `telemetry_sync_logs`. |
 | Perfiles completos                            | ~100 %   | Checklist docente (headline, bio, idiomas, especialidades, certificaciones, LinkedIn/notas) + recordatorios automáticos `profile:remind-incomplete` (cooldown 7 d) corriendo a diario. |
 | Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente + reporte de desempeño y ahora catálogo centralizado (Admin/Teacher Admin) para editar/destacar productos y cohortes. |
-| Documentación & Playbooks                     | ~100 %   | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md`, nuevo `ui-playbook.md`, guía de cohortes y checklist smoke Hostinger listos. |
+| Documentación & Playbooks                     | ~100 %   | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md`, nuevo `ui-playbook.md`, guía de cohortes, checklist smoke Hostinger y base del page builder documentada. |
 | CI/CD extendido                               | ~90 %    | Workflows OK; falta `workflow_dispatch` manual y reporte integrado de smoke tests. |
 
 ## Bloques de implementación pendientes
@@ -49,8 +49,8 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 9. **CI/CD extendido (90 % → 100 %)**  
    `workflow_dispatch` en Deploy, encadenar smoke.yml y publicar resultados (Slack/Discord) con documentación del procedimiento.
 
-10. **Landing/Page Builder (0 % → 0 %)**  
-   Próxima fase: constructor drag & drop tipo Elementor con kits (Hero, CTA, Pricing, Testimonials), widget de productos destacados y publicación versionada para Home/Landings.
+10. **Landing/Page Builder (0 % → 20 %)**  
+    Modelo listo: tablas `pages`/`page_revisions`, servicio `PageBuilderService` y documentación base (`docs/page_builder_fundamentos.md`). Próximo paso: UI drag & drop con kits y widget de productos destacados.
 
 ## Próximas acciones inmediatas
 - Desarrollar el **Page/Landing Builder** con kits responsivos y bloque de productos destacados conectado al catálogo.
