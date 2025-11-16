@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
 use App\Models\Chapter;
 use App\Models\Course;
+use App\Models\IntegrationEvent;
 use App\Models\Lesson;
 use App\Models\User;
 use App\Models\VideoHeatmapSegment;
@@ -177,6 +178,22 @@ class ProfessorDashboardHeatmapTest extends TestCase
         Livewire::actingAs($teacher)
             ->test(Dashboard::class)
             ->assertSee('/whatsapp/redirect', false);
+    }
+
+    public function test_dashboard_displays_whatsapp_metrics(): void
+    {
+        $teacher = User::factory()->create();
+
+        IntegrationEvent::factory()->create([
+            'event' => 'whatsapp.cta_clicked',
+            'payload' => ['context' => 'student.dashboard'],
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($teacher)
+            ->test(Dashboard::class)
+            ->assertSee(__('dashboard.whatsapp.title'))
+            ->assertSee('1');
     }
 
     private function createLesson(string $title): Lesson

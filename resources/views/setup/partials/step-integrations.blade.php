@@ -119,6 +119,9 @@
                 'WEBHOOKS_MAKE_SECRET' => 'Make secret',
                 'MAKE_WEBHOOK_URL' => 'Make webhook URL',
                 'DISCORD_WEBHOOK_URL' => 'Discord webhook',
+                'DISCORD_WEBHOOK_USERNAME' => 'Discord username',
+                'DISCORD_WEBHOOK_AVATAR' => 'Discord avatar URL',
+                'DISCORD_WEBHOOK_THREAD_ID' => 'Discord thread ID',
                 'WHATSAPP_DEEPLINK' => 'WhatsApp deeplink',
             ] as $field => $label)
                 <label class="text-xs uppercase text-slate-400">{{ __($label) }}

@@ -19,6 +19,51 @@
     </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-1">
+            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.whatsapp.title') }}</p>
+            <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.whatsapp.subtitle') }}</h4>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="grid gap-4 md:grid-cols-3">
+                <div>
+                    <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.today') }}</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $whatsappStats['today'] ?? 0 }}</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.week') }}</p>
+                    <p class="text-3xl font-bold text-emerald-600">{{ $whatsappStats['week'] ?? 0 }}</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.trend') }}</p>
+                    <ul class="mt-2 space-y-1 text-sm text-slate-600">
+                        @forelse(collect($whatsappStats['trend'] ?? []) as $entry)
+                            <li class="flex items-center justify-between">
+                                <span>{{ $entry['day'] }}</span>
+                                <span class="font-semibold">{{ $entry['total'] }}</span>
+                            </li>
+                        @empty
+                            <li class="text-xs text-slate-400">{{ __('dashboard.whatsapp.empty') }}</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.contexts') }}</p>
+                <ul class="mt-2 space-y-1 text-sm text-slate-600">
+                    @forelse(collect($whatsappStats['contexts'] ?? []) as $context)
+                        <li class="flex items-center justify-between">
+                            <span>{{ $context['context'] }}</span>
+                            <span class="font-semibold">{{ $context['count'] }}</span>
+                        </li>
+                    @empty
+                        <li class="text-xs text-slate-400">{{ __('dashboard.whatsapp.empty') }}</li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100">
             <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.abandonment.title') }}</p>
             <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.abandonment.subtitle') }}</h4>

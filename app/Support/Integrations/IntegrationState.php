@@ -125,6 +125,7 @@ class IntegrationState
                 'has_credentials' => $videoMode !== 'youtube',
             ],
             'whatsapp' => self::whatsappSummary(),
+            'discord' => self::discordSummary(),
         ];
     }
 
@@ -154,6 +155,20 @@ class IntegrationState
             'ok' => $hasApi || $hasDeeplink,
             'forced' => false,
             'has_credentials' => $hasApi,
+        ];
+    }
+
+    protected static function discordSummary(): array
+    {
+        $webhook = config('services.discord.webhook_url');
+
+        return [
+            'label' => 'Alertas Discord',
+            'driver' => 'webhook',
+            'status' => $webhook ? 'Webhook activo' : 'Sin configurar',
+            'ok' => filled($webhook),
+            'forced' => false,
+            'has_credentials' => filled($webhook),
         ];
     }
 }

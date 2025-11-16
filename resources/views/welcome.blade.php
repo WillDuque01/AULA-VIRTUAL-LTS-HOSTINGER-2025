@@ -270,6 +270,8 @@
             </main>
         </div>
 
+        <livewire:public.practice-packages-showcase />
+
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
         @endif

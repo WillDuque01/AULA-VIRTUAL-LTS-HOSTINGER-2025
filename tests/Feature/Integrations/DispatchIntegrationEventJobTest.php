@@ -16,8 +16,14 @@ class DispatchIntegrationEventJobTest extends TestCase
     {
         config()->set('services.discord.webhook_url', 'https://discord.test/hook');
 
+        $captured = [];
+
         Http::fake([
-            'https://discord.test/*' => Http::response(['ok' => true], 204),
+            'https://discord.test/*' => function ($request) use (&$captured) {
+                $captured = $request->data();
+
+                return Http::response(['ok' => true], 204);
+            },
         ]);
 
         $event = IntegrationEvent::factory()->create([
@@ -29,6 +35,8 @@ class DispatchIntegrationEventJobTest extends TestCase
         $event->refresh();
         $this->assertEquals('sent', $event->status);
         $this->assertNotNull($event->sent_at);
+        $this->assertArrayHasKey('embeds', $captured);
+        $this->assertSame(['parse' => []], $captured['allowed_mentions']);
     }
 
     public function test_mailerlite_event_without_email_is_skipped(): void

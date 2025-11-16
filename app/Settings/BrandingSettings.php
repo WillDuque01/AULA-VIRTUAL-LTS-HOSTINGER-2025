@@ -26,6 +26,8 @@ class BrandingSettings extends Settings
     public string $logo_text;
     public string $logo_mode;
     public string $logo_svg;
+    public string $logo_horizontal_path;
+    public string $logo_square_path;
 
     public static function group(): string
     {

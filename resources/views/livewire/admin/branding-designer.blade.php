@@ -1,4 +1,4 @@
-<div class="space-y-6" x-data="{ previewDark: @entangle('dark_mode'), logoMode: @entangle('logo_mode') }">
+<div class="space-y-6" x-data="brandingDesigner(@js($this->getId()), @entangle('dark_mode'), @entangle('logo_mode'))">
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col gap-4">
         <div>
             <h2 class="text-2xl font-semibold text-slate-900">Panel de branding 2030</h2>
@@ -126,10 +126,59 @@
                         <span>Logo texto / SVG</span>
                     </label>
                 </div>
-                <div x-show="logoMode === 'image'" x-cloak class="space-y-4">
+                <div x-show="logoMode === 'image'" x-cloak class="space-y-5">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <label class="space-y-2">
+                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">Logo horizontal (3:1)</span>
+                            <input type="file"
+                                   x-ref="horizontalInput"
+                                   @change.prevent="handleFileSelected($event, 'horizontal')"
+                                   accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                   class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800">
+                            <p class="text-[11px] text-slate-400">Ideal para headers. PNG/SVG recomendado · máx 2MB.</p>
+                            @error('logoHorizontalUpload') <p class="text-xs text-rose-500">{{ $message }}</p> @enderror
+                        </label>
+                        <label class="space-y-2">
+                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">Logo cuadrado (1:1)</span>
+                            <input type="file"
+                                   x-ref="squareInput"
+                                   @change.prevent="handleFileSelected($event, 'square')"
+                                   accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                   class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800">
+                            <p class="text-[11px] text-slate-400">Para favicon, apps o tarjetas. PNG/SVG · máx 2MB.</p>
+                            @error('logoSquareUpload') <p class="text-xs text-rose-500">{{ $message }}</p> @enderror
+                        </label>
+                    </div>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="rounded-xl border border-dashed border-slate-300 p-4 flex flex-col gap-3">
+                            <div class="flex items-center justify-between text-xs uppercase text-slate-500">
+                                <span>Vista actual horizontal</span>
+                                <button type="button" wire:click="clearLogo('horizontal')" class="text-rose-500 font-semibold" @disabled(!$logo_horizontal_path && !$logo_url)>Reset</button>
+                            </div>
+                            @if($this->horizontalLogoUrl)
+                                <img src="{{ $this->horizontalLogoUrl }}" alt="Logo horizontal" class="h-12 w-auto rounded-md bg-white/10 p-2">
+                            @elseif($logo_url)
+                                <img src="{{ $logo_url }}" alt="Logo" class="h-12 w-auto rounded-md bg-white/10 p-2">
+                            @else
+                                <p class="text-sm text-slate-400">Aún no hay logo subido. Puedes pegar una URL externa abajo.</p>
+                            @endif
+                        </div>
+                        <div class="rounded-xl border border-dashed border-slate-300 p-4 flex flex-col gap-3">
+                            <div class="flex items-center justify-between text-xs uppercase text-slate-500">
+                                <span>Vista actual cuadrada</span>
+                                <button type="button" wire:click="clearLogo('square')" class="text-rose-500 font-semibold" @disabled(!$logo_square_path)>Reset</button>
+                            </div>
+                            @if($this->squareLogoUrl)
+                                <img src="{{ $this->squareLogoUrl }}" alt="Logo cuadrado" class="h-16 w-16 rounded-xl bg-white/10 p-2 object-contain">
+                            @else
+                                <p class="text-sm text-slate-400">Sube una versión cuadrada para favicons y avatares.</p>
+                            @endif
+                        </div>
+                    </div>
                     <label class="space-y-2">
-                        <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">Logo URL</span>
+                        <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">Logo URL (opcional)</span>
                         <input type="url" wire:model.defer="logo_url" class="block w-full rounded-md border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="https://cdn.ejemplo.com/logo.svg">
+                        <span class="text-[11px] text-slate-400">Se usará si prefieres un CDN externo o mientras subes la versión final.</span>
                     </label>
                     <label class="space-y-2">
                         <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wide">Texto fallback</span>
@@ -164,9 +213,12 @@
         </div>
         <div class="grid gap-4 lg:grid-cols-[2fr,1fr]">
             <div class="rounded-2xl p-6 space-y-5" style="background: linear-gradient(135deg, {{ $primary_color }}, {{ $secondary_color }}); border-radius: {{ $border_radius }}; box-shadow: {{ $shadow_soft }};">
+                @php
+                    $previewLogo = $this->horizontalLogoUrl ?? ($logo_url ?: null);
+                @endphp
                 <div class="flex items-center gap-3">
-                    @if($logo_mode === 'image' && $logo_url)
-                        <img src="{{ $logo_url }}" alt="Logo" class="h-10 w-auto rounded-md bg-white/10 p-1">
+                    @if($logo_mode === 'image' && $previewLogo)
+                        <img src="{{ $previewLogo }}" alt="Logo" class="h-10 w-auto rounded-md bg-white/10 p-1">
                     @elseif($logo_mode === 'text' && $logo_svg)
                         <div class="h-10 flex items-center" aria-label="Logo SVG">{!! $logo_svg !!}</div>
                     @else
@@ -206,10 +258,148 @@
             </div>
         </div>
     </div>
+
+    <div x-cloak x-show="cropping" class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/70 p-4">
+        <div class="w-full max-w-4xl rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                <div>
+                    <p class="text-xs uppercase tracking-wide text-slate-400">Recortar logo</p>
+                    <h4 class="text-lg font-semibold text-slate-900" x-text="cropTarget === 'horizontal' ? 'Formato horizontal 3:1' : 'Formato cuadrado 1:1'"></h4>
+                </div>
+                <button type="button" class="text-slate-400 hover:text-slate-600" @click="cancelCrop">
+                    <span class="sr-only">Cerrar</span>
+                    ✕
+                </button>
+            </div>
+            <div class="px-6 py-4">
+                <div class="relative h-[60vh] w-full bg-slate-50" wire:ignore>
+                    <img x-ref="cropImage" :src="cropImageSrc" class="max-h-full w-full object-contain" alt="Previsualización de recorte">
+                </div>
+                <div class="mt-4 flex items-center justify-end gap-3">
+                    <button type="button"
+                            class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300"
+                            @click="cancelCrop">
+                        Cancelar
+                    </button>
+                    <button type="button"
+                            class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                            @click="confirmCrop"
+                            :disabled="uploading">
+                        <span x-show="uploading" class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+                        Aplicar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @once
+    @push('styles')
+        <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.1/dist/cropper.min.css">
+    @endpush
+
     @push('scripts')
+        <script src="https://unpkg.com/cropperjs@1.6.1/dist/cropper.min.js"></script>
+        <script>
+            function brandingDesigner(componentId, darkBinding = false, logoBinding = 'image') {
+                return {
+                    componentId,
+                    previewDark: darkBinding,
+                    logoMode: logoBinding,
+                    cropping: false,
+                    cropTarget: null,
+                    cropImageSrc: null,
+                    cropper: null,
+                    uploading: false,
+                    pendingInput: null,
+                    handleFileSelected(event, variant) {
+                        const file = event.target.files[0];
+                        if (!file) {
+                            return;
+                        }
+
+                        this.pendingInput = event.target;
+                        this.cropTarget = variant;
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.cropImageSrc = e.target.result;
+                            this.openCropper();
+                        };
+                        reader.readAsDataURL(file);
+                    },
+                    openCropper() {
+                        this.cropping = true;
+                        this.$nextTick(() => {
+                            if (this.cropper) {
+                                this.cropper.destroy();
+                            }
+                            const aspect = this.cropTarget === 'horizontal' ? 3 / 1 : 1 / 1;
+                            this.cropper = new Cropper(this.$refs.cropImage, {
+                                aspectRatio: aspect,
+                                viewMode: 2,
+                                autoCropArea: 1,
+                                background: false,
+                                responsive: true,
+                            });
+                        });
+                    },
+                    cancelCrop(clearOnlyInput = false) {
+                        this.resetCropper(clearOnlyInput);
+                    },
+                    confirmCrop() {
+                        if (!this.cropper) {
+                            return;
+                        }
+
+                        const dimensions = this.cropTarget === 'horizontal'
+                            ? { width: 1200, height: 400 }
+                            : { width: 600, height: 600 };
+
+                        this.uploading = true;
+                        this.cropper.getCroppedCanvas(dimensions).toBlob((blob) => {
+                            if (!blob) {
+                                this.uploading = false;
+                                alert('No se pudo generar el recorte.');
+                                return;
+                            }
+
+                            const file = new File([blob], `logo-${this.cropTarget}.png`, { type: 'image/png' });
+                            this.uploadCropped(file);
+                        }, 'image/png', 0.92);
+                    },
+                    uploadCropped(file) {
+                        const field = this.cropTarget === 'horizontal' ? 'logoHorizontalUpload' : 'logoSquareUpload';
+
+                        Livewire.find(this.componentId).upload(field, file, () => {
+                            this.uploading = false;
+                            this.resetCropper(true);
+                            if (window.toast) {
+                                toast('Recorte listo ✔️');
+                            }
+                        }, () => {
+                            this.uploading = false;
+                            alert('No se pudo subir el recorte. Intenta nuevamente.');
+                            this.resetCropper(true);
+                        });
+                    },
+                    resetCropper(clearInput = false) {
+                        if (clearInput && this.pendingInput) {
+                            this.pendingInput.value = '';
+                        }
+                        this.pendingInput = null;
+                        this.cropping = false;
+                        this.cropTarget = null;
+                        this.cropImageSrc = null;
+                        if (this.cropper) {
+                            this.cropper.destroy();
+                            this.cropper = null;
+                        }
+                        this.uploading = false;
+                    },
+                };
+            }
+        </script>
         <script>
             window.addEventListener('branding-saved', () => {
                 if (window.toast) {

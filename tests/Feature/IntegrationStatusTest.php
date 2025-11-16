@@ -66,6 +66,22 @@ class IntegrationStatusTest extends TestCase
             ->expectsOutputToContain('Almacenamiento');
     }
 
+    public function test_discord_status_reflects_webhook_presence(): void
+    {
+        config(['services.discord.webhook_url' => null]);
+        IntegrationConfigurator::apply();
+
+        $status = config('integrations.status.discord');
+        $this->assertFalse($status['ok']);
+
+        config(['services.discord.webhook_url' => 'https://discord.test/hook']);
+        IntegrationConfigurator::apply();
+
+        $status = config('integrations.status.discord');
+        $this->assertTrue($status['ok']);
+        $this->assertSame('Webhook activo', $status['status']);
+    }
+
     public function test_storage_migrate_copies_files_between_disks(): void
     {
         Storage::fake('from_disk');

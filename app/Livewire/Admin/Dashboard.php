@@ -10,6 +10,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
+use App\Support\Integrations\WhatsAppMetrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -50,6 +51,13 @@ class Dashboard extends Component
     public Collection $recentCertificates;
 
     public Collection $recentVerifications;
+
+    public array $whatsappStats = [
+        'today' => 0,
+        'week' => 0,
+        'trend' => [],
+        'contexts' => [],
+    ];
 
     public function mount(): void
     {
@@ -106,6 +114,7 @@ class Dashboard extends Component
         $this->certificateStats = $this->loadCertificateStats();
         $this->recentCertificates = $this->loadRecentCertificates();
         $this->recentVerifications = $this->loadRecentVerifications();
+        $this->whatsappStats = WhatsAppMetrics::summary();
     }
 
     public function render()

@@ -95,6 +95,21 @@ class User extends Authenticatable
         return $this->hasMany(AssignmentSubmission::class);
     }
 
+    public function discordPracticeReservations(): HasMany
+    {
+        return $this->hasMany(DiscordPracticeReservation::class);
+    }
+
+    public function discordPracticeRequests(): HasMany
+    {
+        return $this->hasMany(DiscordPracticeRequest::class);
+    }
+
+    public function practicePackageOrders(): HasMany
+    {
+        return $this->hasMany(PracticePackageOrder::class);
+    }
+
     public function hasTier(string $slug): bool
     {
         return $this->activeTiers()->where('slug', $slug)->exists();

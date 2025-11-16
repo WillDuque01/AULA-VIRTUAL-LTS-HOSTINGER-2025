@@ -78,6 +78,9 @@ return [
 
     'discord' => [
         'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+        'username' => env('DISCORD_WEBHOOK_USERNAME'),
+        'avatar' => env('DISCORD_WEBHOOK_AVATAR'),
+        'thread_id' => env('DISCORD_WEBHOOK_THREAD_ID'),
     ],
 
     'mailerlite' => [
@@ -95,6 +98,11 @@ return [
         'phone_number_id' => env('WHATSAPP_PHONE_ID'),
         'default_to' => env('WHATSAPP_DEFAULT_TO'),
         'deeplink' => env('WHATSAPP_DEEPLINK'),
+    ],
+
+    'discord_practices' => [
+        'request_threshold' => (int) env('DISCORD_PRACTICES_REQUEST_THRESHOLD', 3),
+        'request_cooldown_minutes' => (int) env('DISCORD_PRACTICES_REQUEST_COOLDOWN', 240),
     ],
 
 ];

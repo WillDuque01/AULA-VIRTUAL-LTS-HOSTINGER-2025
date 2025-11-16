@@ -5,8 +5,10 @@ namespace App\Livewire\Professor;
 use App\Models\Assignment;
 use App\Models\Certificate;
 use App\Models\Lesson;
+use App\Models\DiscordPractice;
 use App\Models\VideoHeatmapSegment;
 use App\Models\VideoProgress;
+use App\Support\Integrations\WhatsAppMetrics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -35,6 +37,20 @@ class Dashboard extends Component
 
     public Collection $assignmentAlerts;
 
+    public array $whatsappStats = [
+        'today' => 0,
+        'week' => 0,
+        'contexts' => [],
+    ];
+
+    public array $practiceStats = [
+        'upcoming' => 0,
+        'slots_filled' => 0,
+        'requests' => 0,
+    ];
+
+    public Collection $upcomingPractices;
+
     public function mount(): void
     {
         $this->lessonInsights = collect();
@@ -42,6 +58,7 @@ class Dashboard extends Component
         $this->heatmap['bucket_seconds'] = max(1, (int) config('player.heatmap_bucket_seconds', 15));
         $this->recentCertificates = collect();
         $this->assignmentAlerts = collect();
+        $this->upcomingPractices = collect();
         $this->loadData();
     }
 
@@ -129,6 +146,10 @@ class Dashboard extends Component
                     'requires_approval' => $requiresApproval,
                 ];
             });
+
+        $this->practiceStats = $this->loadPracticeStats();
+        $this->upcomingPractices = $this->loadUpcomingPractices();
+        $this->whatsappStats = WhatsAppMetrics::summary();
     }
 
     private function loadHeatmapData(): void
@@ -213,5 +234,48 @@ class Dashboard extends Component
     public function render()
     {
         return view('livewire.professor.dashboard');
+    }
+
+    private function loadPracticeStats(): array
+    {
+        $upcoming = DiscordPractice::where('start_at', '>=', now())
+            ->where('status', 'scheduled')
+            ->count();
+
+        $filled = DiscordPractice::withCount('reservations')
+            ->where('status', 'scheduled')
+            ->get()
+            ->sum('reservations_count');
+
+        $requests = \App\Models\DiscordPracticeRequest::where('status', 'pending')->count();
+
+        return [
+            'upcoming' => $upcoming,
+            'slots_filled' => $filled,
+            'requests' => $requests,
+        ];
+    }
+
+    private function loadUpcomingPractices(): Collection
+    {
+        return DiscordPractice::with(['lesson.chapter.course'])
+            ->where('start_at', '>=', now())
+            ->where('status', 'scheduled')
+            ->orderBy('start_at')
+            ->limit(5)
+            ->get()
+            ->map(function (DiscordPractice $practice) {
+                return [
+                    'id' => $practice->id,
+                    'title' => $practice->title,
+                    'lesson' => data_get($practice->lesson->config, 'title', __('Lesson')),
+                    'course' => $practice->lesson->chapter?->course?->slug,
+                    'start_at' => $practice->start_at,
+                    'capacity' => $practice->capacity,
+                    'reserved' => $practice->reservations()->count(),
+                    'type' => $practice->type,
+                    'cohort' => $practice->cohort_label,
+                ];
+            });
     }
 }

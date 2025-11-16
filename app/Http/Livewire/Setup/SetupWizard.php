@@ -270,6 +270,9 @@ class SetupWizard extends Component
                 'WEBHOOKS_MAKE_SECRET' => '',
                 'MAKE_WEBHOOK_URL' => '',
                 'DISCORD_WEBHOOK_URL' => '',
+                'DISCORD_WEBHOOK_USERNAME' => '',
+                'DISCORD_WEBHOOK_AVATAR' => '',
+                'DISCORD_WEBHOOK_THREAD_ID' => '',
                 'WHATSAPP_DEEPLINK' => '',
             ],
             'observability' => [

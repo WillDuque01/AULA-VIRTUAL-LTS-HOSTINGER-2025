@@ -4,7 +4,10 @@ namespace App\Http\Livewire;
 
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
+use App\Models\DiscordPractice;
 use App\Models\Lesson;
+use App\Models\PracticePackage;
+use App\Models\PracticePackageOrder;
 use App\Models\VideoProgress;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +32,8 @@ class Player extends Component
     public ?string $ctaUrl = null;
     public array $timeline = [];
     public ?string $courseTitle = null;
+    public ?array $practiceCta = null;
+    public ?array $practicePackCta = null;
 
     public function mount(Lesson $lesson): void
     {
@@ -51,6 +56,7 @@ class Player extends Component
 
         $this->evaluateLocks();
         $this->buildTimeline();
+        $this->loadPracticeHooks();
     }
 
     public function render()
@@ -73,6 +79,8 @@ class Player extends Component
             'prerequisiteLesson' => $this->prerequisiteLesson,
             'timeline' => $this->timeline,
             'courseTitle' => $this->courseTitle,
+            'practiceCta' => $this->practiceCta,
+            'practicePackCta' => $this->practicePackCta,
         ]);
     }
 
@@ -320,6 +328,62 @@ class Player extends Component
             'submitted' => 'submitted',
             default => 'pending',
         };
+    }
+
+    private function loadPracticeHooks(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $practice = DiscordPractice::with(['package', 'reservations'])
+            ->where('lesson_id', $this->lesson->id)
+            ->where('status', 'scheduled')
+            ->where('start_at', '>=', now())
+            ->orderBy('start_at')
+            ->first();
+
+        if ($practice) {
+            $reservedCount = $practice->reservations->count();
+            $this->practiceCta = [
+                'id' => $practice->id,
+                'title' => $practice->title,
+                'start_at' => $practice->start_at,
+                'capacity' => $practice->capacity,
+                'available' => max(0, $practice->capacity - $reservedCount),
+                'requires_package' => $practice->requires_package,
+                'package_title' => $practice->package?->title,
+                'has_reservation' => $practice->reservations->contains('user_id', $user->id),
+            ];
+        }
+
+        $pack = PracticePackage::query()
+            ->where('status', 'published')
+            ->where(function ($query) {
+                $query->where('lesson_id', $this->lesson->id)
+                    ->orWhere(fn ($q) => $q->whereNull('lesson_id')->where('is_global', true));
+            })
+            ->orderByDesc('lesson_id')
+            ->orderByDesc('is_global')
+            ->first();
+
+        if ($pack) {
+            $order = PracticePackageOrder::where('practice_package_id', $pack->id)
+                ->where('user_id', $user->id)
+                ->where('status', 'paid')
+                ->first();
+
+            $this->practicePackCta = [
+                'id' => $pack->id,
+                'title' => $pack->title,
+                'sessions' => $pack->sessions_count,
+                'price' => $pack->price_amount,
+                'currency' => $pack->price_currency,
+                'is_global' => $pack->is_global,
+                'has_order' => (bool) $order,
+            ];
+        }
     }
 }
 

@@ -17,6 +17,83 @@
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Prácticas Discord</p>
+                <h4 class="text-lg font-semibold text-slate-900">Slots y solicitudes</h4>
+            </div>
+            <a href="{{ route('professor.discord-practices', ['locale' => app()->getLocale()]) }}"
+               class="text-xs font-semibold text-blue-600 hover:underline">
+                Ver planificador →
+            </a>
+        </div>
+        <div class="px-6 py-5 grid gap-4 sm:grid-cols-3">
+            <div>
+                <p class="text-xs uppercase text-slate-500">Próximas</p>
+                <p class="text-3xl font-bold text-slate-900">{{ $practiceStats['upcoming'] ?? 0 }}</p>
+            </div>
+            <div>
+                <p class="text-xs uppercase text-slate-500">Reservas</p>
+                <p class="text-3xl font-bold text-emerald-600">{{ $practiceStats['slots_filled'] ?? 0 }}</p>
+            </div>
+            <div>
+                <p class="text-xs uppercase text-slate-500">Solicitudes</p>
+                <p class="text-3xl font-bold text-amber-500">{{ $practiceStats['requests'] ?? 0 }}</p>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100">
+            @forelse($upcomingPractices ?? collect() as $practice)
+                <div class="px-6 py-4 flex flex-col gap-1 text-sm text-slate-600">
+                    <p class="font-semibold text-slate-900">{{ $practice['title'] }}</p>
+                    <p class="text-xs text-slate-500">
+                        {{ $practice['course'] }} · {{ $practice['lesson'] }} · {{ $practice['start_at']->format('d M H:i') }}
+                        ({{ ucfirst($practice['type']) }}{{ $practice['cohort'] ? ' · '.$practice['cohort'] : '' }})
+                    </p>
+                    <p class="text-xs text-slate-400">Capacidad {{ $practice['reserved'] }} / {{ $practice['capacity'] }}</p>
+                </div>
+            @empty
+                <div class="px-6 py-4 text-sm text-slate-500">
+                    Aún no hay sesiones programadas en el calendario.
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.whatsapp.title') }}</p>
+                <h4 class="text-lg font-semibold text-slate-900">{{ __('dashboard.whatsapp.subtitle') }}</h4>
+            </div>
+        </div>
+        <div class="px-6 py-5 space-y-3">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                    <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.today') }}</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $whatsappStats['today'] ?? 0 }}</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.week') }}</p>
+                    <p class="text-3xl font-bold text-emerald-600">{{ $whatsappStats['week'] ?? 0 }}</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase text-slate-500">{{ __('dashboard.whatsapp.contexts') }}</p>
+                    <ul class="mt-2 space-y-1 text-sm text-slate-600">
+                        @forelse(collect($whatsappStats['contexts'] ?? []) as $context)
+                            <li class="flex items-center justify-between">
+                                <span>{{ $context['context'] }}</span>
+                                <span class="font-semibold">{{ $context['count'] }}</span>
+                            </li>
+                        @empty
+                            <li class="text-xs text-slate-400">{{ __('dashboard.whatsapp.empty') }}</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
                 <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('prof.dashboard.heatmap.title') }}</p>
                 <h4 class="text-lg font-semibold text-slate-900">{{ $heatmap['lesson'] ?? __('prof.dashboard.heatmap.empty_title') }}</h4>
                 @if($heatmap['lesson'])

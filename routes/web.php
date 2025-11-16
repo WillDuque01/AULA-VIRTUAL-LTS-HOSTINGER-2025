@@ -18,6 +18,8 @@ use App\Livewire\Admin\PaymentSimulator;
 use App\Livewire\Admin\TierManager;
 use App\Livewire\Catalog\CourseCatalog;
 use App\Livewire\Student\MessageCenter as StudentMessageCenter;
+use App\Livewire\Professor\DiscordPracticePlanner;
+use App\Livewire\Professor\PracticePackagesManager;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -94,6 +96,14 @@ Route::prefix('{locale}')
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')
                 ->name('student.messages');
+
+            Route::get('/professor/practices', DiscordPracticePlanner::class)
+                ->middleware('role:Profesor|teacher_admin')
+                ->name('professor.discord-practices');
+
+            Route::get('/professor/practice-packs', PracticePackagesManager::class)
+                ->middleware('role:Profesor|teacher_admin')
+                ->name('professor.practice-packs');
 
             Route::post('/api/video/progress', [VideoProgressController::class, 'store'])->name('api.video.progress');
         });

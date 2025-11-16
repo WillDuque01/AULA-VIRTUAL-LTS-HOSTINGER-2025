@@ -28,6 +28,8 @@
         </div>
     </div>
 
+    <livewire:student.discord-practice-browser />
+
     @if(session('certificate_status'))
         <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             {{ session('certificate_status') }}
@@ -64,6 +66,8 @@
             @endforelse
         </div>
     </div>
+
+    <livewire:student.practice-packages-catalog />
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">

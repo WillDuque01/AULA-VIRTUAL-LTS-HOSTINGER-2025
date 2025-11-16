@@ -3,11 +3,15 @@
 namespace App\Livewire\Admin;
 
 use App\Settings\BrandingSettings;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class BrandingDesigner extends Component
 {
+    use WithFileUploads;
+
     public string $primary_color = '#0f172a';
     public string $secondary_color = '#1d4ed8';
     public string $accent_color = '#f97316';
@@ -28,6 +32,10 @@ class BrandingDesigner extends Component
     public string $logo_text = '';
     public string $logo_mode = 'image';
     public string $logo_svg = '';
+    public string $logo_horizontal_path = '';
+    public string $logo_square_path = '';
+    public $logoHorizontalUpload;
+    public $logoSquareUpload;
 
     public function mount(BrandingSettings $settings): void
     {
@@ -51,6 +59,8 @@ class BrandingDesigner extends Component
         $this->logo_text = $settings->logo_text;
         $this->logo_mode = $settings->logo_mode;
         $this->logo_svg = $settings->logo_svg;
+        $this->logo_horizontal_path = $settings->logo_horizontal_path ?? '';
+        $this->logo_square_path = $settings->logo_square_path ?? '';
     }
 
     public function save(BrandingSettings $settings): void
@@ -72,11 +82,21 @@ class BrandingDesigner extends Component
             'shadow_bold' => ['required', 'string', 'max:255'],
             'container_max_width' => ['required', 'string', 'max:12'],
             'dark_mode' => ['boolean'],
-            'logo_url' => ['nullable', 'url', Rule::requiredIf(fn () => $this->logo_mode === 'image')],
+            'logo_url' => ['nullable', 'url'],
             'logo_text' => ['nullable', 'string', 'max:80'],
             'logo_mode' => ['required', Rule::in(['image', 'text'])],
             'logo_svg' => ['nullable', 'string', 'max:2048', Rule::requiredIf(fn () => $this->logo_mode === 'text')],
+            'logoHorizontalUpload' => ['nullable', 'file', 'max:2048', 'mimetypes:image/png,image/jpeg,image/webp,image/svg+xml'],
+            'logoSquareUpload' => ['nullable', 'file', 'max:2048', 'mimetypes:image/png,image/jpeg,image/webp,image/svg+xml'],
         ]);
+
+        $logoPaths = $this->handleLogoUploads();
+
+        if ($data['logo_mode'] === 'image' && !$this->hasImageLogo($logoPaths, $data['logo_url'])) {
+            $this->addError('logo_url', __('branding.logo_required'));
+
+            return;
+        }
 
         $settings->primary_color = $data['primary_color'];
         $settings->secondary_color = $data['secondary_color'];
@@ -98,12 +118,78 @@ class BrandingDesigner extends Component
         $settings->logo_text = $data['logo_text'] ?? '';
         $settings->logo_mode = $data['logo_mode'];
         $settings->logo_svg = $data['logo_svg'] ?? '';
+        $settings->logo_horizontal_path = $logoPaths['horizontal'];
+        $settings->logo_square_path = $logoPaths['square'];
         $settings->save();
 
         cache()->forget('branding.info');
 
-        $this->dispatchBrowserEvent('branding-saved');
+        $this->dispatch('branding-saved');
         $this->dispatch('branding-updated');
+    }
+
+    public function clearLogo(string $variant): void
+    {
+        if ($variant === 'horizontal' && $this->logo_horizontal_path) {
+            Storage::disk('public')->delete($this->logo_horizontal_path);
+            $this->logo_horizontal_path = '';
+        }
+
+        if ($variant === 'square' && $this->logo_square_path) {
+            Storage::disk('public')->delete($this->logo_square_path);
+            $this->logo_square_path = '';
+        }
+    }
+
+    public function getHorizontalLogoUrlProperty(): ?string
+    {
+        return $this->logo_horizontal_path
+            ? Storage::disk('public')->url($this->logo_horizontal_path)
+            : null;
+    }
+
+    public function getSquareLogoUrlProperty(): ?string
+    {
+        return $this->logo_square_path
+            ? Storage::disk('public')->url($this->logo_square_path)
+            : null;
+    }
+
+    private function handleLogoUploads(): array
+    {
+        $currentHorizontal = $this->logo_horizontal_path;
+        $currentSquare = $this->logo_square_path;
+
+        if ($this->logoHorizontalUpload) {
+            if ($currentHorizontal) {
+                Storage::disk('public')->delete($currentHorizontal);
+            }
+
+            $currentHorizontal = $this->logoHorizontalUpload->storePublicly('branding', 'public');
+        }
+
+        if ($this->logoSquareUpload) {
+            if ($currentSquare) {
+                Storage::disk('public')->delete($currentSquare);
+            }
+
+            $currentSquare = $this->logoSquareUpload->storePublicly('branding', 'public');
+        }
+
+        $this->logo_horizontal_path = $currentHorizontal ?? '';
+        $this->logo_square_path = $currentSquare ?? '';
+        $this->logoHorizontalUpload = null;
+        $this->logoSquareUpload = null;
+
+        return [
+            'horizontal' => $this->logo_horizontal_path,
+            'square' => $this->logo_square_path,
+        ];
+    }
+
+    private function hasImageLogo(array $paths, ?string $remoteUrl): bool
+    {
+        return filled($paths['horizontal']) || filled($paths['square']) || filled($remoteUrl);
     }
 
     public function render()

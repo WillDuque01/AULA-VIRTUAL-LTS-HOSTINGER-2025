@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\IntegrationEvent;
+use App\Support\Integrations\DiscordMessageBuilder;
 use Google\Service\Sheets;
 use Google\Service\Sheets\ValueRange;
 use Illuminate\Bus\Queueable;
@@ -120,14 +121,12 @@ class DispatchIntegrationEventJob implements ShouldQueue
             throw new \RuntimeException('Discord webhook no configurado');
         }
 
-        $content = sprintf(
-            "**%s**\n```\n%s\n```",
-            $event->event,
-            json_encode($event->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-        );
+        $payload = (new DiscordMessageBuilder($event))->toPayload();
 
         Http::timeout(10)
-            ->post($url, ['content' => mb_substr($content, 0, 1900)]);
+            ->asJson()
+            ->post($url, $payload)
+            ->throw();
     }
 
     private function sendToSheets(IntegrationEvent $event): void

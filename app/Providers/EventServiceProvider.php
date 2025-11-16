@@ -9,6 +9,11 @@ use App\Events\CourseUnlocked;
 use App\Events\ModuleUnlocked;
 use App\Events\OfferLaunched;
 use App\Events\PaymentSimulated;
+use App\Events\DiscordPracticeRequestEscalated;
+use App\Events\DiscordPracticeReserved;
+use App\Events\DiscordPracticeScheduled;
+use App\Events\PracticePackagePublished;
+use App\Events\PracticePackagePurchased;
 use App\Events\SubscriptionExpiring;
 use App\Events\SubscriptionExpired;
 use App\Events\TierUpdated;
@@ -17,12 +22,22 @@ use App\Listeners\EnqueueCertificateIntegrationEvent;
 use App\Listeners\EnqueueAssignmentApprovedIntegrationEvent;
 use App\Listeners\EnqueueAssignmentRejectedIntegrationEvent;
 use App\Listeners\LogSimulatedPayment;
+use App\Listeners\EnqueueDiscordPracticeRequestEscalatedEvent;
+use App\Listeners\EnqueueDiscordPracticeReservedEvent;
+use App\Listeners\EnqueueDiscordPracticeScheduledEvent;
+use App\Listeners\EnqueuePracticePackagePublishedEvent;
+use App\Listeners\EnqueuePracticePackagePurchasedEvent;
 use App\Listeners\SendCourseUnlockedNotification;
+use App\Listeners\SendDiscordPracticeRequestEscalatedNotification;
+use App\Listeners\SendDiscordPracticeReservedNotification;
+use App\Listeners\SendDiscordPracticeScheduledNotification;
 use App\Listeners\SendModuleUnlockedNotification;
 use App\Listeners\SendOfferLaunchedNotification;
 use App\Listeners\SendCertificateIssuedNotification;
 use App\Listeners\SendAssignmentApprovedNotification;
 use App\Listeners\SendAssignmentRejectedNotification;
+use App\Listeners\SendPracticePackagePublishedNotification;
+use App\Listeners\SendPracticePackagePurchasedNotification;
 use App\Listeners\SendSimulatedPaymentNotification;
 use App\Listeners\SendSubscriptionExpiringNotification;
 use App\Listeners\SendSubscriptionExpiredNotification;
@@ -68,6 +83,26 @@ class EventServiceProvider extends ServiceProvider
         AssignmentRejected::class => [
             SendAssignmentRejectedNotification::class,
             EnqueueAssignmentRejectedIntegrationEvent::class,
+        ],
+        PracticePackagePublished::class => [
+            SendPracticePackagePublishedNotification::class,
+            EnqueuePracticePackagePublishedEvent::class,
+        ],
+        PracticePackagePurchased::class => [
+            SendPracticePackagePurchasedNotification::class,
+            EnqueuePracticePackagePurchasedEvent::class,
+        ],
+        DiscordPracticeScheduled::class => [
+            SendDiscordPracticeScheduledNotification::class,
+            EnqueueDiscordPracticeScheduledEvent::class,
+        ],
+        DiscordPracticeReserved::class => [
+            SendDiscordPracticeReservedNotification::class,
+            EnqueueDiscordPracticeReservedEvent::class,
+        ],
+        DiscordPracticeRequestEscalated::class => [
+            SendDiscordPracticeRequestEscalatedNotification::class,
+            EnqueueDiscordPracticeRequestEscalatedEvent::class,
         ],
     ];
 }

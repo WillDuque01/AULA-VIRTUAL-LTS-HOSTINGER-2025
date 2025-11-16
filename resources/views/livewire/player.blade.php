@@ -23,6 +23,9 @@
         'iframe' => '🌐',
         'default' => '📘',
     ];
+    $practiceRoute = \Illuminate\Support\Facades\Route::has('student.discord-practices')
+        ? route('student.discord-practices', ['locale' => app()->getLocale()])
+        : null;
 @endphp
 
 <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
@@ -69,6 +72,34 @@
                                         </span>
                                     @endif
                                 </a>
+                                @if($isCurrent && $practiceCta)
+                                    <div class="ml-9 mt-2 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-indigo-900">
+                                        <p class="font-semibold">🎉 {{ __('Práctica disponible para esta lección') }}</p>
+                                        <p class="text-[11px] text-indigo-700">
+                                            {{ optional($practiceCta['start_at'])->translatedFormat('d M H:i') ?? __('Próximamente') }}
+                                            · {{ $practiceCta['available'] }} / {{ $practiceCta['capacity'] }} {{ __('cupos') }}
+                                        </p>
+                                        @if($practiceRoute)
+                                            <a href="{{ $practiceRoute }}"
+                                               class="mt-1 inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-[11px] font-semibold text-white shadow hover:bg-indigo-700">
+                                                {{ __('Abrir agenda') }} ↗
+                                            </a>
+                                        @endif
+                                    </div>
+                                @elseif($isCurrent && $practicePackCta)
+                                    <div class="ml-9 mt-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs text-emerald-900">
+                                        <p class="font-semibold">✨ {{ __('Pack de prácticas recomendado') }}</p>
+                                        <p class="text-[11px] text-emerald-700">
+                                            {{ $practicePackCta['sessions'] }} {{ __('sesiones') }} · {{ number_format($practicePackCta['price'], 0) }} {{ $practicePackCta['currency'] }}
+                                        </p>
+                                        @if($practiceRoute)
+                                            <a href="{{ $practiceRoute }}"
+                                               class="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white shadow hover:bg-emerald-700">
+                                                {{ $practicePackCta['has_order'] ? __('Gestionar sesiones') : __('Ver packs') }} ↗
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -123,6 +154,81 @@
          data-duration="{{ $durationSeconds ?? '' }}"
          data-strict="{{ $strictSeeking ? '1' : '0' }}"
          data-progress-url="{{ route('api.video.progress') }}">
+
+        @if($practiceCta)
+            <div class="rounded-3xl border border-indigo-200 bg-indigo-50/80 p-5 shadow-sm">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="text-xs uppercase font-semibold tracking-wide text-indigo-500">{{ __('Práctica en vivo vinculada') }}</p>
+                        <p class="text-lg font-semibold text-slate-900">{{ $practiceCta['title'] }}</p>
+                        <p class="text-sm text-slate-600">
+                            {{ __('Inicio') }}: {{ optional($practiceCta['start_at'])->translatedFormat('d M H:i') ?? __('Próximamente') }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-semibold text-slate-800">{{ $practiceCta['available'] }} / {{ $practiceCta['capacity'] }}</p>
+                        <p class="text-[11px] uppercase tracking-wide text-slate-500">{{ __('Cupos disponibles') }}</p>
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                    @if($practiceCta['has_reservation'])
+                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-700">
+                            ✅ {{ __('Reserva confirmada') }}
+                        </span>
+                    @elseif($practiceCta['available'] <= 0)
+                        <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-4 py-2 text-xs font-semibold text-rose-700">
+                            ⚠️ {{ __('Cupos agotados') }}
+                        </span>
+                    @else
+                        @if($practiceRoute)
+                            <a href="{{ $practiceRoute }}"
+                               class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-indigo-700">
+                                {{ __('Reservar en Discord') }} ↗
+                            </a>
+                        @endif
+                    @endif
+                    @if($practiceRoute)
+                        <a href="{{ $practiceRoute }}"
+                           class="inline-flex items-center gap-2 rounded-full border border-indigo-200 px-4 py-2 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
+                            {{ __('Ver agenda completa') }}
+                        </a>
+                    @endif
+                </div>
+                @if($practiceCta['requires_package'])
+                    <p class="mt-3 text-xs text-slate-600">
+                        {{ __('Requiere pack activo') }}
+                        @if($practiceCta['package_title'])
+                            — {{ $practiceCta['package_title'] }}
+                        @endif
+                    </p>
+                    @if(($practicePackCta['has_order'] ?? false) === false && $practicePackCta && $practiceRoute)
+                        <a href="{{ $practiceRoute }}"
+                           class="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-semibold text-emerald-700 hover:border-emerald-300">
+                            {{ __('Ver packs disponibles') }} ↗
+                        </a>
+                    @endif
+                @endif
+            </div>
+        @elseif($practicePackCta)
+            <div class="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
+                <div class="flex flex-col gap-2">
+                    <p class="text-xs uppercase font-semibold tracking-wide text-emerald-600">{{ __('Prácticas recomendadas') }}</p>
+                    <p class="text-lg font-semibold text-slate-900">{{ $practicePackCta['title'] }}</p>
+                    <p class="text-sm text-slate-600">
+                        {{ $practicePackCta['sessions'] }} {{ __('sesiones') }} · {{ number_format($practicePackCta['price'], 2) }} {{ $practicePackCta['currency'] }}
+                    </p>
+                </div>
+                <div class="mt-3 flex flex-wrap items-center gap-3">
+                    @if($practiceRoute)
+                        <a href="{{ $practiceRoute }}"
+                           class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-emerald-700">
+                            {{ $practicePackCta['has_order'] ? __('Gestionar mis sesiones') : __('Comprar pack') }} ↗
+                        </a>
+                    @endif
+                    <span class="text-xs text-emerald-700">{{ __('Ideal para practicar lo visto en esta lección.') }}</span>
+                </div>
+            </div>
+        @endif
 
         <div class="aspect-video rounded-3xl overflow-hidden bg-black relative ring-1 ring-slate-900/10 shadow-xl shadow-black/30">
             @switch($provider)

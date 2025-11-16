@@ -12,6 +12,10 @@
                 <livewire:admin.dashboard />
             @elseif($user && $user->hasRole('Profesor'))
                 <livewire:professor.dashboard />
+                <div class="mt-10 space-y-10">
+                    <livewire:professor.discord-practice-planner />
+                    <livewire:professor.practice-packages-manager />
+                </div>
             @else
                 <livewire:student.dashboard />
             @endif

@@ -50,6 +50,9 @@ class ProvisionerRequest extends FormRequest
             'WEBHOOKS_MAKE_SECRET' => ['nullable', 'string', 'max:255'],
             'MAKE_WEBHOOK_URL' => ['nullable', 'url', 'max:255'],
             'DISCORD_WEBHOOK_URL' => ['nullable', 'url', 'max:255'],
+            'DISCORD_WEBHOOK_USERNAME' => ['nullable', 'string', 'max:80'],
+            'DISCORD_WEBHOOK_AVATAR' => ['nullable', 'url', 'max:255'],
+            'DISCORD_WEBHOOK_THREAD_ID' => ['nullable', 'string', 'max:64'],
 
             'CERTIFICATES_VERIFY_SECRET' => ['nullable', 'string', 'max:255'],
 

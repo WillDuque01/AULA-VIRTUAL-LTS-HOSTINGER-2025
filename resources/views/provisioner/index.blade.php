@@ -68,6 +68,9 @@
       <label>WEBHOOKS_MAKE_SECRET</label><input name="WEBHOOKS_MAKE_SECRET" value="{{ config('services.make.secret') }}">
       <label>MAKE_WEBHOOK_URL</label><input name="MAKE_WEBHOOK_URL" value="{{ config('services.make.webhook_url') }}">
       <label>DISCORD_WEBHOOK_URL</label><input name="DISCORD_WEBHOOK_URL" value="{{ config('services.discord.webhook_url') }}">
+      <label>DISCORD_WEBHOOK_USERNAME</label><input name="DISCORD_WEBHOOK_USERNAME" placeholder="LMS Alerts" value="{{ config('services.discord.username') }}">
+      <label>DISCORD_WEBHOOK_AVATAR</label><input name="DISCORD_WEBHOOK_AVATAR" placeholder="https://cdn..." value="{{ config('services.discord.avatar') }}">
+      <label>DISCORD_WEBHOOK_THREAD_ID</label><input name="DISCORD_WEBHOOK_THREAD_ID" placeholder="Opcional: ID de hilo" value="{{ config('services.discord.thread_id') }}">
       <label>GOOGLE_SERVICE_ACCOUNT_JSON_PATH</label><input name="GOOGLE_SERVICE_ACCOUNT_JSON_PATH" value="{{ config('services.google.service_account_json', 'storage/app/keys/google.json') }}">
       <label>SHEET_ID</label><input name="SHEET_ID" value="{{ config('services.google.sheet_id') }}">
       <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="GOOGLE_SHEETS_ENABLED" value="1" {{ config('services.google.enabled') ? 'checked' : '' }}> Habilitar Google Sheets</label>

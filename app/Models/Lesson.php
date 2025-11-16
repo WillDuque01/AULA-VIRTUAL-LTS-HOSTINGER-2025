@@ -84,5 +84,10 @@ class Lesson extends Model
     {
         return $this->hasOne(Assignment::class);
     }
+
+    public function discordPractices()
+    {
+        return $this->hasMany(DiscordPractice::class);
+    }
 }
 
