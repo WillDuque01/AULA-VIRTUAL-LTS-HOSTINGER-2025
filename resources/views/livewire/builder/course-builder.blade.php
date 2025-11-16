@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6" data-builder-root>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-semibold">Builder de curso: {{ $course->slug }}</h2>
@@ -103,14 +103,25 @@
                 <div class="space-y-3" data-sortable-lessons>
                     @forelse($chapter['lessons'] as $lessonIndex => $lesson)
                         @php($isFocused = $focus && data_get($focus, 'lesson.id') === $lesson['id'])
+                        @php($isSaving = ($savingLessonId ?? null) === ($lesson['id'] ?? null))
                         <div @class([
-                                'border rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent data-[state=saving]:ring-blue-200 transition',
+                                'relative border rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent transition data-[state=saving]:opacity-80',
                                 'border-indigo-200 ring-2 ring-indigo-200/80 bg-white shadow-lg shadow-indigo-100/60' => $isFocused,
                                 'border-gray-200' => ! $isFocused,
                             ])
                              data-lesson-item
                              data-lesson-id="{{ $lesson['id'] }}"
+                             data-state="{{ $isSaving ? 'saving' : 'idle' }}"
+                             aria-busy="{{ $isSaving ? 'true' : 'false' }}"
                              wire:key="lesson-{{ $lesson['id'] }}">
+                            @if($isSaving)
+                                <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-2xl">
+                                    <svg class="h-5 w-5 animate-spin text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
+                                </div>
+                            @endif
                             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                                 <div class="flex items-center gap-3">
                                     <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-8 h-8 cursor-move bg-white shadow-inner" title="Arrastrar lección">
@@ -324,7 +335,15 @@
                             </div>
 
                             <div class="mt-4 text-right">
-                                <button type="button" wire:click="saveLesson({{ $chapterIndex }}, {{ $lessonIndex }})" class="inline-flex items-center px-4 py-2 text-xs font-semibold bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <button type="button"
+                                        wire:click="saveLesson({{ $chapterIndex }}, {{ $lessonIndex }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="saveLesson({{ $chapterIndex }}, {{ $lessonIndex }})"
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70">
+                                    <svg wire:loading.flex wire:target="saveLesson({{ $chapterIndex }}, {{ $lessonIndex }})" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
                                     Guardar cambios
                                 </button>
                             </div>
@@ -455,6 +474,9 @@
                 0% { transform: translateY(-20px) scale(1); opacity: 1; }
                 100% { transform: translateY(40px) scale(0.5); opacity: 0; }
             }
+            [data-builder-root] [data-state="saving"] {
+                pointer-events: none;
+            }
         </style>
         <script>
             document.addEventListener('alpine:init', () => {
@@ -544,9 +566,61 @@
                 };
 
                 initializeSortables();
+                let cleanupShortcuts = null;
+
+                const callShortcut = (eventName) => {
+                    if (window.Livewire?.dispatch) {
+                        window.Livewire.dispatch(eventName);
+                    }
+                };
+
+                const shouldIgnoreTarget = (target) => {
+                    if (! target) {
+                        return false;
+                    }
+
+                    const tag = target.tagName ? target.tagName.toLowerCase() : '';
+                    return ['input', 'textarea', 'select'].includes(tag) || target.isContentEditable;
+                };
+
+                const registerShortcuts = () => {
+                    const handler = (event) => {
+                        const key = event.key ? event.key.toLowerCase() : null;
+                        if (! key) {
+                            return;
+                        }
+
+                        if (! event.ctrlKey && ! event.metaKey && ! event.altKey && key === 'n' && ! shouldIgnoreTarget(event.target)) {
+                            event.preventDefault();
+                            callShortcut('builder-new-chapter');
+                        }
+
+                        if ((event.ctrlKey || event.metaKey) && key === 's') {
+                            event.preventDefault();
+                            callShortcut('builder-save-focused');
+                        }
+                    };
+
+                    document.addEventListener('keydown', handler);
+
+                    return () => document.removeEventListener('keydown', handler);
+                };
+
+                const ensureShortcuts = () => {
+                    if (cleanupShortcuts || ! document.querySelector('[data-builder-root]')) {
+                        return;
+                    }
+
+                    cleanupShortcuts = registerShortcuts();
+                };
+
+                ensureShortcuts();
 
                 Livewire.on('builder:refresh-sortables', () => {
-                    setTimeout(() => initializeSortables(), 60);
+                    setTimeout(() => {
+                        initializeSortables();
+                        ensureShortcuts();
+                    }, 60);
                 });
 
                 const showToast = ({ variant = 'success', message = '' }) => {
@@ -604,6 +678,13 @@
                             duration: 720,
                             easing: 'ease-out'
                         });
+                    }
+                });
+
+                Livewire.hook('component.removed', (component) => {
+                    if (component.el && component.el.hasAttribute('data-builder-root')) {
+                        cleanupShortcuts?.();
+                        cleanupShortcuts = null;
                     }
                 });
             });

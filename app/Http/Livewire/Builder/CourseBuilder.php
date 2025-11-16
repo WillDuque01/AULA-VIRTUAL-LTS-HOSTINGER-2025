@@ -38,6 +38,8 @@ class CourseBuilder extends Component
 
     public ?array $focus = null;
 
+    public ?int $savingLessonId = null;
+
     public array $lessonTypes = [
         'video' => 'Video',
         'audio' => 'Audio',
@@ -58,6 +60,8 @@ class CourseBuilder extends Component
 
     protected $listeners = [
         'builder-reorder' => 'saveOrder',
+        'builder-new-chapter' => 'addChapter',
+        'builder-save-focused' => 'saveFocusedLesson',
     ];
 
     public function mount(Course $course): void
@@ -133,7 +137,9 @@ class CourseBuilder extends Component
     public function saveLesson(int $chapterIndex, int $lessonIndex): void
     {
         $lessonData = data_get($this->state, "chapters.$chapterIndex.lessons.$lessonIndex", []);
-        $lesson = Lesson::findOrFail((int) ($lessonData['id'] ?? 0));
+        $lessonId = (int) ($lessonData['id'] ?? 0);
+        $lesson = Lesson::findOrFail($lessonId);
+        $this->savingLessonId = $lessonId ?: null;
 
         $type = $lessonData['type'] ?? $lesson->type;
         if (! array_key_exists($type, $this->lessonTypes)) {
@@ -189,6 +195,8 @@ class CourseBuilder extends Component
                 'message' => collect($validationErrors)->implode("\n"),
             ]);
 
+            $this->savingLessonId = null;
+
             return;
         }
 
@@ -213,6 +221,25 @@ class CourseBuilder extends Component
             'variant' => 'success',
             'message' => 'Lección actualizada con éxito',
         ]);
+
+        if ($this->savingLessonId === $lessonId) {
+            $this->savingLessonId = null;
+        }
+    }
+
+    public function saveFocusedLesson(): void
+    {
+        $lessonId = $this->focus['lesson']['id'] ?? $this->focusedLessonId;
+        if (! $lessonId) {
+            return;
+        }
+
+        [$chapterIndex, $lessonIndex] = $this->findLessonIndexes($lessonId);
+        if ($chapterIndex === null || $lessonIndex === null) {
+            return;
+        }
+
+        $this->saveLesson($chapterIndex, $lessonIndex);
     }
 
     public function saveOrder(array $payload): void
@@ -265,6 +292,23 @@ class CourseBuilder extends Component
         $this->focusedLessonId = null;
         $this->focus = null;
         $this->dispatch('builder:focus-open', ['lessonId' => null]);
+    }
+
+    private function findLessonIndexes(?int $lessonId): array
+    {
+        if (! $lessonId) {
+            return [null, null];
+        }
+
+        foreach ($this->state['chapters'] as $chapterIndex => $chapter) {
+            foreach (($chapter['lessons'] ?? []) as $lessonIndex => $lesson) {
+                if ((int) ($lesson['id'] ?? 0) === $lessonId) {
+                    return [$chapterIndex, $lessonIndex];
+                }
+            }
+        }
+
+        return [null, null];
     }
 
     public function render()
