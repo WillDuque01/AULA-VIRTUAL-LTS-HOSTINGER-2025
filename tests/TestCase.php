@@ -13,30 +13,31 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        app()->setLocale($this->testingLocale);
+        URL::defaults(['locale' => $this->testingLocale]);
+
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+    }
+
+    protected function getEnvironmentSetUp($app): void
+    {
         $databasePath = database_path('testing.sqlite');
 
         if (! file_exists($databasePath)) {
             touch($databasePath);
         }
 
-        config([
-            'app.locale' => $this->testingLocale,
-            'session.driver' => 'file',
-            'queue.default' => 'sync',
-            'cache.default' => 'array',
-            'mail.default' => 'array',
-            'database.default' => 'sqlite',
-            'database.connections.sqlite.database' => $databasePath,
-            'hashing.driver' => 'bcrypt',
-            'hashing.bcrypt.verify' => false,
-            'hashing.argon.verify' => false,
-            'telescope.enabled' => false,
-        ]);
-
-        app()->setLocale($this->testingLocale);
-        URL::defaults(['locale' => $this->testingLocale]);
-
-        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+        $app['config']->set('app.locale', $this->testingLocale);
+        $app['config']->set('session.driver', 'array');
+        $app['config']->set('queue.default', 'sync');
+        $app['config']->set('cache.default', 'array');
+        $app['config']->set('mail.default', 'array');
+        $app['config']->set('database.default', 'sqlite');
+        $app['config']->set('database.connections.sqlite.database', $databasePath);
+        $app['config']->set('hashing.driver', 'bcrypt');
+        $app['config']->set('hashing.bcrypt.verify', false);
+        $app['config']->set('hashing.argon.verify', false);
+        $app['config']->set('telescope.enabled', false);
     }
 
     public function call($method, $uri, $parameters = [], $cookies = [], $files = [], $server = [], $content = null)
