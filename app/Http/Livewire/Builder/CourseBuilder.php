@@ -61,6 +61,15 @@ class CourseBuilder extends Component
         'cloudflare' => 'Cloudflare Stream',
     ];
 
+    public string $statusFilter = 'all';
+
+    public array $statusFilterOptions = [
+        'all' => 'Todos',
+        'pending' => 'Pendientes',
+        'published' => 'Publicados',
+        'rejected' => 'Rechazados',
+    ];
+
     public array $availablePrerequisites = [];
 
     protected $listeners = [
@@ -438,6 +447,7 @@ class CourseBuilder extends Component
             'lessonTypes' => $this->lessonTypes,
             'videoSources' => $this->videoSources,
             'availablePrerequisites' => $this->availablePrerequisites,
+            'statusFilterOptions' => $this->statusFilterOptions,
         ]);
     }
 

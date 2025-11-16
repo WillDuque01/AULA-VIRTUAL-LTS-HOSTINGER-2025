@@ -19,6 +19,62 @@
     </header>
 
     <section class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4">
+        <div class="grid gap-3 md:grid-cols-3">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ __('Docente') }}
+                <select wire:model="filters.teacher_id"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:ring-slate-900">
+                    <option value="">{{ __('Todos') }}</option>
+                    @foreach($teacherOptions as $teacher)
+                        <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ __('Curso') }}
+                <select wire:model="filters.course_id"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:ring-slate-900">
+                    <option value="">{{ __('Todos') }}</option>
+                    @foreach($courseOptions as $course)
+                        <option value="{{ $course->id }}">{{ $course->slug }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ __('Tipo de propuesta') }}
+                <select wire:model="filters.type"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:ring-slate-900">
+                    <option value="all">{{ __('Todas') }}</option>
+                    <option value="module">{{ __('Módulos') }}</option>
+                    <option value="lesson">{{ __('Lecciones') }}</option>
+                    <option value="pack">{{ __('Packs') }}</option>
+                </select>
+            </label>
+        </div>
+        <div class="grid gap-3 md:grid-cols-3">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ __('Contenido publicado') }}
+                <select wire:model="filters.content_status"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:ring-slate-900">
+                    <option value="all">{{ __('Todos') }}</option>
+                    <option value="pending">{{ __('Pendiente') }}</option>
+                    <option value="published">{{ __('Publicado') }}</option>
+                    <option value="rejected">{{ __('Rechazado') }}</option>
+                </select>
+            </label>
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ __('Desde') }}
+                <input type="date"
+                       wire:model="filters.date_from"
+                       class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:ring-slate-900" />
+            </label>
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ __('Hasta') }}
+                <input type="date"
+                       wire:model="filters.date_to"
+                       class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:ring-slate-900" />
+            </label>
+        </div>
         @forelse($submissions as $submission)
             @php
                 $contentStatus = optional($submission->result)->status;
@@ -67,6 +123,27 @@
                         @endif
                     </div>
                 </div>
+                @if($submission->history->isNotEmpty())
+                    <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ __('Historial') }}</p>
+                        <ol class="mt-2 space-y-2">
+                            @foreach($submission->history as $history)
+                                <li class="rounded-xl border border-slate-100 bg-white px-3 py-2 text-[11px] text-slate-600">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-semibold text-slate-800">{{ __($history->status) }}</span>
+                                        <span class="text-[10px] text-slate-400">{{ optional($history->created_at)->format('d M H:i') }}</span>
+                                    </div>
+                                    @if($history->notes)
+                                        <p class="mt-1 text-slate-500">{{ $history->notes }}</p>
+                                    @endif
+                                    @if($history->reviewer)
+                                        <p class="mt-1 text-[10px] text-slate-400">{{ __('Por :name', ['name' => $history->reviewer->name]) }}</p>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
+                @endif
             </article>
         @empty
             <p class="text-sm text-slate-500">{{ __('No hay propuestas en esta bandeja.') }}</p>

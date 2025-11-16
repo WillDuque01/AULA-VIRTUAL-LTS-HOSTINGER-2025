@@ -54,10 +54,16 @@
                     </div>
                 @endforeach
             </div>
-            <a href="{{ route('admin.teacher-submissions', ['locale' => app()->getLocale()]) }}"
-               class="mt-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
-                {{ __('Ir a la bandeja') }} →
-            </a>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <a href="{{ route('admin.teacher-submissions', ['locale' => app()->getLocale()]) }}"
+                   class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
+                    {{ __('Ir a la bandeja') }} →
+                </a>
+                <a href="{{ route('admin.teacher-performance', ['locale' => app()->getLocale()]) }}"
+                   class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-600 hover:border-slate-300">
+                    {{ __('Ver reporte') }} →
+                </a>
+            </div>
         </div>
     </div>
 

@@ -60,7 +60,10 @@ class Dashboard extends Component
             ->get() ?? collect();
 
         $this->submissions = $user?->teacherSubmissions()
-            ->with('result')
+            ->with([
+                'result',
+                'history' => fn ($query) => $query->orderByDesc('created_at')->limit(10),
+            ])
             ->latest()
             ->limit(25)
             ->get() ?? collect();

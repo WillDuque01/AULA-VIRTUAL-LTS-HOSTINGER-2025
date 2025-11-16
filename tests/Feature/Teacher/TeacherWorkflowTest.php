@@ -3,6 +3,7 @@
 namespace Tests\Feature\Teacher;
 
 use App\Livewire\Admin\TeacherManager;
+use App\Livewire\Admin\TeacherPerformanceReport;
 use App\Livewire\Admin\TeacherSubmissionsHub;
 use App\Livewire\Teacher\Dashboard as TeacherDashboard;
 use App\Models\Chapter;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
+use Illuminate\Support\Carbon;
 
 class TeacherWorkflowTest extends TestCase
 {
@@ -103,6 +105,11 @@ class TeacherWorkflowTest extends TestCase
             'status' => 'approved',
         ]);
 
+        $this->assertDatabaseHas('teacher_submission_histories', [
+            'teacher_submission_id' => $submission->id,
+            'status' => 'approved',
+        ]);
+
         $this->assertDatabaseHas('chapters', [
             'id' => $chapterId,
             'status' => 'published',
@@ -150,6 +157,11 @@ class TeacherWorkflowTest extends TestCase
             'feedback' => 'Necesita ajustes',
         ]);
 
+        $this->assertDatabaseHas('teacher_submission_histories', [
+            'teacher_submission_id' => $submission->id,
+            'status' => 'rejected',
+        ]);
+
         $this->assertDatabaseHas('lessons', [
             'id' => $lessonId,
             'status' => 'rejected',
@@ -182,6 +194,48 @@ class TeacherWorkflowTest extends TestCase
             'teacher_id' => $teacher->id,
             'course_id' => $course->id,
         ]);
+    }
+
+    public function test_teacher_performance_report_shows_metrics(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('Admin');
+
+        $teacher = User::factory()->create();
+        $teacher->assignRole('teacher');
+
+        $course = Course::factory()->create();
+        $chapter = Chapter::factory()->create(['course_id' => $course->id]);
+        $teacher->teachingCourses()->attach($course->id);
+
+        $this->actingAs($teacher);
+
+        Livewire::test(TeacherDashboard::class)
+            ->set('form', [
+                'type' => 'lesson',
+                'course_id' => $course->id,
+                'chapter_id' => $chapter->id,
+                'title' => 'Reporte',
+                'lesson_type' => 'video',
+                'estimated_minutes' => 10,
+            ])
+            ->call('submitProposal');
+
+        $submission = TeacherSubmission::first();
+        $submission->update([
+            'status' => 'approved',
+            'approved_by' => $admin->id,
+            'approved_at' => Carbon::now(),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(TeacherPerformanceReport::class)
+            ->assertSee('Reporte de desempeño docente')
+            ->assertSee($teacher->name)
+            ->assertSee('Aprobadas');
     }
 }
 

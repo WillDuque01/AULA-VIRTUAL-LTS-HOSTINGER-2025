@@ -102,6 +102,25 @@
         </div>
     </div>
 
+    <div class="rounded-2xl border border-indigo-100 bg-white/80 shadow-sm px-4 py-4">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">{{ __('Filtro por estado') }}</p>
+                <p class="text-sm text-slate-500">{{ __('Muestra solo capítulos o lecciones con el estado seleccionado.') }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                @foreach($statusFilterOptions as $value => $label)
+                    <button type="button"
+                            wire:click="$set('statusFilter', '{{ $value }}')"
+                            class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition
+                                {{ $statusFilter === $value ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300' }}">
+                        {{ __($label) }}
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     <div class="space-y-4" data-sortable-chapters>
         @forelse($state['chapters'] as $chapterIndex => $chapter)
             @php
@@ -112,7 +131,11 @@
                     'rejected' => 'border-rose-200 bg-rose-50 text-rose-700',
                     default => 'border-emerald-200 bg-emerald-50 text-emerald-700',
                 };
+                $showChapter = $statusFilter === 'all' ||
+                    $chapterStatus === $statusFilter ||
+                    collect($chapter['lessons'])->contains(fn ($lesson) => ($lesson['status'] ?? 'published') === $statusFilter);
             @endphp
+            @continue(! $showChapter)
             <div class="bg-white border border-gray-200 rounded-2xl shadow-lg shadow-slate-100/60 p-4 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
                     <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -181,6 +204,7 @@
                                 default => 'border-emerald-200 bg-emerald-50 text-emerald-700',
                             };
                         @endphp
+                        @continue($statusFilter !== 'all' && $lessonStatus !== $statusFilter)
                         <div @class([
                                 'relative border rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent transition data-[state=saving]:opacity-80',
                                 'border-indigo-200 ring-2 ring-indigo-200/80 bg-white shadow-lg shadow-indigo-100/60' => $isFocused,

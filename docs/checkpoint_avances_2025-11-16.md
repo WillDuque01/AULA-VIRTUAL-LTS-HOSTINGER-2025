@@ -18,7 +18,7 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 | Planner Discord & Packs                       | ~100 %   | Planner con plantillas multi-slot, presets de cohorte, checklist Make y guía operativa (`docs/planner_operativa_make.md`) completada. |
 | DataPorter & Telemetría                       | ~95 %    | Hub con datasets nuevos (`discord_practices`, `practice_package_orders`), snapshots de consumo/escalaciones, monitoreo con historial `telemetry_sync_logs` y panel GA4/Mixpanel. |
 | Perfiles completos                            | ~100 %   | Checklist docente (headline, bio, idiomas, especialidades, certificaciones, LinkedIn/notas) + recordatorios automáticos `profile:remind-incomplete` (cooldown 7 d) corriendo a diario. |
-| Operación docente (Teacher Admin & Teacher)   | ~85 %    | Dashboard de Teachers + submissions crean contenido `pending`, nuevas bandejas de aprobación, notificaciones y filtros de contenido publicado. Resta sumar métricas de desempeño y reportes. |
+| Operación docente (Teacher Admin & Teacher)   | ~100 %   | Dashboard docente con historial de aprobación, filtros por estado en builder y nuevo reporte de desempeño (tiempos, tasas, backlog) disponible para Admin/Teacher Admin. |
 | Documentación & Playbooks                     | ~85 %    | Blueprint + checkpoints al día, `player_signals_playbook`, `integration_playbook.md` y actualización roles; faltan UI playbook completo, guía de cohortes y checklists Hostinger. |
 | CI/CD extendido                               | ~90 %    | Workflows OK; falta `workflow_dispatch` manual y reporte integrado de smoke tests. |
 
@@ -43,15 +43,15 @@ Este documento captura el estado global del proyecto LMS al 16-nov-2025 y define
 7. **HelpHub contextual (100 %)**  
    Configuración centralizada de credenciales (`integration_guides.php`) + Experience Guides (`experience_guides.php`) integrada en wizard, dashboards y botón flotante global. Nuevos componentes `x-help.contextual-panel` y `x-help.floating`.
 
-8. **Operación docente (85 % → 100 %)**  
-   Iteración actual: status `pending/published/rejected` en capítulos/lecciones/packs, dashboard exclusivo de Teachers con propuestas, notificaciones a Teacher Admin y hub de aprobaciones conectado con DataPorter. Próximo paso: métricas por docente, reportes y auditoría fina.
+8. **Operación docente (100 %)**  
+   Cerrado: historial de aprobación por propuesta, filtros de estado en Course Builder, métricas de desempeño (tiempos y tasas) y dashboard dedicado `teacher-performance`.
 
 9. **CI/CD extendido (90 % → 100 %)**  
    `workflow_dispatch` en Deploy, encadenar smoke.yml y publicar resultados (Slack/Discord) con documentación del procedimiento.
 
 ## Próximas acciones inmediatas
-- Cerrar **Operación docente 100 %**: métricas y reportes de desempeño, filtros de contenido publicado, historial de aprobación.
 - Afinar **alertas DataPorter**: snapshots de asistencia/cancelaciones y notificaciones cuando `events_pending` exceda el umbral definido.
 - Revisar las guías: añadir nuevas fichas en `experience_guides.php` cuando se liberen módulos (p. ej. Practice Packs checkout real).
+- Completar documentación UIX 2030 (playbook + cohortes) y habilitar triggers CI/CD pendientes.
 - Tras completar cada bloque, actualizar este checkpoint y comunicar cuando el frente llegue al 100 %.
 

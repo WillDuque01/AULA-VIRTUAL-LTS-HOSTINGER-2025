@@ -98,6 +98,27 @@
                                     </span>
                                 @endif
                             </div>
+                            @if($submission->history->isNotEmpty())
+                                <div class="mt-4 border-t border-slate-100 pt-3">
+                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Historial de aprobación') }}</p>
+                                    <ul class="mt-2 space-y-2">
+                                        @foreach($submission->history as $history)
+                                            <li class="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 text-[11px] text-slate-600">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <span class="font-semibold text-slate-800">{{ __($history->status) }}</span>
+                                                    <span class="text-[10px] text-slate-400">{{ optional($history->created_at)->diffForHumans() }}</span>
+                                                </div>
+                                                @if($history->notes)
+                                                    <p class="mt-1 text-slate-500">{{ $history->notes }}</p>
+                                                @endif
+                                                @if($history->reviewer)
+                                                    <p class="mt-1 text-[10px] text-slate-400">{{ __('Por :name', ['name' => $history->reviewer->name]) }}</p>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </article>
                 @empty
@@ -125,11 +146,18 @@
                 <p class="font-semibold text-slate-900">{{ __('Gestor de Packs') }}</p>
                 <p class="text-xs text-slate-500">{{ __('Revisa los packs publicados y su desempeño.') }}</p>
             </a>
-            <a href="{{ route('courses.builder', ['locale' => app()->getLocale(), 'course' => optional($courses->first())->id]) }}"
-               class="rounded-2xl border border-slate-100 px-4 py-3 text-sm text-slate-700 hover:border-slate-300">
-                <p class="font-semibold text-slate-900">{{ __('Course Builder') }}</p>
-                <p class="text-xs text-slate-500">{{ __('Acceso rápido al constructor cuando tengas aprobación.') }}</p>
-            </a>
+            @if($courses->isNotEmpty())
+                <a href="{{ route('courses.builder', ['locale' => app()->getLocale(), 'course' => optional($courses->first())->id]) }}"
+                   class="rounded-2xl border border-slate-100 px-4 py-3 text-sm text-slate-700 hover:border-slate-300">
+                    <p class="font-semibold text-slate-900">{{ __('Course Builder') }}</p>
+                    <p class="text-xs text-slate-500">{{ __('Acceso rápido al constructor cuando tengas aprobación.') }}</p>
+                </a>
+            @else
+                <div class="rounded-2xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-400">
+                    <p class="font-semibold">{{ __('Course Builder') }}</p>
+                    <p class="text-xs">{{ __('Solicita un curso asignado para habilitar el acceso.') }}</p>
+                </div>
+            @endif
         </div>
     </section>
 

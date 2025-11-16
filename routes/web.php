@@ -27,6 +27,7 @@ use App\Livewire\Professor\PracticePackagesManager;
 use App\Livewire\Teacher\Dashboard as TeacherDashboard;
 use App\Livewire\Admin\TeacherManager;
 use App\Livewire\Admin\TeacherSubmissionsHub;
+use App\Livewire\Admin\TeacherPerformanceReport;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -130,6 +131,10 @@ Route::prefix('{locale}')
             Route::get('/admin/teacher-submissions', TeacherSubmissionsHub::class)
                 ->middleware('role:Admin|teacher_admin')
                 ->name('admin.teacher-submissions');
+
+            Route::get('/admin/teacher-performance', TeacherPerformanceReport::class)
+                ->middleware('role:Admin|teacher_admin')
+                ->name('admin.teacher-performance');
 
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')
