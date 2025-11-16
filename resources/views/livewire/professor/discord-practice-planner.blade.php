@@ -1,9 +1,34 @@
 <div class="space-y-6">
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
         <div class="flex flex-col gap-1">
             <p class="text-xs uppercase text-slate-500 tracking-wide">Programar práctica</p>
             <h3 class="text-lg font-semibold text-slate-900">Sesiones 1:1 / Cohorte en Discord</h3>
             <p class="text-xs text-slate-500">Configura un slot y luego ajusta detalles desde el calendario semanal.</p>
+        </div>
+        <div class="grid gap-4 md:grid-cols-3">
+            <label class="space-y-1 text-xs font-semibold text-slate-500 uppercase tracking-wide" x-data>
+                Plantilla guardada
+                <select wire:model="selectedTemplateId" @change="$wire.applyTemplate($event.target.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">{{ __('Sin plantilla') }}</option>
+                    @foreach($templates as $template)
+                        <option value="{{ $template->id }}">{{ $template->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="space-y-1 text-xs font-semibold text-slate-500 uppercase tracking-wide md:col-span-2">
+                Guardar formulario como plantilla
+                <div class="flex items-center gap-2">
+                    <input type="text" wire:model.defer="templateName" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Ej. Cohorte B2 mañanas">
+                    <button type="button" wire:click="saveTemplate" class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
+                        💾 Guardar
+                    </button>
+                    @if($selectedTemplateId)
+                        <button type="button" wire:click="deleteTemplate({{ $selectedTemplateId }})" class="inline-flex items-center gap-2 rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:border-rose-300">
+                            🗑 Eliminar
+                        </button>
+                    @endif
+                </div>
+            </label>
         </div>
         <div class="mt-5 grid gap-4 md:grid-cols-2">
             <label class="space-y-1 text-sm text-slate-600">
@@ -155,6 +180,18 @@
                                                         <span>{{ __('Cupos') }} {{ $practice->reservations->count() }} / {{ $practice->capacity }}</span>
                                                         <span class="capitalize">{{ $practice->type }}</span>
                                                     </p>
+                                                    <div class="mt-2 flex flex-wrap gap-2">
+                                                        <button type="button"
+                                                                wire:click="duplicatePractice({{ $practice->id }}, 1)"
+                                                                class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-500 hover:border-indigo-200 hover:text-indigo-700">
+                                                            ⤴︎ +1 día
+                                                        </button>
+                                                        <button type="button"
+                                                                wire:click="duplicatePractice({{ $practice->id }}, 7)"
+                                                                class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-500 hover:border-indigo-200 hover:text-indigo-700">
+                                                            ⤴︎ +1 semana
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             @endforeach
                                         </div>

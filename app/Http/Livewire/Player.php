@@ -9,6 +9,7 @@ use App\Models\Lesson;
 use App\Models\PracticePackage;
 use App\Models\PracticePackageOrder;
 use App\Models\VideoProgress;
+use App\Models\VideoHeatmapSegment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -34,6 +35,10 @@ class Player extends Component
     public ?string $courseTitle = null;
     public ?array $practiceCta = null;
     public ?array $practicePackCta = null;
+    public array $heatmap = [];
+    public float $progressPercent = 0.0;
+
+    protected ?VideoProgress $progressRecord = null;
 
     public function mount(Lesson $lesson): void
     {
@@ -57,6 +62,8 @@ class Player extends Component
         $this->evaluateLocks();
         $this->buildTimeline();
         $this->loadPracticeHooks();
+        $this->loadHeatmap();
+        $this->calculateProgressPercent();
     }
 
     public function render()
@@ -132,6 +139,8 @@ class Player extends Component
         $progress = VideoProgress::where('lesson_id', $this->lesson->id)
             ->where('user_id', $userId)
             ->first();
+
+        $this->progressRecord = $progress;
 
         return $progress?->last_second ?? 0;
     }
@@ -384,6 +393,41 @@ class Player extends Component
                 'has_order' => (bool) $order,
             ];
         }
+    }
+
+    private function loadHeatmap(): void
+    {
+        $segments = VideoHeatmapSegment::where('lesson_id', $this->lesson->id)
+            ->orderBy('bucket')
+            ->get();
+
+        if ($segments->isEmpty()) {
+            $this->heatmap = [];
+
+            return;
+        }
+
+        $maxReach = (int) max($segments->pluck('reach_count')->all());
+
+        $this->heatmap = $segments->map(function (VideoHeatmapSegment $segment) use ($maxReach) {
+            return [
+                'bucket' => $segment->bucket,
+                'reach' => $segment->reach_count,
+                'intensity' => $maxReach > 0 ? round($segment->reach_count / $maxReach, 3) : 0,
+            ];
+        })->toArray();
+    }
+
+    private function calculateProgressPercent(): void
+    {
+        if (! $this->progressRecord || ! $this->duration || $this->duration <= 0) {
+            $this->progressPercent = 0;
+
+            return;
+        }
+
+        $watched = $this->progressRecord->watched_seconds ?? $this->progressRecord->last_second ?? 0;
+        $this->progressPercent = round(min(1, $watched / $this->duration) * 100, 1);
     }
 }
 

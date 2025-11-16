@@ -1,0 +1,67 @@
+name: Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'URL base a monitorear (default: HOSTINGER_APP_URL)'
+        required: false
+      locale:
+        description: 'Locale principal para construir rutas (ej. es)'
+        required: false
+        default: es
+      extra_paths:
+        description: "Rutas adicionales (una por línea, empiezan con /)"
+        required: false
+  schedule:
+    - cron: '30 12 * * *'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: ${{ github.event.inputs.base_url || secrets.HOSTINGER_APP_URL }}
+      LOCALE: ${{ github.event.inputs.locale || 'es' }}
+      EXTRA_PATHS: ${{ github.event.inputs.extra_paths }}
+    steps:
+      - name: Resolver URL base
+        id: setup
+        run: |
+          base="${BASE_URL%/}"
+          if [ -z "$base" ]; then
+              echo "❌ BASE_URL no está definido (input o secreto HOSTINGER_APP_URL)." >&2
+              exit 1
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "✅ Usando base: $base"
+
+      - name: Ejecutar smoke tests
+        run: |
+          set -euo pipefail
+          base="${{ steps.setup.outputs.base }}"
+          endpoints=$'/'$'\n'"/${LOCALE}"$'\n'"/${LOCALE}/login"$'\n'"/${LOCALE}/dashboard"
+
+          if [ -n "${EXTRA_PATHS:-}" ]; then
+            cleaned=$(printf '%s\n' "$EXTRA_PATHS" | sed '/^\s*$/d')
+            if [ -n "$cleaned" ]; then
+              endpoints="$endpoints"$'\n'"$cleaned"
+            fi
+          fi
+
+          echo "🔍 Realizando smoke tests:"
+          while IFS= read -r path; do
+            trimmed=$(printf '%s' "$path" | xargs)
+            if [ -z "$trimmed" ]; then
+              continue
+            fi
+
+            full_url="$base$trimmed"
+            echo "→ $full_url"
+            curl --fail --show-error --silent --max-time 12 \
+              -H "User-Agent: LTS-SMOKE/${GITHUB_RUN_ID}" \
+              "$full_url" >/dev/null
+          done <<< "$endpoints"
+
+          echo "✅ Todos los endpoints respondieron correctamente."
+

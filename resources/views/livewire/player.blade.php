@@ -38,42 +38,56 @@
                 </div>
                 <span class="text-xl" aria-hidden="true">🧭</span>
             </div>
-            <div class="mt-4 space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <div class="mt-4 space-y-4 max-h-[70vh] overflow-y-auto pr-1" data-player-timeline>
                 @forelse($timeline as $block)
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $block['title'] ?? __('player.timeline.chapter_fallback') }}</p>
-                        <div class="mt-2 space-y-2">
+                        <div class="mt-2 space-y-4 relative pl-6">
+                            <span class="pointer-events-none absolute left-2 top-0 bottom-0 w-px bg-slate-100"></span>
                             @foreach($block['lessons'] as $timelineLesson)
                                 @php
                                     $isCurrent = $timelineLesson['current'] ?? false;
                                     $statusKey = $timelineLesson['status'] ?? null;
                                     $statusMeta = $assignmentStatusMeta[$statusKey] ?? null;
                                     $glyph = $typeGlyphs[$timelineLesson['type']] ?? $typeGlyphs['default'];
+                                    $dotClasses = match (true) {
+                                        $isCurrent => 'bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.18)] motion-safe:animate-pulse',
+                                        $statusKey === 'approved' => 'bg-emerald-300 shadow-[0_0_0_4px_rgba(16,185,129,.08)]',
+                                        $statusKey === 'rejected' => 'bg-rose-300 shadow-[0_0_0_4px_rgba(244,114,182,.12)]',
+                                        $statusKey === 'submitted' || $statusKey === 'graded' => 'bg-sky-300',
+                                        default => 'bg-slate-300',
+                                    };
                                     $itemClasses = $isCurrent
-                                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-400/40'
+                                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-500/40 scale-[1.01]'
                                         : 'bg-white text-slate-700 border border-slate-100 hover:border-slate-300 hover:shadow-md';
                                 @endphp
-                                <a href="{{ route('lessons.player', ['locale' => app()->getLocale(), 'lesson' => $timelineLesson['id']]) }}"
-                                   class="group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition {{ $itemClasses }}"
-                                   @if($isCurrent) aria-current="true" @endif>
-                                    <span class="text-base" aria-hidden="true">{{ $glyph }}</span>
-                                    <span class="flex-1">
-                                        <span class="block font-semibold">{{ $timelineLesson['title'] }}</span>
-                                        <span class="block text-[11px] text-slate-500 group-hover:text-slate-600">
-                                            {{ ucfirst($timelineLesson['type']) }}
-                                            @if($timelineLesson['requiresApproval'] ?? false)
-                                                · {{ __('player.timeline.requires_approval_badge') }}
-                                            @endif
-                                        </span>
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute -left-5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center">
+                                        <span class="h-2.5 w-2.5 rounded-full {{ $dotClasses }}"></span>
                                     </span>
-                                    @if($statusMeta)
-                                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $statusMeta['class'] }}">
-                                            {{ $statusMeta['label'] }}
+                                    <a href="{{ route('lessons.player', ['locale' => app()->getLocale(), 'lesson' => $timelineLesson['id']]) }}"
+                                       class="group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition transform {{ $itemClasses }}"
+                                       data-timeline-link
+                                       @if($isCurrent) aria-current="true" @endif>
+                                        <span class="text-base" aria-hidden="true">{{ $glyph }}</span>
+                                        <span class="flex-1">
+                                            <span class="block font-semibold">{{ $timelineLesson['title'] }}</span>
+                                            <span class="block text-[11px] text-slate-500 group-hover:text-slate-600">
+                                                {{ ucfirst($timelineLesson['type']) }}
+                                                @if($timelineLesson['requiresApproval'] ?? false)
+                                                    · {{ __('player.timeline.requires_approval_badge') }}
+                                                @endif
+                                            </span>
                                         </span>
-                                    @endif
-                                </a>
+                                        @if($statusMeta)
+                                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $statusMeta['class'] }}">
+                                                {{ $statusMeta['label'] }}
+                                            </span>
+                                        @endif
+                                    </a>
+                                </div>
                                 @if($isCurrent && $practiceCta)
-                                    <div class="ml-9 mt-2 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-indigo-900">
+                                    <div class="ml-8 mt-2 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-xs text-indigo-900">
                                         <p class="font-semibold">🎉 {{ __('Práctica disponible para esta lección') }}</p>
                                         <p class="text-[11px] text-indigo-700">
                                             {{ optional($practiceCta['start_at'])->translatedFormat('d M H:i') ?? __('Próximamente') }}
@@ -87,7 +101,7 @@
                                         @endif
                                     </div>
                                 @elseif($isCurrent && $practicePackCta)
-                                    <div class="ml-9 mt-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs text-emerald-900">
+                                    <div class="ml-8 mt-2 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs text-emerald-900">
                                         <p class="font-semibold">✨ {{ __('Pack de prácticas recomendado') }}</p>
                                         <p class="text-[11px] text-emerald-700">
                                             {{ $practicePackCta['sessions'] }} {{ __('sesiones') }} · {{ number_format($practicePackCta['price'], 0) }} {{ $practicePackCta['currency'] }}
@@ -270,6 +284,23 @@
             @endswitch
         </div>
 
+        @if(!empty($heatmap))
+            <div class="rounded-3xl border border-slate-100 bg-white/80 p-4 shadow-sm">
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                    <p class="font-semibold uppercase tracking-wide text-slate-400">{{ __('Mapa de abandono') }}</p>
+                    <span>{{ count($heatmap) }} {{ __('segmentos') }}</span>
+                </div>
+                <div class="mt-3 flex h-16 items-end gap-0.5" role="presentation">
+                    @foreach($heatmap as $segment)
+                        <span class="flex-1 rounded-t-full bg-gradient-to-t from-slate-200 to-indigo-400"
+                              style="height: {{ max(8, $segment['intensity'] * 100) }}%; opacity: {{ max(0.35, $segment['intensity']) }};"
+                              title="{{ __('Bucket :bucket — :reach reproducciones', ['bucket' => $segment['bucket'], 'reach' => $segment['reach']]) }}">
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100/80 p-6 space-y-4">
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div class="space-y-1">
@@ -282,6 +313,16 @@
                     <p class="text-sm text-gray-500">Proveedor: {{ ucfirst($provider) }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                    @if($progressPercent > 0)
+                        <div class="w-full">
+                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Avance</span>
+                            <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                <span class="block h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all duration-500"
+                                      style="width: {{ $progressPercent }}%;"></span>
+                            </div>
+                            <p class="mt-1 text-xs text-slate-500">{{ $progressPercent }}% {{ __('completado') }}</p>
+                        </div>
+                    @endif
                     <div>
                         <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">Reanudar</span>
                         <span class="text-sm text-gray-900">{{ $resumeLabel }}</span>
@@ -608,10 +649,34 @@
                     };
                 })();
 
-                PlayerBridge.attachAll();
+                const focusTimeline = () => {
+                    const container = document.querySelector('[data-player-timeline]');
+                    if (! container) {
+                        return;
+                    }
 
-                Livewire.hook('message.processed', () => {
+                    const current = container.querySelector('[aria-current="true"]');
+                    if (! current) {
+                        return;
+                    }
+
+                    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    current.scrollIntoView({
+                        block: 'center',
+                        inline: 'nearest',
+                        behavior: prefersReduced ? 'auto' : 'smooth',
+                    });
+                };
+
+                PlayerBridge.attachAll();
+                focusTimeline();
+
+                Livewire.hook('message.processed', (message, component) => {
                     setTimeout(() => PlayerBridge.attachAll(), 100);
+
+                    if (component.fingerprint?.name === 'player') {
+                        requestAnimationFrame(() => focusTimeline());
+                    }
                 });
             });
         </script>

@@ -3,8 +3,10 @@
 namespace App\Listeners;
 
 use App\Events\DiscordPracticeScheduled;
+use App\Models\DiscordPracticeRequest;
 use App\Models\User;
 use App\Notifications\DiscordPracticeScheduledNotification;
+use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use Illuminate\Support\Facades\Notification;
 
 class SendDiscordPracticeScheduledNotification
@@ -22,11 +24,33 @@ class SendDiscordPracticeScheduledNotification
         }
 
         Notification::send($recipients, new DiscordPracticeScheduledNotification($practice));
+        $this->notifyPendingRequests($practice);
     }
 
     private function teacherAdmins()
     {
         return User::role('teacher_admin')->get();
+    }
+
+    private function notifyPendingRequests($practice): void
+    {
+        $requests = DiscordPracticeRequest::with('user')
+            ->where('lesson_id', $practice->lesson_id)
+            ->where('status', 'pending')
+            ->get();
+
+        if ($requests->isEmpty()) {
+            return;
+        }
+
+        $students = $requests->pluck('user')->filter()->unique('id');
+
+        if ($students->isNotEmpty()) {
+            Notification::send($students, new DiscordPracticeSlotAvailableNotification($practice));
+        }
+
+        DiscordPracticeRequest::whereIn('id', $requests->pluck('id'))
+            ->update(['status' => 'fulfilled']);
     }
 }
 

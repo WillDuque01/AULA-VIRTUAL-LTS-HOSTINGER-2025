@@ -102,7 +102,7 @@ return [
 
     'discord_practices' => [
         'request_threshold' => (int) env('DISCORD_PRACTICES_REQUEST_THRESHOLD', 3),
-        'request_cooldown_minutes' => (int) env('DISCORD_PRACTICES_REQUEST_COOLDOWN', 240),
+        'request_cooldown_minutes' => (int) env('DISCORD_PRACTICES_REQUEST_COOLDOWN_MINUTES', 240),
     ],
 
 ];

@@ -24,6 +24,20 @@ class CourseBuilder extends Component
         'chapters' => [],
     ];
 
+    public array $metrics = [
+        'totals' => [
+            'chapters' => 0,
+            'lessons' => 0,
+            'locked' => 0,
+            'estimated_minutes' => 0,
+        ],
+        'chapters' => [],
+    ];
+
+    public ?int $focusedLessonId = null;
+
+    public ?array $focus = null;
+
     public array $lessonTypes = [
         'video' => 'Video',
         'audio' => 'Audio',
@@ -78,7 +92,7 @@ class CourseBuilder extends Component
 
         $defaultConfig = $this->defaultLessonConfig($type);
 
-        Lesson::create([
+        $lesson = Lesson::create([
             'chapter_id' => $chapterId,
             'type' => $type,
             'position' => $nextPosition,
@@ -87,12 +101,20 @@ class CourseBuilder extends Component
         ]);
 
         $this->refreshState(true);
+
+        if ($lesson) {
+            $this->focusLesson($lesson->id);
+        }
     }
 
     public function removeLesson(int $lessonId): void
     {
         Lesson::whereKey($lessonId)->delete();
         $this->refreshState(true);
+
+        if ($this->focusedLessonId === $lessonId) {
+            $this->clearFocus();
+        }
     }
 
     public function saveChapterTitle(int $chapterId, int $chapterIndex): void
@@ -182,6 +204,11 @@ class CourseBuilder extends Component
         }
 
         $this->refreshState();
+
+        if ($this->focusedLessonId === $lesson->id) {
+            $this->focusLesson($lesson->id);
+        }
+
         $this->dispatch('builder:flash', [
             'variant' => 'success',
             'message' => 'Lección actualizada con éxito',
@@ -216,6 +243,28 @@ class CourseBuilder extends Component
         });
 
         $this->refreshState();
+    }
+
+    public function focusLesson(int $lessonId): void
+    {
+        $payload = $this->findLessonInState($lessonId);
+
+        if (! $payload) {
+            $this->clearFocus();
+
+            return;
+        }
+
+        $this->focusedLessonId = $lessonId;
+        $this->focus = $payload;
+        $this->dispatch('builder:focus-open', ['lessonId' => $lessonId]);
+    }
+
+    public function clearFocus(): void
+    {
+        $this->focusedLessonId = null;
+        $this->focus = null;
+        $this->dispatch('builder:focus-open', ['lessonId' => null]);
     }
 
     public function render()
@@ -291,6 +340,9 @@ class CourseBuilder extends Component
                 return [$lesson->id => $title];
             });
         })->toArray();
+
+        $this->recalculateMetrics($chapters);
+        $this->hydrateFocusFromState();
 
         if ($shouldReorder) {
             $this->resequenceChapters();
@@ -486,6 +538,77 @@ class CourseBuilder extends Component
                 ];
             })
             ->toArray();
+    }
+
+    private function recalculateMetrics(Collection $chapters): void
+    {
+        $totals = [
+            'chapters' => $chapters->count(),
+            'lessons' => 0,
+            'locked' => 0,
+            'estimated_minutes' => 0,
+        ];
+
+        $byChapter = [];
+
+        foreach ($chapters as $chapter) {
+            $lessonsCount = $chapter->lessons->count();
+            $lockedCount = $chapter->lessons->where('locked', true)->count();
+            $estimatedMinutes = $chapter->lessons->sum(fn (Lesson $lesson) => (int) data_get($lesson->config, 'estimated_minutes', 0));
+            $assignmentsPending = $chapter->lessons
+                ->filter(fn (Lesson $lesson) => $lesson->type === 'assignment')
+                ->count();
+
+            $totals['lessons'] += $lessonsCount;
+            $totals['locked'] += $lockedCount;
+            $totals['estimated_minutes'] += $estimatedMinutes;
+
+            $byChapter[$chapter->id] = [
+                'lessons' => $lessonsCount,
+                'locked' => $lockedCount,
+                'estimated_minutes' => $estimatedMinutes,
+                'assignments' => $assignmentsPending,
+            ];
+        }
+
+        $this->metrics = [
+            'totals' => $totals,
+            'chapters' => $byChapter,
+        ];
+    }
+
+    private function findLessonInState(int $lessonId): ?array
+    {
+        foreach ($this->state['chapters'] as $chapter) {
+            foreach ($chapter['lessons'] as $lesson) {
+                if ((int) ($lesson['id'] ?? 0) === $lessonId) {
+                    return [
+                        'lesson' => $lesson,
+                        'chapter' => [
+                            'id' => $chapter['id'],
+                            'title' => $chapter['title'],
+                            'position' => $chapter['position'],
+                            'metrics' => $this->metrics['chapters'][$chapter['id']] ?? null,
+                        ],
+                    ];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function hydrateFocusFromState(): void
+    {
+        if (! $this->focusedLessonId) {
+            return;
+        }
+
+        $this->focus = $this->findLessonInState($this->focusedLessonId);
+
+        if (! $this->focus) {
+            $this->focusedLessonId = null;
+        }
     }
 }
 

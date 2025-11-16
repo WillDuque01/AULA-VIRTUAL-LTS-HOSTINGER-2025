@@ -8,12 +8,14 @@ use App\Events\DiscordPracticeScheduled;
 use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\DiscordPractice;
+use App\Models\DiscordPracticeRequest;
 use App\Models\DiscordPracticeReservation;
 use App\Models\Lesson;
 use App\Models\User;
 use App\Notifications\DiscordPracticeRequestEscalatedNotification;
 use App\Notifications\DiscordPracticeReservedNotification;
 use App\Notifications\DiscordPracticeScheduledNotification;
+use App\Notifications\DiscordPracticeSlotAvailableNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -91,6 +93,52 @@ class DiscordPracticeNotificationsTest extends TestCase
 
         Notification::assertSentTo($teacher, DiscordPracticeScheduledNotification::class);
         $this->assertDatabaseHas('integration_events', ['event' => 'discord.practice.scheduled']);
+    }
+
+    public function test_scheduled_event_notifies_pending_requests(): void
+    {
+        Notification::fake();
+        Queue::fake();
+
+        $teacher = User::factory()->create();
+        $lesson = $this->createLesson();
+        $watcherA = User::factory()->create();
+        $watcherB = User::factory()->create();
+
+        $practice = DiscordPractice::create([
+            'lesson_id' => $lesson->id,
+            'title' => 'Slot solicitado',
+            'type' => 'cohort',
+            'start_at' => now()->addDays(3),
+            'end_at' => now()->addDays(3)->addMinutes(60),
+            'duration_minutes' => 60,
+            'capacity' => 5,
+            'status' => 'scheduled',
+            'created_by' => $teacher->id,
+        ]);
+
+        DiscordPracticeRequest::create([
+            'lesson_id' => $lesson->id,
+            'user_id' => $watcherA->id,
+            'status' => 'pending',
+        ]);
+
+        DiscordPracticeRequest::create([
+            'lesson_id' => $lesson->id,
+            'user_id' => $watcherB->id,
+            'status' => 'pending',
+        ]);
+
+        event(new DiscordPracticeScheduled($practice));
+
+        Notification::assertSentTo($teacher, DiscordPracticeScheduledNotification::class);
+        Notification::assertSentTo([$watcherA, $watcherB], DiscordPracticeSlotAvailableNotification::class);
+
+        $this->assertDatabaseHas('discord_practice_requests', [
+            'lesson_id' => $lesson->id,
+            'user_id' => $watcherA->id,
+            'status' => 'fulfilled',
+        ]);
     }
 
     public function test_request_escalated_event_notifies_teacher_admins(): void

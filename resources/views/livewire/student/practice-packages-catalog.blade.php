@@ -1,37 +1,67 @@
 <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
-    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div>
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Prácticas premium</p>
-            <h4 class="text-lg font-semibold text-slate-900">Refuerza con sesiones 1:1</h4>
+            <p class="text-xs uppercase font-semibold text-emerald-500 tracking-[0.2em]">Prácticas premium</p>
+            <h4 class="text-2xl font-semibold text-slate-900 leading-tight">Haz que cada clase cuente</h4>
+            <p class="text-sm text-slate-500">Sesiones cortas, enfocadas y con feedback accionable. Reserva en 30 segundos.</p>
         </div>
-        <button type="button" wire:click="$refresh" class="text-xs font-semibold text-slate-600 hover:text-blue-600">
-            Actualizar
-        </button>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+            <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
+                ✅ Cupos garantizados en Discord
+            </span>
+            <button type="button" wire:click="$refresh" class="rounded-full border border-slate-200 px-3 py-1 hover:border-blue-300 hover:text-blue-600">
+                Actualizar lista
+            </button>
+        </div>
     </div>
     <div class="px-6 py-5">
         <div class="grid gap-4 lg:grid-cols-3 sm:grid-cols-2">
             @forelse($packages as $package)
-                <div class="rounded-2xl border border-slate-100 p-4 bg-gradient-to-b from-white to-slate-50 flex flex-col gap-3 shadow-sm">
+                @php
+                    $pricePerSession = $package->sessions_count > 0 ? $package->price_amount / $package->sessions_count : $package->price_amount;
+                    $badge = $package->is_global ? __('Teacher Admin') : __('Tu profesor');
+                    $platformLabel = match ($package->delivery_platform) {
+                        'zoom' => 'Zoom con cámara compartida',
+                        'meet' => 'Google Meet con grabación',
+                        default => 'Discord con pizarras en vivo',
+                    };
+                    $emotionalHook = [
+                        __('Activa tu español en 48h'),
+                        __('Feedback accionable y seguimiento'),
+                        __('Recordatorios automáticos + bonus PDF'),
+                    ];
+                @endphp
+                <div class="rounded-2xl border border-slate-100 p-4 bg-gradient-to-b from-white to-slate-50 flex flex-col gap-4 shadow-sm ring-1 ring-transparent hover:ring-emerald-200 transition">
                     <div>
-                        <p class="text-xs uppercase text-emerald-600 font-semibold">{{ $package->is_global ? 'Global' : 'Tu profesor' }}</p>
-                        <h5 class="text-lg font-semibold text-slate-900">{{ $package->title }}</h5>
+                        <p class="text-xs uppercase text-emerald-600 font-semibold tracking-wide">{{ $badge }}</p>
+                        <h5 class="text-xl font-semibold text-slate-900 leading-snug">{{ $package->title }}</h5>
                         @if($package->subtitle)
                             <p class="text-sm text-slate-500">{{ $package->subtitle }}</p>
                         @endif
                     </div>
-                    <p class="text-3xl font-bold text-slate-900">
-                        ${{ number_format($package->price_amount, 0) }}
-                        <span class="text-base font-semibold text-slate-500">{{ $package->price_currency }}</span>
-                    </p>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-3xl font-bold text-slate-900">
+                            ${{ number_format($package->price_amount, 0) }}
+                            <span class="text-base font-semibold text-slate-500">{{ $package->price_currency }}</span>
+                        </p>
+                        <span class="text-xs text-slate-500">≈ ${{ number_format($pricePerSession, 1) }}/sesión</span>
+                    </div>
                     <ul class="text-xs text-slate-500 space-y-1">
-                        <li>• {{ $package->sessions_count }} sesiones privadas</li>
-                        <li>• Plataforma: {{ ucfirst($package->delivery_platform) }}</li>
-                        <li>• Acceso a material de apoyo</li>
+                        <li>• {{ $package->sessions_count }} sesiones guiadas</li>
+                        <li>• {{ $platformLabel }}</li>
+                        <li>• {{ __('Prioridad en agenda Discord + recordatorios') }}</li>
                     </ul>
+                    <div class="space-y-1">
+                        @foreach($emotionalHook as $line)
+                            <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                                <span class="text-emerald-500">●</span> {{ $line }}
+                            </div>
+                        @endforeach
+                    </div>
                     <button type="button"
                             wire:click="startCheckout({{ $package->id }})"
-                            class="mt-auto inline-flex items-center justify-center rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
-                        Reservar pack
+                            class="mt-auto inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                        {{ $package->is_global ? __('Quiero acceso inmediato') : __('Reservar con mi profe') }}
                     </button>
                 </div>
             @empty
