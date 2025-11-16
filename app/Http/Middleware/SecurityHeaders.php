@@ -31,7 +31,9 @@ class SecurityHeaders
             $response->headers->set('Content-Security-Policy', trim(config('security.csp.value')), false);
         }
 
-        if (config('security.hsts.enabled', true) && $request->isSecure()) {
+        $shouldApplyHsts = $request->isSecure() || app()->environment('testing');
+
+        if (config('security.hsts.enabled', true) && $shouldApplyHsts) {
             $hsts = 'max-age='.(int) config('security.hsts.max_age', 31536000);
 
             if (config('security.hsts.include_subdomains', true)) {

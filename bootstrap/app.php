@@ -33,10 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->web([
             \App\Http\Middleware\SetLocale::class,
             EnsureSetupIsComplete::class,
-            SecurityHeaders::class,
         ]);
         $middleware->priority([
             \App\Http\Middleware\SetLocale::class,
