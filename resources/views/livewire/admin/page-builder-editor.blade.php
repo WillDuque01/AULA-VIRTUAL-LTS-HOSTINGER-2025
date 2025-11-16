@@ -46,18 +46,42 @@
         @endif
     </header>
 
-    <div class="grid gap-6 lg:grid-cols-[280px,1fr]">
-        <aside class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Kits disponibles') }}</h2>
-            <div class="space-y-2">
-                @foreach($kits as $key => $kit)
-                    <button type="button"
-                            wire:click="addBlock('{{ $key }}')"
-                            class="w-full rounded-2xl border border-slate-200 px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:border-slate-400">
-                        {{ $kit['label'] }}
-                        <span class="block text-xs font-normal text-slate-400">{{ ucfirst($kit['type']) }}</span>
-                    </button>
-                @endforeach
+    <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
+        <aside class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-6">
+            <div class="space-y-3">
+                <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Tema') }}</h2>
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Color primario') }}
+                    <input type="color" wire:model.defer="settings.theme.primary" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
+                </label>
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Color secundario') }}
+                    <input type="color" wire:model.defer="settings.theme.secondary" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
+                </label>
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Fondo') }}
+                    <input type="color" wire:model.defer="settings.theme.background" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
+                </label>
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Tipografía (CSS)') }}
+                    <input type="text"
+                           wire:model.defer="settings.theme.font_family"
+                           class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm">
+                </label>
+            </div>
+
+            <div>
+                <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Kits disponibles') }}</h2>
+                <div class="mt-3 space-y-2">
+                    @foreach($kits as $key => $kit)
+                        <button type="button"
+                                wire:click="addBlock('{{ $key }}')"
+                                class="w-full rounded-2xl border border-slate-200 px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:border-slate-400">
+                            {{ $kit['label'] }}
+                            <span class="block text-xs font-normal text-slate-400">{{ ucfirst($kit['type']) }}</span>
+                        </button>
+                    @endforeach
+                </div>
             </div>
         </aside>
 
@@ -97,6 +121,7 @@
                     @includeWhen($block['type'] === 'gallery', 'livewire.admin.page-builder.blocks.gallery-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'team', 'livewire.admin.page-builder.blocks.team-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'faq', 'livewire.admin.page-builder.blocks.faq-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'timeline', 'livewire.admin.page-builder.blocks.timeline-editor', ['index' => $index, 'block' => $block])
                 </article>
             @empty
                 <div class="rounded-3xl border border-dashed border-slate-200 bg-white/50 p-6 text-center text-sm text-slate-500">

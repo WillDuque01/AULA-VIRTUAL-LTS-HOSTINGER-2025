@@ -69,6 +69,7 @@ class PageManager extends Component
     {
         return view('livewire.admin.page-manager', [
             'pages' => Page::query()
+                ->withCount('views')
                 ->orderByDesc('updated_at')
                 ->paginate(12),
         ]);

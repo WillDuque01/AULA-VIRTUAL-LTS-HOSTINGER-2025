@@ -63,16 +63,22 @@ Este servicio se usará por el futuro constructor Livewire para encapsular la l�
 
 ## 6. Kit UI y fase 3
 
-- Nuevos kits: `gallery_masonry`, `team_grid`, `faq_list` y `featured_products` ampliado (categoría + ids personalizados).
-- Editor incorpora preview responsivo (desktop/tablet/mobile) y reordenamiento con `wire:sortable`.
-- Bloques renderizados en `resources/views/page/blocks` y pueden añadirse sin tocar código backend.
-- Panel `livewire:admin.page-manager` gestiona creación/duplicado de Home/Landings y enlaza al builder.
+- Nuevos kits: `gallery_masonry`, `team_grid`, `faq_list`, `timeline_steps` y `featured_products` ampliado (categoría + IDs concretos).
+- Editor incorpora preview responsivo (desktop/tablet/móvil), variables globales de tema (colores, tipografía) y reordenamiento `wire:sortable`.
+- Bloques renderizados en `resources/views/page/blocks` respetan las variables del tema.
+- Panel `livewire:admin.page-manager` gestiona creación/duplicado y muestra conteo de vistas (`page_views`).
 
-## 7. Próximos pasos
+## 7. Analítica básica
 
-- Añadir drag & drop visual con arrastre directo en el canvas (actualmente botones/handles).
-- Variables globales de estilo (paleta por página) y más bloques (FAQ avanzado, testimonios con video).
-- Integrar analítica directa (vista previa de conversiones por landing).
+- Tabla `page_views` + modelo `PageView`.
+- `PageController@show` registra visitas (session, referer, user agent) antes de renderizar.
+- `Page` expone `views()`/`views_count` y el manager los despliega para priorizar landings.
 
-Con esto el constructor ya cubre la experiencia mínima viable para crear/publish Homes y Landings desde el dashboard.
+## 8. Próximos pasos
+
+- Drag & drop visual directo sobre el canvas e inline editing.
+- Variables globales extendidas (paleta avanzada, tamaños de fuente) y kits con inputs ricos (formularios, video, countdown).
+- Integrar analítica de conversiones/ventas (landing → carrito) y exponerlo en dashboards/ DataPorter.
+
+Con esto el constructor ya cubre la experiencia mínima viable para crear/publish Homes y Landings desde el dashboard y empezar a medir desempeño.
 

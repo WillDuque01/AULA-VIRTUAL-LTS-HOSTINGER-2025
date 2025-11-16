@@ -49,6 +49,27 @@ class PageBuilderServiceTest extends TestCase
         $this->assertEquals('published', $updated->status);
         $this->assertEquals($draft->id, $updated->published_revision_id);
     }
+
+    public function test_settings_are_stored_with_revision(): void
+    {
+        $service = new PageBuilderService();
+        $page = $service->createPage([
+            'title' => 'Landing Settings',
+            'slug' => 'landing-settings',
+            'type' => 'landing',
+            'locale' => 'es',
+        ]);
+
+        $revision = $service->saveDraft($page, [
+            'label' => 'Theme',
+            'layout' => [],
+            'settings' => [
+                'theme' => ['primary' => '#ff0000'],
+            ],
+        ]);
+
+        $this->assertEquals('#ff0000', $revision->settings['theme']['primary']);
+    }
 }
 
 

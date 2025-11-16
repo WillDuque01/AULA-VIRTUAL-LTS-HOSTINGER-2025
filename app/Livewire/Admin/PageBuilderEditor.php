@@ -23,11 +23,21 @@ class PageBuilderEditor extends Component
 
     public string $previewMode = 'desktop';
 
+    public array $settings = [
+        'theme' => [
+            'primary' => '#0f172a',
+            'secondary' => '#14b8a6',
+            'background' => '#f8fafc',
+            'font_family' => 'Inter, sans-serif',
+        ],
+    ];
+
     public function mount(Page $page): void
     {
         $this->page = $page->load(['revisions' => fn ($q) => $q->latest(), 'publishedRevision']);
         $this->kits = config('page_builder.kits', []);
         $this->blocks = $this->prepareBlocks($this->page->currentLayout());
+        $this->settings = array_replace_recursive($this->settings, $this->page->currentSettings());
     }
 
     public function addBlock(string $kitKey): void
@@ -96,7 +106,7 @@ class PageBuilderEditor extends Component
         $service->saveDraft($this->page, [
             'label' => now()->format('d M H:i'),
             'layout' => $this->sanitizedBlocks(),
-            'settings' => [],
+            'settings' => $this->settings,
         ], Auth::id());
 
         $this->flashMessage = __('Borrador guardado.');
@@ -109,7 +119,7 @@ class PageBuilderEditor extends Component
         $revision = $service->saveDraft($this->page, [
             'label' => __('Versión publicada :date', ['date' => now()->format('d/m H:i')]),
             'layout' => $this->sanitizedBlocks(),
-            'settings' => [],
+            'settings' => $this->settings,
         ], Auth::id());
 
         $service->publish($this->page, $revision);
@@ -126,6 +136,7 @@ class PageBuilderEditor extends Component
             'blocks' => $this->blocks,
             'kits' => $this->kits,
             'previewMode' => $this->previewMode,
+            'theme' => $this->settings['theme'] ?? [],
         ]);
     }
 

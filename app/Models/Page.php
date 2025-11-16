@@ -41,6 +41,11 @@ class Page extends Model
         return $this->hasOne(PageRevision::class)->latestOfMany();
     }
 
+    public function views(): HasMany
+    {
+        return $this->hasMany(PageView::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
@@ -51,6 +56,13 @@ class Page extends Model
         $revision = $this->revisions()->latest()->first() ?? $this->publishedRevision;
 
         return $revision?->layout ?? [];
+    }
+
+    public function currentSettings(): array
+    {
+        $revision = $this->revisions()->latest()->first() ?? $this->publishedRevision;
+
+        return $revision?->settings ?? [];
     }
 }
 

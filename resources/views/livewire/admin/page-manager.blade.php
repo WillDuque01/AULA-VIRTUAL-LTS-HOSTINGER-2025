@@ -41,6 +41,9 @@
                                 {{ __('Estado: :status', ['status' => __($page->status)]) }}
                             </span>
                             <span class="text-slate-400">{{ $page->updated_at->diffForHumans() }}</span>
+                            <span class="rounded-full border border-amber-200 px-2 py-0.5 text-amber-600">
+                                👀 {{ $page->views_count }}
+                            </span>
                         </div>
                         <div class="flex flex-wrap items-center gap-2 pt-2 text-xs font-semibold">
                             <a href="{{ route('admin.pages.builder', ['locale' => app()->getLocale(), 'page' => $page->id]) }}"

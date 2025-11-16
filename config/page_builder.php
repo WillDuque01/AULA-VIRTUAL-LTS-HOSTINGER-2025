@@ -125,6 +125,18 @@ return [
                 ],
             ],
         ],
+        'timeline_steps' => [
+            'label' => 'Timeline',
+            'type' => 'timeline',
+            'props' => [
+                'title' => 'Cómo funciona',
+                'steps' => [
+                    ['title' => 'Kickoff', 'description' => 'Sesión inicial con tu mentor.', 'badge' => 'Día 1'],
+                    ['title' => 'Sprints', 'description' => 'Trabaja con cohortes y retos semanales.', 'badge' => 'Semanas 1-4'],
+                    ['title' => 'Demo Day', 'description' => 'Presenta tu proyecto y recibe feedback.', 'badge' => 'Semana 5'],
+                ],
+            ],
+        ],
     ],
 ];
 
