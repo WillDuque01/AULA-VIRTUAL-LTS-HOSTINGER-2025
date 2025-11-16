@@ -40,6 +40,8 @@ class CourseBuilder extends Component
 
     public ?array $focus = null;
 
+    public string $focusTab = 'content';
+
     public ?int $savingLessonId = null;
 
     public array $lessonTypes = [
@@ -286,6 +288,7 @@ class CourseBuilder extends Component
 
         $this->focusedLessonId = $lessonId;
         $this->focus = $payload;
+        $this->focusTab = 'content';
         $this->dispatch('builder:focus-open', ['lessonId' => $lessonId]);
     }
 
@@ -293,7 +296,118 @@ class CourseBuilder extends Component
     {
         $this->focusedLessonId = null;
         $this->focus = null;
+        $this->focusTab = 'content';
         $this->dispatch('builder:focus-open', ['lessonId' => null]);
+    }
+
+    public function setFocusTab(string $tab): void
+    {
+        if (! in_array($tab, $this->focusTabs(), true)) {
+            return;
+        }
+
+        $this->focusTab = $tab;
+    }
+
+    public function duplicateLesson(int $lessonId): void
+    {
+        $lesson = Lesson::with(['assignment', 'chapter'])->findOrFail($lessonId);
+        $this->assertLessonInCourse($lesson);
+
+        $copy = $lesson->replicate(['position']);
+        $copy->position = (int) (Lesson::where('chapter_id', $lesson->chapter_id)->max('position') ?? 0) + 1;
+        $copy->save();
+
+        if ($lesson->assignment) {
+            $assignmentClone = $lesson->assignment->replicate(['lesson_id']);
+            $assignmentClone->lesson_id = $copy->id;
+            $assignmentClone->save();
+        }
+
+        $this->refreshState(true);
+        $this->focusLesson($copy->id);
+
+        $this->dispatch('builder:flash', [
+            'variant' => 'success',
+            'message' => __('Lección duplicada'),
+        ]);
+        $this->dispatch('builder:celebrate');
+    }
+
+    public function quickMoveLesson(int $lessonId, $targetChapterId): void
+    {
+        $chapterId = (int) $targetChapterId;
+        if ($chapterId <= 0) {
+            return;
+        }
+
+        $lesson = Lesson::with('chapter')->findOrFail($lessonId);
+        $this->assertLessonInCourse($lesson);
+
+        if ($lesson->chapter_id === $chapterId) {
+            return;
+        }
+
+        $chapter = Chapter::where('course_id', $this->course->id)->whereKey($chapterId)->first();
+        if (! $chapter) {
+            return;
+        }
+
+        $lesson->chapter_id = $chapterId;
+        $lesson->position = (int) (Lesson::where('chapter_id', $chapterId)->max('position') ?? 0) + 1;
+        $lesson->save();
+
+        $this->refreshState(true);
+        $this->focusLesson($lesson->id);
+
+        $this->dispatch('builder:flash', [
+            'variant' => 'success',
+            'message' => __('Lección movida correctamente'),
+        ]);
+    }
+
+    public function quickConvertLesson(int $lessonId, string $type): void
+    {
+        if (! array_key_exists($type, $this->lessonTypes)) {
+            return;
+        }
+
+        $lesson = Lesson::with(['chapter', 'assignment'])->findOrFail($lessonId);
+        $this->assertLessonInCourse($lesson);
+
+        if ($lesson->type === $type) {
+            return;
+        }
+
+        $currentConfig = $lesson->config ?? [];
+        $defaults = $this->defaultLessonConfig($type);
+
+        $lesson->type = $type;
+        $lesson->config = array_merge($defaults, [
+            'title' => $currentConfig['title'] ?? $defaults['title'] ?? __('Lección'),
+            'badge' => $currentConfig['badge'] ?? null,
+            'cta_label' => $currentConfig['cta_label'] ?? null,
+            'cta_url' => $currentConfig['cta_url'] ?? null,
+            'estimated_minutes' => $currentConfig['estimated_minutes'] ?? null,
+            'prerequisite_lesson_id' => $currentConfig['prerequisite_lesson_id'] ?? null,
+        ]);
+
+        $lesson->save();
+
+        if ($type === 'assignment') {
+            $this->syncAssignment($lesson, $lesson->config ?? []);
+        } elseif ($lesson->assignment) {
+            $lesson->assignment()->delete();
+        }
+
+        $this->refreshState();
+        $this->focusLesson($lesson->id);
+
+        $this->dispatch('builder:flash', [
+            'variant' => 'success',
+            'message' => __('Tipo de lección actualizado'),
+        ]);
+        $this->dispatch('builder:celebrate');
     }
 
     private function findLessonIndexes(?int $lessonId): array
@@ -320,6 +434,19 @@ class CourseBuilder extends Component
             'videoSources' => $this->videoSources,
             'availablePrerequisites' => $this->availablePrerequisites,
         ]);
+    }
+
+    private function focusTabs(): array
+    {
+        return ['content', 'config', 'practice', 'gamification'];
+    }
+
+    private function assertLessonInCourse(Lesson $lesson): void
+    {
+        $lesson->loadMissing('chapter');
+        if (! $lesson->chapter || (int) $lesson->chapter->course_id !== (int) $this->course->id) {
+            abort(403, __('No puedes modificar esta lección.'));
+        }
     }
 
     private function refreshState(bool $shouldReorder = false): void

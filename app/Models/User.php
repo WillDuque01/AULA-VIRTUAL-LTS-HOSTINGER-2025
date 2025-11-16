@@ -17,11 +17,29 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
+        'country',
+        'state',
+        'city',
+        'headline',
+        'bio',
+        'teaching_since',
+        'specialties',
+        'languages',
+        'certifications',
+        'linkedin_url',
+        'teacher_notes',
         'password',
         'experience_points',
         'current_streak',
         'last_completion_at',
+        'profile_completed_at',
+        'profile_completion_score',
+        'profile_meta',
+        'profile_last_reminded_at',
     ];
 
     protected $hidden = [
@@ -35,7 +53,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_completion_at' => 'datetime',
+            'profile_completed_at' => 'datetime',
+            'profile_meta' => 'array',
+            'specialties' => 'array',
+            'languages' => 'array',
+            'certifications' => 'array',
+            'profile_last_reminded_at' => 'datetime',
         ];
+    }
+
+    public function profileSummary(): array
+    {
+        return \App\Support\Profile\ProfileCompletion::summarize($this);
     }
 
     public function notificationPreferences()

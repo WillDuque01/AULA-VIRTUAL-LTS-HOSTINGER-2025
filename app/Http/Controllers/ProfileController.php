@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Support\Profile\ProfileCompletion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,15 +27,35 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        foreach (['specialties', 'languages', 'certifications'] as $listField) {
+            if (array_key_exists($listField, $validated)) {
+                $validated[$listField] = $this->stringToList($validated[$listField]);
+            }
         }
 
-        $request->user()->save();
+        $user->fill($validated);
+        ProfileCompletion::syncDisplayName($user);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        ProfileCompletion::updateUserMetrics($user);
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    private function stringToList(?string $value): array
+    {
+        return collect(preg_split('/[,;\n]+/', (string) $value))
+            ->map(fn ($item) => trim($item))
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**

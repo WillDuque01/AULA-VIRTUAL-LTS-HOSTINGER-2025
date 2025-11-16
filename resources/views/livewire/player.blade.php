@@ -1,3 +1,22 @@
+        @if($returnHint)
+            <div x-data
+                 x-init="window.playerSignals?.emitOnce('return_hint_view_{{ $lesson->id }}', 'banner_view', { metadata: { banner: 'return_hint' } })"
+                 class="player-slide-up flex flex-wrap items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">
+                <div class="flex items-center gap-2">
+                    <span class="text-base" aria-hidden="true">⏪</span>
+                    <p class="font-semibold">{{ __('Retoma desde :time', ['time' => $returnHint['label']]) }}</p>
+                </div>
+                <button type="button"
+                        class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-700 hover:border-amber-300"
+                        x-on:click.prevent="
+                            window.dispatchEvent(new CustomEvent('player:seek-to', { detail: { time: {{ $returnHint['seconds'] ?? 0 }}, source: 'return_hint' } }));
+                            window.playerSignals?.emit('banner_click', { metadata: { banner: 'return_hint' } });
+                        ">
+                    {{ __('Volver ahora') }}
+                </button>
+            </div>
+        @endif
+
 @php
     $title = data_get($lesson->config, 'title', $lesson->chapter?->title.' — Lección '.$lesson->position);
     $resumeSeconds = max(0, (int) $resumeAt);
@@ -6,6 +25,9 @@
     $bodyContent = data_get($lesson->config, 'body');
     $resourceUrl = $resourceUrl ?? data_get($lesson->config, 'resource_url');
     $estimation = $estimatedMinutes ? $estimatedMinutes.' min' : null;
+    $remainingSeconds = $durationSeconds !== null ? max(0, $durationSeconds - $resumeSeconds) : null;
+    $remainingLabel = $remainingSeconds !== null ? gmdate('H:i:s', $remainingSeconds) : null;
+
     $assignmentStatusMeta = [
         'pending' => ['label' => __('player.timeline.assignment.pending'), 'class' => 'bg-slate-200 text-slate-700'],
         'submitted' => ['label' => __('player.timeline.assignment.submitted'), 'class' => 'bg-sky-100 text-sky-700'],
@@ -28,14 +50,55 @@
         : null;
 @endphp
 
+@once
+    @push('styles')
+        <style>
+            @keyframes playerFadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes playerSlideUp {
+                from { opacity: 0; transform: translateY(16px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes playerGlowPulse {
+                0% { box-shadow: 0 0 0 rgba(16, 185, 129, 0.0); }
+                50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+                100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0.0); }
+            }
+
+            @media (prefers-reduced-motion: no-preference) {
+                .player-fade-in { animation: playerFadeIn 0.5s cubic-bezier(0.2, 0, 0, 1) both; }
+                .player-slide-up { animation: playerSlideUp 0.55s cubic-bezier(0.2, 0, 0, 1) both; }
+                .player-glow-pulse { animation: playerGlowPulse 1.6s ease-in-out infinite; }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .player-fade-in,
+                .player-slide-up,
+                .player-glow-pulse {
+                    animation: none !important;
+                }
+            }
+        </style>
+    @endpush
+@endonce
+
 <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
     <aside
         class="lg:sticky lg:top-28 space-y-4"
-        x-data="playerInsights({{ json_encode([
-            'progress' => $progressPercent,
-            'duration' => $durationSeconds ?? 0,
-            'resume' => $resumeSeconds,
-        ]) }})">
+        x-data="playerInsights(
+            {{ json_encode([
+                'progress' => $progressPercent,
+                'duration' => $durationSeconds ?? 0,
+                'resume' => $resumeSeconds,
+            ]) }},
+            {{ json_encode([
+                'milestones' => $progressMarkers,
+            ]) }}
+        )">
         <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60">
             <div class="flex items-center justify-between">
                 <div>
@@ -173,10 +236,13 @@
          data-resume="{{ $resumeSeconds }}"
          data-duration="{{ $durationSeconds ?? '' }}"
          data-strict="{{ $strictSeeking ? '1' : '0' }}"
-         data-progress-url="{{ route('api.video.progress') }}">
+         data-progress-url="{{ route('api.video.progress') }}"
+         data-events-url="{{ route('api.player.events') }}">
 
         @if($practiceCta)
-            <div class="rounded-3xl border border-indigo-200 bg-indigo-50/80 p-5 shadow-sm">
+            <div x-data
+                 x-init="window.playerSignals?.emitOnce('cta_practice_view_{{ $lesson->id }}_{{ $practiceCta['id'] }}', 'cta_view', { metadata: { type: 'practice', practice_id: {{ $practiceCta['id'] }}, requires_package: {{ $practiceCta['requires_package'] ? 'true' : 'false' }} } })"
+                 class="player-slide-up rounded-3xl border border-indigo-200 bg-indigo-50/80 p-5 shadow-sm">
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <p class="text-xs uppercase font-semibold tracking-wide text-indigo-500">{{ __('Práctica en vivo vinculada') }}</p>
@@ -202,6 +268,7 @@
                     @else
                         @if($practiceRoute)
                             <a href="{{ $practiceRoute }}"
+                               x-on:click="window.playerSignals?.emit('cta_click', { metadata: { type: 'practice', action: 'reserve', practice_id: {{ $practiceCta['id'] }} } })"
                                class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-indigo-700">
                                 {{ __('Reservar en Discord') }} ↗
                             </a>
@@ -209,6 +276,7 @@
                     @endif
                     @if($practiceRoute)
                         <a href="{{ $practiceRoute }}"
+                           x-on:click="window.playerSignals?.emit('cta_click', { metadata: { type: 'practice', action: 'agenda', practice_id: {{ $practiceCta['id'] }} } })"
                            class="inline-flex items-center gap-2 rounded-full border border-indigo-200 px-4 py-2 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
                             {{ __('Ver agenda completa') }}
                         </a>
@@ -223,6 +291,7 @@
                     </p>
                     @if(($practicePackCta['has_order'] ?? false) === false && $practicePackCta && $practiceRoute)
                         <a href="{{ $practiceRoute }}"
+                           x-on:click="window.playerSignals?.emit('cta_click', { metadata: { type: 'practice', action: 'view_packs', practice_id: {{ $practiceCta['id'] }} } })"
                            class="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-semibold text-emerald-700 hover:border-emerald-300">
                             {{ __('Ver packs disponibles') }} ↗
                         </a>
@@ -230,7 +299,9 @@
                 @endif
             </div>
         @elseif($practicePackCta)
-            <div class="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
+            <div x-data
+                 x-init="window.playerSignals?.emitOnce('cta_pack_view_{{ $lesson->id }}_{{ $practicePackCta['id'] }}', 'cta_view', { metadata: { type: 'pack', pack_id: {{ $practicePackCta['id'] }}, owned: {{ $practicePackCta['has_order'] ? 'true' : 'false' }} } })"
+                 class="player-slide-up rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
                 <div class="flex flex-col gap-2">
                     <p class="text-xs uppercase font-semibold tracking-wide text-emerald-600">{{ __('Prácticas recomendadas') }}</p>
                     <p class="text-lg font-semibold text-slate-900">{{ $practicePackCta['title'] }}</p>
@@ -241,6 +312,7 @@
                 <div class="mt-3 flex flex-wrap items-center gap-3">
                     @if($practiceRoute)
                         <a href="{{ $practiceRoute }}"
+                           x-on:click="window.playerSignals?.emit('cta_click', { metadata: { type: 'pack', pack_id: {{ $practicePackCta['id'] }}, owned: {{ $practicePackCta['has_order'] ? 'true' : 'false' }} } })"
                            class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-emerald-700">
                             {{ $practicePackCta['has_order'] ? __('Gestionar mis sesiones') : __('Comprar pack') }} ↗
                         </a>
@@ -291,7 +363,7 @@
         </div>
 
         @if(!empty($heatmap))
-            <div class="rounded-3xl border border-slate-100 bg-white/80 p-4 shadow-sm">
+            <div class="player-fade-in rounded-3xl border border-slate-100 bg-white/80 p-4 shadow-sm">
                 <div class="flex items-center justify-between text-xs text-slate-500">
                     <p class="font-semibold uppercase tracking-wide text-slate-400">{{ __('Mapa de abandono') }}</p>
                     <span>{{ count($heatmap) }} {{ __('segmentos') }}</span>
@@ -304,10 +376,23 @@
                         </span>
                     @endforeach
                 </div>
+                @if(!empty($heatmapHighlights))
+                    <div class="mt-4 rounded-2xl border border-slate-100 bg-white/90 px-4 py-3">
+                        <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-400">{{ __('Momentos más vistos') }}</p>
+                        <ul class="mt-2 space-y-1 text-sm text-slate-600">
+                            @foreach($heatmapHighlights as $highlight)
+                                <li class="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-1.5">
+                                    <span>{{ $highlight['label'] }}</span>
+                                    <span class="text-[11px] font-semibold text-slate-500">{{ $highlight['percent'] }}%</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </div>
         @endif
 
-        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100/80 p-6 space-y-4" data-player-metrics>
+        <div class="player-slide-up bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100/80 p-6 space-y-4" data-player-metrics>
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
@@ -321,16 +406,33 @@
                     <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600">
                     <div class="w-full" aria-live="polite">
                         <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Avance') }}</span>
-                        <div class="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden motion-safe:transition-all motion-safe:duration-500">
-                            <span class="block h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all duration-500"
+                        <div class="mt-2 relative h-3 rounded-full bg-slate-100 overflow-hidden motion-safe:transition-all motion-safe:duration-500 motion-reduce:transition-none">
+                            <span class="absolute inset-0 h-full rounded-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 transition-all duration-500 motion-reduce:transition-none"
                                   style="width: {{ $progressPercent }}%;"
                                   x-bind:style="`width: ${progressPercent}%`"
-                                  x-bind:class="{ 'shadow-[0_0_12px_rgba(16,185,129,.45)]': celebrating }"></span>
+                                  x-bind:class="{ 'shadow-[0_0_12px_rgba(16,185,129,.45)]': celebrating, 'player-glow-pulse': celebrating }"></span>
+                            @foreach($progressMarkers as $marker)
+                                <span class="absolute -top-4 flex flex-col items-center"
+                                      style="left: {{ $marker['percent'] }}%;">
+                                    <span class="h-3 w-px bg-slate-300"></span>
+                                    <span class="mt-1 hidden whitespace-nowrap rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500 md:inline-flex">
+                                        {{ $marker['label'] }}
+                                    </span>
+                                </span>
+                            @endforeach
                         </div>
                         <p class="mt-1 text-xs text-slate-500"
                            x-text="`${progressPercent}% {{ __('completado') }}`">
                             {{ number_format($progressPercent, 1) }}% {{ __('completado') }}
                         </p>
+                        <div class="mt-2 space-y-2" x-show="milestoneMessages.length" x-cloak>
+            <template x-for="(message, index) in milestoneMessages" :key="index">
+                <div class="rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-[11px] font-semibold text-emerald-800 shadow-sm"
+                                     x-text="message"
+                                     x-transition>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     <div>
                         <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Reanudar') }}</span>
@@ -344,13 +446,12 @@
                             <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Duración') }}</span>
                             <span class="text-sm text-gray-900">{{ gmdate('H:i:s', $durationSeconds) }}</span>
                         </div>
-                        <div x-show="duration > 0">
-                            <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Tiempo restante') }}</span>
-                            <span class="text-sm text-gray-900"
-                                  x-text="timeRemainingLabel">
-                                --
-                            </span>
-                        </div>
+                        @if($remainingLabel)
+                            <div>
+                                <span class="block text-[11px] uppercase font-semibold tracking-wide text-gray-400">{{ __('Tiempo restante') }}</span>
+                                <span class="text-sm text-gray-900">{{ $remainingLabel }}</span>
+                            </div>
+                        @endif
                     @endif
                     @if($estimation)
                         <div>
@@ -373,13 +474,51 @@
                 </div>
             </div>
 
-            @if($ctaLabel && $ctaUrl)
-                <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+            @if($ctaHighlight)
+                <div x-data
+                     x-init="window.playerSignals?.emitOnce('cta_highlight_view_{{ $lesson->id }}_{{ $ctaHighlight['type'] }}', 'cta_view', { metadata: @js($ctaHighlight) })"
+                     @class([
+                            'player-fade-in flex flex-wrap items-center gap-3 rounded-2xl border px-4 py-3',
+                        'border-indigo-100 bg-indigo-50/60' => $ctaHighlight['type'] === 'practice',
+                        'border-emerald-100 bg-emerald-50/60' => $ctaHighlight['type'] === 'pack',
+                        'border-amber-100 bg-amber-50/60' => $ctaHighlight['type'] === 'resource',
+                    ])>
+                    <div class="flex-1 space-y-0.5">
+                        <p class="text-sm font-semibold text-slate-900">{{ $ctaHighlight['title'] }}</p>
+                        <p class="text-xs text-slate-600">{{ $ctaHighlight['description'] }}</p>
+                    </div>
+                    @if($ctaHighlight['type'] === 'practice' && $practiceRoute)
+                        <a href="{{ $practiceRoute }}"
+                           x-on:click="window.playerSignals?.emit('cta_click', { metadata: Object.assign({ type: 'practice', origin: 'highlight' }, @js($ctaHighlight)) })"
+                           class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-indigo-700">
+                            {{ ($practiceCta['has_reservation'] ?? false) ? __('Ver detalles') : __('Reservar ahora') }} ↗
+                        </a>
+                    @elseif($ctaHighlight['type'] === 'pack' && $practiceRoute)
+                        <a href="{{ $practiceRoute }}"
+                           x-on:click="window.playerSignals?.emit('cta_click', { metadata: Object.assign({ type: 'pack', origin: 'highlight' }, @js($ctaHighlight)) })"
+                           class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-emerald-700">
+                            {{ ($practicePackCta['has_order'] ?? false) ? __('Gestionar') : __('Ver packs') }} ↗
+                        </a>
+                    @elseif($ctaHighlight['type'] === 'resource' && $ctaUrl)
+                        <a href="{{ $ctaUrl }}" target="_blank" rel="noopener"
+                           x-on:click="window.playerSignals?.emit('cta_click', { metadata: Object.assign({ type: 'resource', origin: 'highlight' }, @js($ctaHighlight)) })"
+                           class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-amber-600">
+                            {{ __('Abrir recurso') }} ↗
+                        </a>
+                    @endif
+                </div>
+            @endif
+
+            @if($ctaLabel && $ctaUrl && (! $ctaHighlight || $ctaHighlight['type'] !== 'resource'))
+                <div x-data
+                     x-init="window.playerSignals?.emitOnce('cta_resource_view_{{ $lesson->id }}', 'cta_view', { metadata: { type: 'resource', origin: 'secondary', label: @js($ctaLabel) } })"
+                     class="player-fade-in flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
                     <div class="flex-1">
                         <p class="text-sm font-semibold text-emerald-800">{{ $ctaLabel }}</p>
                         <p class="text-xs text-emerald-600/90">Enlace recomendado al finalizar esta lección.</p>
                     </div>
                     <a href="{{ $ctaUrl }}" target="_blank" rel="noopener"
+                       x-on:click="window.playerSignals?.emit('cta_click', { metadata: { type: 'resource', origin: 'secondary', label: @js($ctaLabel) } })"
                        class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-emerald-700">
                         Abrir recurso
                         <span aria-hidden="true">↗</span>
@@ -394,7 +533,7 @@
     <livewire:lessons.assignment-panel :lesson="$lesson" />
 @else
     <div class="space-y-6">
-        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-6 space-y-4">
+        <div class="player-slide-up bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-6 space-y-4">
             <div class="flex items-center gap-3">
                 <h3 class="text-lg font-semibold">{{ $title }}</h3>
                 @if($badge)
@@ -403,11 +542,12 @@
             </div>
             <p class="text-sm text-gray-500 capitalize">Tipo de contenido: {{ $lesson->type }}</p>
             @if($lesson->type === 'text' && $bodyContent)
-                <div class="prose prose-slate max-w-none">
+                <div class="player-fade-in prose prose-slate max-w-none">
                     {!! \Illuminate\Support\Str::markdown($bodyContent) !!}
                 </div>
             @elseif($resourceUrl)
                 <a href="{{ $resourceUrl }}" target="_blank" rel="noopener"
+                   x-on:click="window.playerSignals?.emit('resource_click', { metadata: { type: 'external', lesson_id: {{ $lesson->id }} } })"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-full shadow-sm hover:bg-blue-700">
                     Abrir recurso externo
                 </a>
@@ -416,6 +556,7 @@
             @endif
             @if($ctaLabel && $ctaUrl)
                 <a href="{{ $ctaUrl }}" target="_blank" rel="noopener"
+                   x-on:click="window.playerSignals?.emit('cta_click', { metadata: { type: 'resource', origin: 'static', label: @js($ctaLabel) } })"
                    class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
                     {{ $ctaLabel }} ↗
                 </a>
@@ -431,21 +572,62 @@
         <script src="https://player.vimeo.com/api/player.js" defer></script>
         <script src="https://embed.videodelivery.net/embed/sdk.latest.js" defer></script>
         <script>
+            (function () {
+                const signals = window.playerSignals || {};
+                signals.queue = signals.queue || [];
+                signals.onceKeys = signals.onceKeys || new Set();
+                signals.emit = signals.emit || function (event, payload = {}) {
+                    if (typeof signals.emitImpl === 'function') {
+                        signals.emitImpl(event, payload);
+                    } else {
+                        signals.queue.push([event, payload]);
+                    }
+                };
+                signals.emitOnce = signals.emitOnce || function (key, event, payload = {}) {
+                    if (! key) {
+                        return signals.emit(event, payload);
+                    }
+
+                    if (signals.onceKeys.has(key)) {
+                        return;
+                    }
+
+                    signals.onceKeys.add(key);
+                    signals.emit(event, payload);
+                };
+                signals.flushQueue = signals.flushQueue || function () {
+                    if (typeof signals.emitImpl !== 'function') {
+                        return;
+                    }
+
+                    while (signals.queue.length) {
+                        const [event, payload] = signals.queue.shift();
+                        signals.emitImpl(event, payload);
+                    }
+                };
+
+                window.playerSignals = signals;
+            })();
+
             document.addEventListener('alpine:init', () => {
                 const normalizePercent = (value) => {
                     const num = Number(value ?? 0);
                     return Math.min(100, Math.max(0, Math.round(num * 10) / 10));
                 };
 
-                Alpine.data('playerInsights', (initial = {}) => ({
+                Alpine.data('playerInsights', (initial = {}, meta = {}) => ({
                     progressPercent: normalizePercent(initial.progress ?? 0),
                     duration: Number(initial.duration ?? 0),
                     current: Number(initial.resume ?? 0),
+                    milestones: Array.isArray(meta.milestones) ? meta.milestones : [],
+                    milestoneHits: {},
+                    milestoneMessages: [],
                     celebrating: false,
                     resumeLabel: '',
                     timeRemainingLabel: '',
                     init() {
                         this.updateLabels();
+                        this.checkMilestones(this.progressPercent);
 
                         this.onProgress = (event) => {
                             const detail = event.detail || {};
@@ -459,6 +641,7 @@
                                 this.progressPercent = normalizePercent(detail.percent);
                             }
                             this.updateLabels();
+                            this.checkMilestones(this.progressPercent);
                         };
 
                         this.onCelebrate = () => {
@@ -479,6 +662,22 @@
                         this.timeRemainingLabel = this.duration > 0
                             ? this.formatTime(Math.max(0, this.duration - this.current))
                             : '{{ __('--') }}';
+                    },
+                    checkMilestones(percent) {
+                        this.milestones.forEach((milestone, index) => {
+                            const threshold = Number(milestone.percent ?? 0);
+                            if (percent >= threshold && ! this.milestoneHits[index]) {
+                                this.milestoneHits[index] = true;
+                                const label = milestone.label ?? '{{ __('Bloque completado') }}';
+                                this.queueMilestone(`🎯 ${label}`);
+                            }
+                        });
+                    },
+                    queueMilestone(message) {
+                        this.milestoneMessages.push(message);
+                        setTimeout(() => {
+                            this.milestoneMessages.shift();
+                        }, 2600 + (this.milestoneMessages.length * 200));
                     },
                     formatTime(totalSeconds) {
                         const total = Math.max(0, Math.round(totalSeconds ?? 0));
@@ -540,7 +739,7 @@
                         });
                     };
 
-                      const postProgress = (url, payload) => {
+                    const postProgress = (url, payload) => {
                         const token = document.querySelector('meta[name="csrf-token"]')?.content;
                         const body = new URLSearchParams(payload);
                         if (token) {
@@ -568,6 +767,37 @@
                                   return data;
                               })
                               .catch(() => null);
+                    };
+
+                    const postPlayerEvent = (url, payload) => {
+                        if (! url) {
+                            return;
+                        }
+
+                        const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                        const enriched = Object.assign({}, payload);
+                        if (token) {
+                            enriched._token = token;
+                        }
+
+                        const body = JSON.stringify(enriched);
+
+                        if (navigator.sendBeacon) {
+                            const blob = new Blob([body], { type: 'application/json' });
+                            navigator.sendBeacon(url, blob);
+
+                            return Promise.resolve();
+                        }
+
+                        return fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                ...(token ? { 'X-CSRF-TOKEN': token } : {}),
+                            },
+                            body,
+                        }).catch(() => null);
                     };
 
                     const toSeconds = (value) => {
@@ -600,6 +830,49 @@
                         };
                     };
 
+                    const createEventEmitter = (eventsUrl, lessonId, provider, duration) => {
+                        if (! eventsUrl || ! lessonId) {
+                            return () => {};
+                        }
+
+                        return (event, payload = {}) => {
+                            if (! event) {
+                                return;
+                            }
+
+                            const body = {
+                                lesson_id: lessonId,
+                                event,
+                                provider,
+                                video_duration: duration,
+                            };
+
+                            if (payload.playback_seconds !== undefined) {
+                                body.playback_seconds = payload.playback_seconds;
+                            }
+
+                            if (payload.watched_seconds !== undefined) {
+                                body.watched_seconds = payload.watched_seconds;
+                            }
+
+                            if (payload.metadata !== undefined) {
+                                body.metadata = payload.metadata;
+                            }
+
+                            if (payload.context_tag !== undefined) {
+                                body.context_tag = payload.context_tag;
+                            }
+
+                            postPlayerEvent(eventsUrl, body);
+                        };
+                    };
+
+                    const registerGlobalEmitter = (emitter) => {
+                        window.playerSignals = window.playerSignals || {};
+                        window.playerSignals.emitImpl = emitter;
+                        window.playerSignals.flushQueue?.();
+                    };
+
                     const attachYouTube = (container) => {
                         const iframeId = container.querySelector('iframe')?.id;
                         if (! iframeId) {
@@ -608,10 +881,13 @@
 
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
+                        const eventsUrl = container.dataset.eventsUrl;
                         const resumeAt = toSeconds(container.dataset.resume);
                         const duration = toSeconds(container.dataset.duration);
                         const isStrict = container.dataset.strict === '1';
                         const emitProgress = createProgressEmitter(duration);
+                        const emitEvent = createEventEmitter(eventsUrl, lessonId, 'youtube', duration);
+                        registerGlobalEmitter(emitEvent);
                         emitProgress(resumeAt);
 
                         const initPlayer = () => {
@@ -622,13 +898,15 @@
                                             player.seekTo(resumeAt, true);
                                         }
                                     },
-                                    onStateChange: () => handleTick(),
+                                    onStateChange: (state) => handleStateChange(state),
                                 },
                             });
 
                             let intervalRef = null;
                             let lastValid = resumeAt;
                             let lastSent = resumeAt;
+                            let lastReportedTime = resumeAt;
+                            let playbackState = null;
 
                             const handleTick = () => {
                                 if (intervalRef) {
@@ -649,14 +927,52 @@
                                             source: 'youtube',
                                             last_second: currentTime,
                                             watched_seconds: lastValid,
+                                            duration,
                                         });
                                     }
 
                                     if (isStrict && currentTime > lastValid + 3) {
                                         player.seekTo(lastValid, true);
+                                    } else if (currentTime !== lastReportedTime) {
+                                        dispatchProgressEvent(currentTime, duration);
+                                        lastReportedTime = currentTime;
                                     }
                                 }, 2000);
                             };
+
+                            const handleStateChange = (stateEvent) => {
+                                handleTick();
+
+                                if (! stateEvent) {
+                                    return;
+                                }
+
+                                if (stateEvent.data === YT.PlayerState.PLAYING && playbackState !== 'playing') {
+                                    playbackState = 'playing';
+                                    emitEvent('play', {
+                                        playback_seconds: Math.floor(player.getCurrentTime()),
+                                    });
+                                } else if (stateEvent.data === YT.PlayerState.PAUSED && playbackState !== 'paused') {
+                                    playbackState = 'paused';
+                                    emitEvent('pause', {
+                                        playback_seconds: Math.floor(player.getCurrentTime()),
+                                    });
+                                }
+                            };
+
+                            window.addEventListener('player:seek-to', (event) => {
+                                const seekTime = toSeconds(event.detail?.time);
+                                if (Number.isFinite(seekTime)) {
+                                    player.seekTo(seekTime, true);
+                                    lastValid = seekTime;
+                                    lastSent = seekTime;
+                                    dispatchProgressEvent(seekTime, duration);
+                                    emitEvent('seek', {
+                                        playback_seconds: seekTime,
+                                        metadata: { source: event.detail?.source || 'ui' },
+                                    });
+                                }
+                            });
                         };
 
                         if (window.YT && window.YT.Player) {
@@ -675,10 +991,13 @@
                         }
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
+                        const eventsUrl = container.dataset.eventsUrl;
                         const resumeAt = toSeconds(container.dataset.resume);
                         const duration = toSeconds(container.dataset.duration);
                         const isStrict = container.dataset.strict === '1';
                         const emitProgress = createProgressEmitter(duration);
+                        const emitEvent = createEventEmitter(eventsUrl, lessonId, 'vimeo', duration);
+                        registerGlobalEmitter(emitEvent);
                         emitProgress(resumeAt);
 
                         const player = new Vimeo.Player(iframe);
@@ -705,18 +1024,55 @@
                                     source: 'vimeo',
                                     last_second: currentTime,
                                     watched_seconds: lastValid,
+                                    duration,
                                 });
                             }
                         });
 
+                        player.on('play', (data) => {
+                            emitEvent('play', {
+                                playback_seconds: Math.floor(data.seconds ?? 0),
+                            });
+                        });
+
+                        player.on('pause', (data) => {
+                            emitEvent('pause', {
+                                playback_seconds: Math.floor(data.seconds ?? 0),
+                            });
+                        });
+
                         player.on('seeked', (event) => {
                             if (! isStrict) {
+                                emitEvent('seek', {
+                                    playback_seconds: Math.floor(event.seconds ?? 0),
+                                    metadata: { source: 'scrub' },
+                                });
                                 return;
                             }
 
                             const seconds = Math.floor(event.seconds ?? 0);
                             if (seconds > lastValid + 3) {
                                 player.setCurrentTime(lastValid).catch(() => null);
+                                return;
+                            }
+
+                            emitEvent('seek', {
+                                playback_seconds: seconds,
+                                metadata: { source: 'scrub' },
+                            });
+                        });
+
+                        window.addEventListener('player:seek-to', (event) => {
+                            const seekTime = toSeconds(event.detail?.time);
+                            if (Number.isFinite(seekTime)) {
+                                player.setCurrentTime(seekTime).catch(() => null);
+                                lastValid = seekTime;
+                                lastSent = seekTime;
+                                emitProgress(seekTime);
+                                emitEvent('seek', {
+                                    playback_seconds: seekTime,
+                                    metadata: { source: event.detail?.source || 'ui' },
+                                });
                             }
                         });
                     };
@@ -729,10 +1085,13 @@
 
                         const progressUrl = container.dataset.progressUrl;
                         const lessonId = container.dataset.lesson;
+                        const eventsUrl = container.dataset.eventsUrl;
                         const resumeAt = toSeconds(container.dataset.resume);
                         const duration = toSeconds(container.dataset.duration);
                         const isStrict = container.dataset.strict === '1';
                         const emitProgress = createProgressEmitter(duration);
+                        const emitEvent = createEventEmitter(eventsUrl, lessonId, 'cloudflare', duration);
+                        registerGlobalEmitter(emitEvent);
                         emitProgress(resumeAt);
 
                         let lastValid = resumeAt;
@@ -758,18 +1117,55 @@
                                     source: 'cloudflare',
                                     last_second: current,
                                     watched_seconds: lastValid,
+                                    duration,
                                 });
                             }
                         });
 
+                        element.addEventListener('play', () => {
+                            emitEvent('play', {
+                                playback_seconds: Math.floor(element.currentTime || 0),
+                            });
+                        });
+
+                        element.addEventListener('pause', () => {
+                            emitEvent('pause', {
+                                playback_seconds: Math.floor(element.currentTime || 0),
+                            });
+                        });
+
                         element.addEventListener('seeking', () => {
                             if (! isStrict) {
+                                emitEvent('seek', {
+                                    playback_seconds: Math.floor(element.currentTime || 0),
+                                    metadata: { source: 'scrub' },
+                                });
                                 return;
                             }
 
                             const current = Math.floor(element.currentTime || 0);
                             if (current > lastValid + 3) {
                                 element.currentTime = lastValid;
+                                return;
+                            }
+
+                            emitEvent('seek', {
+                                playback_seconds: current,
+                                metadata: { source: 'scrub' },
+                            });
+                        });
+
+                        window.addEventListener('player:seek-to', (event) => {
+                            const seekTime = toSeconds(event.detail?.time);
+                            if (Number.isFinite(seekTime)) {
+                                element.currentTime = seekTime;
+                                lastValid = seekTime;
+                                lastSent = seekTime;
+                                emitProgress(seekTime);
+                                emitEvent('seek', {
+                                    playback_seconds: seekTime,
+                                    metadata: { source: event.detail?.source || 'ui' },
+                                });
                             }
                         });
                     };

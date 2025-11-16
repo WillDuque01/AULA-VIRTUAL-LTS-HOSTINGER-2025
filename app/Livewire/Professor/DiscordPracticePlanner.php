@@ -33,6 +33,19 @@ class DiscordPracticePlanner extends Component
     public string $discord_channel_url = '';
     public string $templateName = '';
     public ?int $selectedTemplateId = null;
+    public array $templateSlots = [
+        [
+            'weekday' => 'monday',
+            'time' => '18:00',
+        ],
+    ];
+    public array $seriesForm = [
+        'template_id' => null,
+        'start_date' => '',
+        'weeks' => 1,
+    ];
+    public array $cohortTemplates = [];
+    public ?string $selectedCohortTemplate = null;
 
     public string $calendarRangeStart;
     public string $calendarRangeEnd;
@@ -54,6 +67,8 @@ class DiscordPracticePlanner extends Component
             ->orderBy('name')
             ->get();
 
+        $this->cohortTemplates = config('practice.cohort_templates', []);
+
         $startOfWeek = now()->startOfWeek();
         $this->calendarRangeStart = $startOfWeek->toDateString();
         $this->calendarRangeEnd = $startOfWeek->copy()->addDays(6)->toDateString();
@@ -62,6 +77,7 @@ class DiscordPracticePlanner extends Component
             ->toArray();
 
         $this->loadPractices();
+        $this->seriesForm['template_id'] = null;
     }
 
     public function loadPractices(): void
@@ -206,6 +222,8 @@ class DiscordPracticePlanner extends Component
         ]);
 
         $payload = [
+            'lesson_id' => $this->selectedLesson,
+            'title' => $this->title,
             'type' => $this->type,
             'cohort_label' => $this->cohort_label,
             'requires_package' => $this->requires_package,
@@ -214,6 +232,7 @@ class DiscordPracticePlanner extends Component
             'capacity' => $this->capacity,
             'discord_channel_url' => $this->discord_channel_url,
             'description' => $this->description,
+            'slots' => $this->normalizeTemplateSlots($this->templateSlots),
         ];
 
         $template = PracticeTemplate::updateOrCreate(
@@ -248,6 +267,8 @@ class DiscordPracticePlanner extends Component
 
         $payload = $template->payload ?? [];
 
+        $this->selectedLesson = $payload['lesson_id'] ?? $this->selectedLesson;
+        $this->title = $payload['title'] ?? $this->title;
         $this->type = $payload['type'] ?? $this->type;
         $this->cohort_label = $payload['cohort_label'] ?? $this->cohort_label;
         $this->requires_package = (bool) ($payload['requires_package'] ?? false);
@@ -256,8 +277,40 @@ class DiscordPracticePlanner extends Component
         $this->capacity = (int) ($payload['capacity'] ?? $this->capacity);
         $this->discord_channel_url = $payload['discord_channel_url'] ?? $this->discord_channel_url;
         $this->description = $payload['description'] ?? $this->description;
+        $this->templateSlots = $this->normalizeTemplateSlots($payload['slots'] ?? $this->templateSlots);
 
         $this->selectedTemplateId = $template->id;
+    }
+
+    public function applyCohortTemplate(?string $templateKey): void
+    {
+        if (! $templateKey) {
+            return;
+        }
+
+        $template = $this->cohortTemplates[$templateKey] ?? null;
+        if (! $template) {
+            return;
+        }
+
+        $this->type = $template['type'] ?? $this->type;
+        $this->cohort_label = $template['cohort_label'] ?? $this->cohort_label;
+        $this->requires_package = (bool) ($template['requires_package'] ?? $this->requires_package);
+        $this->practice_package_id = $template['practice_package_id'] ?? $this->practice_package_id;
+        $this->duration_minutes = (int) ($template['duration_minutes'] ?? $this->duration_minutes);
+        $this->capacity = (int) ($template['capacity'] ?? $this->capacity);
+        $this->discord_channel_url = $template['discord_channel_url'] ?? $this->discord_channel_url;
+        $this->description = $template['description'] ?? $this->description;
+        $this->templateSlots = $this->normalizeTemplateSlots($template['slots'] ?? $this->templateSlots);
+        if (! empty($template['lesson_id']) && Lesson::whereKey($template['lesson_id'])->exists()) {
+            $this->selectedLesson = $template['lesson_id'];
+        }
+
+        $this->selectedCohortTemplate = $templateKey;
+
+        $this->dispatch('practice-template-applied', [
+            'name' => $template['name'] ?? $templateKey,
+        ]);
     }
 
     public function deleteTemplate(int $templateId): void
@@ -276,6 +329,107 @@ class DiscordPracticePlanner extends Component
         $this->templates = PracticeTemplate::where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
+    }
+
+    public function addTemplateSlot(): void
+    {
+        $this->templateSlots[] = [
+            'weekday' => 'monday',
+            'time' => '18:00',
+        ];
+    }
+
+    public function removeTemplateSlot(int $index): void
+    {
+        if (! isset($this->templateSlots[$index])) {
+            return;
+        }
+
+        unset($this->templateSlots[$index]);
+        $this->templateSlots = array_values($this->templateSlots);
+        if (empty($this->templateSlots)) {
+            $this->templateSlots = [
+                [
+                    'weekday' => 'monday',
+                    'time' => '18:00',
+                ],
+            ];
+        }
+    }
+
+    public function scheduleTemplateSeries(): void
+    {
+        $data = $this->validate([
+            'seriesForm.template_id' => ['required', Rule::exists('practice_templates', 'id')->where('user_id', auth()->id())],
+            'seriesForm.start_date' => ['required', 'date'],
+            'seriesForm.weeks' => ['required', 'integer', 'min:1', 'max:12'],
+        ], [], [
+            'seriesForm.template_id' => __('plantilla'),
+            'seriesForm.start_date' => __('fecha de inicio'),
+            'seriesForm.weeks' => __('cantidad de semanas'),
+        ]);
+
+        /** @var PracticeTemplate $template */
+        $template = PracticeTemplate::where('user_id', auth()->id())->findOrFail($data['seriesForm']['template_id']);
+        $payload = $template->payload ?? [];
+        $slots = collect($this->normalizeTemplateSlots($payload['slots'] ?? []))
+            ->filter(fn ($slot) => ! empty($slot['weekday']) && ! empty($slot['time']))
+            ->values();
+
+        if ($slots->isEmpty()) {
+            $this->addError('templateSlots', __('La plantilla no tiene bloques configurados.'));
+
+            return;
+        }
+
+        $lessonId = $payload['lesson_id'] ?? null;
+        if (! $lessonId || ! Lesson::whereKey($lessonId)->exists()) {
+            $this->addError('seriesForm.template_id', __('La plantilla no tiene una lección válida.'));
+
+            return;
+        }
+
+        $baseDate = Carbon::parse($data['seriesForm']['start_date'], config('app.timezone'))->startOfDay();
+        $scheduled = 0;
+
+        foreach (range(0, $data['seriesForm']['weeks'] - 1) as $weekIndex) {
+            foreach ($slots as $slot) {
+                $startAt = $this->resolveSlotDate($baseDate, $slot, $weekIndex);
+
+                if ($startAt->isPast()) {
+                    $startAt = now()->addHour();
+                }
+
+                $endAt = $startAt->copy()->addMinutes((int) ($payload['duration_minutes'] ?? 60));
+
+                $practice = DiscordPractice::create([
+                    'lesson_id' => $lessonId,
+                    'title' => $payload['title'] ?? $template->name,
+                    'description' => $payload['description'] ?? null,
+                    'type' => $payload['type'] ?? 'cohort',
+                    'cohort_label' => $payload['cohort_label'] ?? null,
+                    'practice_package_id' => $payload['practice_package_id'] ?? null,
+                    'start_at' => $startAt,
+                    'end_at' => $endAt,
+                    'duration_minutes' => (int) ($payload['duration_minutes'] ?? 60),
+                    'capacity' => (int) ($payload['capacity'] ?? 10),
+                    'discord_channel_url' => $payload['discord_channel_url'] ?? null,
+                    'created_by' => auth()->id(),
+                    'requires_package' => (bool) ($payload['requires_package'] ?? false),
+                ]);
+
+                $scheduled++;
+
+                event(new DiscordPracticeScheduled(
+                    $practice->fresh(['lesson.chapter.course', 'creator'])
+                ));
+            }
+        }
+
+        $this->loadPractices();
+        $this->dispatch('practice-series-scheduled', ['count' => $scheduled]);
+
+        $this->seriesForm['template_id'] = null;
     }
 
     public function duplicatePractice(int $practiceId, int $daysOffset = 7): void
@@ -315,7 +469,53 @@ class DiscordPracticePlanner extends Component
 
     public function render()
     {
-        return view('livewire.professor.discord-practice-planner');
+        return view('livewire.professor.discord-practice-planner', [
+            'cohortTemplates' => $this->cohortTemplates,
+        ]);
+    }
+
+    private function normalizeTemplateSlots(array $slots): array
+    {
+        $normalized = collect($slots)
+            ->map(function ($slot) {
+                $weekday = strtolower((string) ($slot['weekday'] ?? 'monday'));
+                $time = $slot['time'] ?? '18:00';
+
+                return [
+                    'weekday' => in_array($weekday, array_keys($this->weekdayMap()), true) ? $weekday : 'monday',
+                    'time' => preg_match('/^\d{2}:\d{2}$/', $time) ? $time : '18:00',
+                ];
+            })
+            ->values()
+            ->all();
+
+        return empty($normalized) ? [
+            ['weekday' => 'monday', 'time' => '18:00'],
+        ] : $normalized;
+    }
+
+    private function resolveSlotDate(Carbon $baseDate, array $slot, int $weekOffset): Carbon
+    {
+        $weekdayIndex = $this->weekdayMap()[$slot['weekday']] ?? 0;
+        $weekStart = $baseDate->copy()->startOfWeek()->addWeeks($weekOffset);
+
+        $target = $weekStart->copy()->addDays($weekdayIndex);
+        $target->setTimeFromTimeString($slot['time']);
+
+        return $target;
+    }
+
+    private function weekdayMap(): array
+    {
+        return [
+            'monday' => 0,
+            'tuesday' => 1,
+            'wednesday' => 2,
+            'thursday' => 3,
+            'friday' => 4,
+            'saturday' => 5,
+            'sunday' => 6,
+        ];
     }
 }
 

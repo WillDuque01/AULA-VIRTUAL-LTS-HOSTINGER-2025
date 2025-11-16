@@ -5,6 +5,17 @@
             <h3 class="text-lg font-semibold text-slate-900">Sesiones 1:1 / Cohorte en Discord</h3>
             <p class="text-xs text-slate-500">Configura un slot y luego ajusta detalles desde el calendario semanal.</p>
         </div>
+        @php
+            $weekdayOptions = [
+                'monday' => __('Lunes'),
+                'tuesday' => __('Martes'),
+                'wednesday' => __('Miércoles'),
+                'thursday' => __('Jueves'),
+                'friday' => __('Viernes'),
+                'saturday' => __('Sábado'),
+                'sunday' => __('Domingo'),
+            ];
+        @endphp
         <div class="grid gap-4 md:grid-cols-3">
             <label class="space-y-1 text-xs font-semibold text-slate-500 uppercase tracking-wide" x-data>
                 Plantilla guardada
@@ -29,6 +40,140 @@
                     @endif
                 </div>
             </label>
+        </div>
+        @if(!empty($cohortTemplates))
+            <div class="rounded-2xl border border-indigo-100 bg-white/70 p-4 space-y-4">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-xs uppercase font-semibold tracking-wide text-indigo-500">Plantillas de cohorte</p>
+                        <p class="text-sm text-slate-600">Atajos preconfigurados por programa/horario.</p>
+                    </div>
+                    @if($selectedCohortTemplate)
+                        <button type="button"
+                                wire:click="applyCohortTemplate(null)"
+                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300">
+                            ✕ {{ __('Limpiar selección') }}
+                        </button>
+                    @endif
+                </div>
+                <div class="grid gap-3 md:grid-cols-3">
+                    @foreach($cohortTemplates as $templateKey => $preset)
+                        @php
+                            $slotSummary = collect($preset['slots'] ?? [])
+                                ->map(fn ($slot) => ($weekdayOptions[$slot['weekday']] ?? ucfirst($slot['weekday'])) . ' · ' . $slot['time'])
+                                ->implode(', ');
+                        @endphp
+                        <button type="button"
+                                wire:key="cohort-template-{{ $templateKey }}"
+                                wire:click="applyCohortTemplate('{{ $templateKey }}')"
+                                wire:loading.attr="disabled"
+                                wire:target="applyCohortTemplate('{{ $templateKey }}')"
+                                class="text-left rounded-2xl border px-4 py-3 text-xs transition {{ $selectedCohortTemplate === $templateKey ? 'border-indigo-400 bg-indigo-50 shadow-inner shadow-indigo-100' : 'border-slate-200 bg-white hover:border-indigo-200' }}">
+                            <p class="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                {{ $preset['name'] ?? $templateKey }}
+                                @if($selectedCohortTemplate === $templateKey)
+                                    <span class="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">{{ __('Activo') }}</span>
+                                @endif
+                            </p>
+                            <p class="mt-1 text-[11px] text-slate-500">{{ $preset['description'] ?? '—' }}</p>
+                            @if($slotSummary)
+                                <p class="mt-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] text-slate-600">{{ $slotSummary }}</p>
+                            @endif
+                            <div class="mt-2 flex flex-wrap gap-2 text-[10px] font-semibold text-slate-500">
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                    ⏱ {{ $preset['duration_minutes'] ?? 60 }} min
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                    👥 {{ $preset['capacity'] ?? 10 }}
+                                </span>
+                            </div>
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+        <div class="rounded-2xl border border-amber-100 bg-amber-50/60 p-4 text-xs text-amber-900 space-y-2">
+            <p class="font-semibold">Checklist Make / Discord</p>
+            <ul class="list-disc pl-4 space-y-1">
+                <li>{{ __('Confirma que el webhook de Discord y el escenario Make usan los eventos `discord.practice.*`.') }}</li>
+                <li>{{ __('Cada práctica programada (manual o serie) dispara `DiscordPracticeScheduled` y se registra en el outbox.') }}</li>
+                <li>{{ __('No olvides sincronizar el timezone antes de duplicar semanas para evitar desfases en Make.') }}</li>
+            </ul>
+        </div>
+        <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <p class="text-xs uppercase font-semibold tracking-wide text-slate-400">Bloques recurrentes</p>
+                <button type="button" wire:click="addTemplateSlot" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-indigo-200 hover:text-indigo-700">
+                    ➕ Añadir bloque
+                </button>
+            </div>
+            <p class="text-xs text-slate-500">Define los días y horarios que se repetirán cuando guardes o ejecutes esta plantilla. Ideal para duplicar cohortes completas.</p>
+            <div class="space-y-2">
+                @foreach($templateSlots as $index => $slot)
+                    <div class="grid gap-2 sm:grid-cols-[1fr,1fr,auto] items-center">
+                        <label class="text-xs text-slate-500">
+                            <span class="sr-only">Día</span>
+                            <select wire:model="templateSlots.{{ $index }}.weekday" class="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach($weekdayOptions as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="text-xs text-slate-500">
+                            <span class="sr-only">Hora</span>
+                            <input type="time" wire:model="templateSlots.{{ $index }}.time" class="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </label>
+                        <button type="button"
+                                wire:click="removeTemplateSlot({{ $index }})"
+                                class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-500 hover:border-rose-200 hover:text-rose-600">
+                            ✕
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+            @error('templateSlots') <p class="text-xs text-rose-500">{{ $message }}</p> @enderror
+        </div>
+        <div class="rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs uppercase font-semibold tracking-wide text-indigo-500">Duplicación masiva</p>
+                    <p class="text-sm text-slate-600">Programa varias semanas con una sola acción.</p>
+                </div>
+                <button type="button"
+                        wire:click="$set('seriesForm.template_id', {{ $selectedTemplateId ?? 'null' }})"
+                        class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1 text-[11px] font-semibold text-indigo-600 hover:border-indigo-300">
+                    Usar plantilla actual
+                </button>
+            </div>
+            <div class="grid gap-3 md:grid-cols-3">
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Plantilla
+                    <select wire:model="seriesForm.template_id" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">{{ __('Selecciona una plantilla') }}</option>
+                        @foreach($templates as $template)
+                            <option value="{{ $template->id }}">{{ $template->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('seriesForm.template_id') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                </label>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Inicio de la serie
+                    <input type="date" wire:model="seriesForm.start_date" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    @error('seriesForm.start_date') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                </label>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Semanas
+                    <input type="number" min="1" max="12" wire:model="seriesForm.weeks" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    @error('seriesForm.weeks') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
+                </label>
+            </div>
+            <div class="text-right">
+                <button type="button"
+                        wire:click="scheduleTemplateSeries"
+                        class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700">
+                    ⚡ Programar serie
+                </button>
+            </div>
         </div>
         <div class="mt-5 grid gap-4 md:grid-cols-2">
             <label class="space-y-1 text-sm text-slate-600">

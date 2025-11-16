@@ -36,7 +36,11 @@ class Player extends Component
     public ?array $practiceCta = null;
     public ?array $practicePackCta = null;
     public array $heatmap = [];
+    public array $heatmapHighlights = [];
     public float $progressPercent = 0.0;
+    public array $progressMarkers = [];
+    public ?array $returnHint = null;
+    public ?array $ctaHighlight = null;
 
     protected ?VideoProgress $progressRecord = null;
 
@@ -64,6 +68,7 @@ class Player extends Component
         $this->loadPracticeHooks();
         $this->loadHeatmap();
         $this->calculateProgressPercent();
+        $this->buildReturnHint();
     }
 
     public function render()
@@ -88,6 +93,10 @@ class Player extends Component
             'courseTitle' => $this->courseTitle,
             'practiceCta' => $this->practiceCta,
             'practicePackCta' => $this->practicePackCta,
+            'progressMarkers' => $this->progressMarkers,
+            'returnHint' => $this->returnHint,
+            'ctaHighlight' => $this->ctaHighlight,
+            'heatmapHighlights' => $this->heatmapHighlights,
         ]);
     }
 
@@ -259,6 +268,7 @@ class Player extends Component
         $course = $this->lesson->chapter?->course;
         if (! $course) {
             $this->timeline = [];
+            $this->progressMarkers = [];
 
             return;
         }
@@ -288,36 +298,51 @@ class Player extends Component
         $this->courseTitle = optional($course->i18n->firstWhere('locale', app()->getLocale()))
             ?->title ?? $course->slug;
 
+        $totalLessons = max(1, $course->chapters->sum(fn ($chapter) => max(1, $chapter->lessons->count())));
+        $lessonsAccumulated = 0;
+        $this->progressMarkers = [];
+
         $this->timeline = $course->chapters
             ->sortBy('position')
-            ->map(function ($chapter) use ($submissionMap) {
+            ->map(function ($chapter) use ($submissionMap, $totalLessons, &$lessonsAccumulated) {
+                $lessons = $chapter->lessons
+                    ->sortBy('position')
+                    ->map(function (Lesson $lesson) use ($submissionMap) {
+                        $item = [
+                            'id' => $lesson->id,
+                            'title' => data_get($lesson->config, 'title', "Lección #{$lesson->position}"),
+                            'type' => $lesson->type,
+                            'current' => $lesson->id === $this->lesson->id,
+                            'requiresApproval' => (bool) data_get($lesson->config, 'requires_approval', false),
+                        ];
+
+                        if ($lesson->assignment) {
+                            $submission = $submissionMap->get($lesson->assignment->id);
+                            $item['status'] = $this->resolveAssignmentTimelineStatus($submission, $lesson->assignment);
+                            $item['score'] = $submission?->score;
+                        } else {
+                            $item['status'] = null;
+                            $item['score'] = null;
+                        }
+
+                        return $item;
+                    })
+                    ->values()
+                    ->toArray();
+
+                $lessonsAccumulated += max(1, count($lessons));
+                $chapterPercent = round(($lessonsAccumulated / $totalLessons) * 100, 1);
+
+                $this->progressMarkers[] = [
+                    'percent' => min(100, $chapterPercent),
+                    'label' => $chapter->title,
+                    'lessons' => count($lessons),
+                ];
+
                 return [
                     'id' => $chapter->id,
                     'title' => $chapter->title,
-                    'lessons' => $chapter->lessons
-                        ->sortBy('position')
-                        ->map(function (Lesson $lesson) use ($submissionMap) {
-                            $item = [
-                                'id' => $lesson->id,
-                                'title' => data_get($lesson->config, 'title', "Lección #{$lesson->position}"),
-                                'type' => $lesson->type,
-                                'current' => $lesson->id === $this->lesson->id,
-                                'requiresApproval' => (bool) data_get($lesson->config, 'requires_approval', false),
-                            ];
-
-                            if ($lesson->assignment) {
-                                $submission = $submissionMap->get($lesson->assignment->id);
-                                $item['status'] = $this->resolveAssignmentTimelineStatus($submission, $lesson->assignment);
-                                $item['score'] = $submission?->score;
-                            } else {
-                                $item['status'] = null;
-                                $item['score'] = null;
-                            }
-
-                            return $item;
-                        })
-                        ->values()
-                        ->toArray(),
+                    'lessons' => $lessons,
                 ];
             })
             ->values()
@@ -393,6 +418,8 @@ class Player extends Component
                 'has_order' => (bool) $order,
             ];
         }
+
+        $this->resolveContextualCta();
     }
 
     private function loadHeatmap(): void
@@ -403,6 +430,7 @@ class Player extends Component
 
         if ($segments->isEmpty()) {
             $this->heatmap = [];
+            $this->heatmapHighlights = [];
 
             return;
         }
@@ -416,6 +444,8 @@ class Player extends Component
                 'intensity' => $maxReach > 0 ? round($segment->reach_count / $maxReach, 3) : 0,
             ];
         })->toArray();
+
+        $this->buildHeatmapHighlights();
     }
 
     private function calculateProgressPercent(): void
@@ -428,6 +458,100 @@ class Player extends Component
 
         $watched = $this->progressRecord->watched_seconds ?? $this->progressRecord->last_second ?? 0;
         $this->progressPercent = round(min(1, $watched / $this->duration) * 100, 1);
+    }
+
+    private function buildReturnHint(): void
+    {
+        if (! $this->isVideo || $this->resumeAt <= 0) {
+            $this->returnHint = null;
+
+            return;
+        }
+
+        if ($this->duration && $this->resumeAt < ($this->duration * 0.1)) {
+            $this->returnHint = null;
+
+            return;
+        }
+
+        $this->returnHint = [
+            'seconds' => $this->resumeAt,
+            'label' => gmdate('H:i:s', $this->resumeAt),
+        ];
+    }
+
+    private function resolveContextualCta(): void
+    {
+        if ($this->practiceCta) {
+            $this->ctaHighlight = [
+                'type' => 'practice',
+                'title' => $this->practiceCta['has_reservation']
+                    ? __('Tienes una práctica confirmada')
+                    : __('Reserva tu práctica en vivo'),
+                'description' => optional($this->practiceCta['start_at'])->translatedFormat('d M · H:i') ?? __('Próximamente'),
+                'status' => $this->practiceCta['has_reservation'] ? 'reserved' : (($this->practiceCta['available'] ?? 0) > 0 ? 'open' : 'full'),
+            ];
+
+            return;
+        }
+
+        if ($this->practicePackCta) {
+            $this->ctaHighlight = [
+                'type' => 'pack',
+                'title' => $this->practicePackCta['has_order']
+                    ? __('Gestiona tus sesiones activas')
+                    : __('Impulsa tu avance con sesiones guiadas'),
+                'description' => sprintf('%s · %s %s',
+                    $this->practicePackCta['title'],
+                    $this->practicePackCta['sessions'],
+                    __('sesiones')
+                ),
+                'status' => $this->practicePackCta['has_order'] ? 'owned' : 'cta',
+            ];
+
+            return;
+        }
+
+        if ($this->ctaLabel && $this->ctaUrl) {
+            $this->ctaHighlight = [
+                'type' => 'resource',
+                'title' => $this->ctaLabel,
+                'description' => __('Recurso recomendado al finalizar esta lección.'),
+                'status' => 'link',
+            ];
+
+            return;
+        }
+
+        $this->ctaHighlight = null;
+    }
+
+    private function buildHeatmapHighlights(): void
+    {
+        if (empty($this->heatmap) || ! $this->duration) {
+            $this->heatmapHighlights = [];
+
+            return;
+        }
+
+        $segmentWindow = max(5, (int) floor($this->duration / 20));
+
+        $this->heatmapHighlights = collect($this->heatmap)
+            ->sortByDesc('reach')
+            ->take(3)
+            ->map(function (array $segment) use ($segmentWindow) {
+                $startSeconds = max(0, (int) ($segment['bucket'] ?? 0));
+                $endSeconds = min($this->duration, $startSeconds + $segmentWindow);
+
+                return [
+                    'bucket' => $segment['bucket'],
+                    'reach' => $segment['reach'],
+                    'percent' => round(($segment['intensity'] ?? 0) * 100),
+                    'label' => sprintf('%s – %s', gmdate('i:s', $startSeconds), gmdate('i:s', $endSeconds)),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 }
 

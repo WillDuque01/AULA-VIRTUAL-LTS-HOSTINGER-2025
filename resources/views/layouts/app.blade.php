@@ -62,6 +62,9 @@
     <body class="font-sans antialiased {{ $branding->dark_mode ? 'dark' : '' }}">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
             @include('layouts.navigation')
+            @auth
+                <livewire:profile.completion-banner />
+            @endauth
 
             <!-- Page Heading -->
             @isset($header)

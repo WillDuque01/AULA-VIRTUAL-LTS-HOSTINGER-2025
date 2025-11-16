@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\DataPorterExportController;
+use App\Http\Controllers\Api\PlayerEventController;
 use App\Http\Controllers\Api\VideoProgressController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ProfileController;
@@ -11,6 +13,7 @@ use App\Http\Livewire\Builder\CourseBuilder;
 use App\Http\Livewire\Player;
 use App\Livewire\Admin\AssignmentsManager;
 use App\Livewire\Admin\BrandingDesigner;
+use App\Livewire\Admin\DataPorterHub;
 use App\Livewire\Admin\GroupManager;
 use App\Livewire\Admin\MessageCenter as AdminMessageCenter;
 use App\Livewire\Admin\IntegrationOutbox;
@@ -94,6 +97,13 @@ Route::prefix('{locale}')
                 ->middleware('can:manage-settings')
                 ->name('admin.integrations.outbox');
 
+            Route::get('/admin/data-porter', DataPorterHub::class)
+                ->name('admin.data-porter');
+
+            Route::get('/admin/data-porter/export', DataPorterExportController::class)
+                ->middleware('signed')
+                ->name('admin.data-porter.export');
+
             Route::get('/student/messages', StudentMessageCenter::class)
                 ->middleware('role:student_free|student_paid|student_vip')
                 ->name('student.messages');
@@ -111,6 +121,7 @@ Route::prefix('{locale}')
                 ->name('professor.practice-packs');
 
             Route::post('/api/video/progress', [VideoProgressController::class, 'store'])->name('api.video.progress');
+            Route::post('/api/player/events', PlayerEventController::class)->name('api.player.events');
         });
 
         require __DIR__.'/auth.php';

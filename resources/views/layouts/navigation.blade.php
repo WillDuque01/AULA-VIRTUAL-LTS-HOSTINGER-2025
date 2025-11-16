@@ -30,6 +30,11 @@
                             {{ __('Pagos') }}
                         </x-nav-link>
                     @endcan
+                    @if($currentUser?->can('manage-settings') || $currentUser?->hasRole('teacher_admin'))
+                        <x-nav-link :href="route('admin.data-porter')" :active="request()->routeIs('admin.data-porter')">
+                            DataPorter
+                        </x-nav-link>
+                    @endif
                     @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
                         <x-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
                             {{ __('Mensajes') }}
@@ -109,6 +114,11 @@
                     {{ __('Pagos') }}
                 </x-responsive-nav-link>
             @endcan
+            @if($currentUser?->can('manage-settings') || $currentUser?->hasRole('teacher_admin'))
+                <x-responsive-nav-link :href="route('admin.data-porter')" :active="request()->routeIs('admin.data-porter')">
+                    DataPorter
+                </x-responsive-nav-link>
+            @endif
             @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
                 <x-responsive-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
                     {{ __('Mensajes') }}

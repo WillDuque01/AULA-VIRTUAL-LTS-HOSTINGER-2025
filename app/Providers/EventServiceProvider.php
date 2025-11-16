@@ -37,6 +37,8 @@ use App\Listeners\SendCertificateIssuedNotification;
 use App\Listeners\SendAssignmentApprovedNotification;
 use App\Listeners\SendAssignmentRejectedNotification;
 use App\Listeners\SendPracticePackagePublishedNotification;
+use App\Listeners\RecordPracticePackPurchaseSnapshot;
+use App\Listeners\RecordPracticeReservationSnapshot;
 use App\Listeners\SendPracticePackagePurchasedNotification;
 use App\Listeners\SendSimulatedPaymentNotification;
 use App\Listeners\SendSubscriptionExpiringNotification;
@@ -91,6 +93,7 @@ class EventServiceProvider extends ServiceProvider
         PracticePackagePurchased::class => [
             SendPracticePackagePurchasedNotification::class,
             EnqueuePracticePackagePurchasedEvent::class,
+            RecordPracticePackPurchaseSnapshot::class,
         ],
         DiscordPracticeScheduled::class => [
             SendDiscordPracticeScheduledNotification::class,
@@ -99,6 +102,7 @@ class EventServiceProvider extends ServiceProvider
         DiscordPracticeReserved::class => [
             SendDiscordPracticeReservedNotification::class,
             EnqueueDiscordPracticeReservedEvent::class,
+            RecordPracticeReservationSnapshot::class,
         ],
         DiscordPracticeRequestEscalated::class => [
             SendDiscordPracticeRequestEscalatedNotification::class,

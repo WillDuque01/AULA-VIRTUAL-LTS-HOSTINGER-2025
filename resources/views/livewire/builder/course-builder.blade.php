@@ -8,21 +8,25 @@
         : null;
 @endphp
 
-<div class="space-y-6" data-builder-root>
+<div class="space-y-6" data-builder-root data-state="idle">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-semibold">Builder de curso: {{ $course->slug }}</h2>
             <p class="text-sm text-gray-500">Organiza capítulos, define lecciones y bloquea el avance según el plan de estudios.</p>
         </div>
         <div class="flex items-center gap-3">
-            <button type="button" wire:click="addChapter" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <button type="button"
+                    wire:click="addChapter"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    aria-label="Crear nuevo capítulo"
+                    title="Crear nuevo capítulo (atajo: N)">
                 <span class="text-lg">+</span>
                 Nuevo capítulo
             </button>
         </div>
     </div>
 
-    <div class="grid gap-3 md:grid-cols-3">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @php
             $totals = data_get($metrics, 'totals', []);
         @endphp
@@ -60,15 +64,57 @@
         </div>
     </div>
 
+    <div class="rounded-2xl border border-slate-200 bg-white/80 shadow-sm px-4 py-3" x-data="{ open: false }">
+        <div class="flex flex-wrap items-center gap-3">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Atajos y consejos</p>
+            <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-300"
+                    @click="open = ! open"
+                    :aria-expanded="open.toString()">
+                <span class="text-base" aria-hidden="true">⌨️</span>
+                <span x-text="open ? '{{ __('Ocultar') }}' : '{{ __('Ver atajos') }}'"></span>
+            </button>
+            <span class="ml-auto hidden text-[11px] text-slate-400 md:inline">{{ __('Diseñado para flujos 2030 · accesible y responsivo.') }}</span>
+        </div>
+        <div class="mt-3 grid gap-3 text-xs text-slate-600" x-show="open" x-transition>
+            <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2 flex items-center justify-between">
+                <div>
+                    <p class="font-semibold text-slate-800">Nuevo capítulo</p>
+                    <p class="text-[11px] text-slate-500">{{ __('Presiona N en cualquier parte del builder.') }}</p>
+                </div>
+                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 font-semibold text-slate-700">
+                    N
+                </span>
+            </div>
+            <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2 flex items-center justify-between">
+                <div>
+                    <p class="font-semibold text-slate-800">{{ __('Guardar lección enfocada') }}</p>
+                    <p class="text-[11px] text-slate-500">{{ __('Ctrl/⌘ + S sobre cualquier tarjeta abierta.') }}</p>
+                </div>
+                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 font-semibold text-slate-700">
+                    Ctrl/⌘ + S
+                </span>
+            </div>
+            <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
+                <p class="font-semibold text-slate-800">{{ __('Drag & drop accesible') }}</p>
+                <p class="text-[11px] text-slate-500">{{ __('Usa la tecla Tab para enfocar el asa y Enter/Espacio para agarrar o soltar.') }}</p>
+            </div>
+        </div>
+    </div>
+
     <div class="space-y-4" data-sortable-chapters>
         @forelse($state['chapters'] as $chapterIndex => $chapter)
             @php
                 $chapterMetrics = $metrics['chapters'][$chapter['id']] ?? null;
             @endphp
             <div class="bg-white border border-gray-200 rounded-2xl shadow-lg shadow-slate-100/60 p-4 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="flex items-center gap-3">
-                        <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-9 h-9 cursor-move bg-white shadow-inner" title="Arrastrar capítulo">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-9 h-9 cursor-move bg-white shadow-inner"
+                              role="button"
+                              tabindex="0"
+                              aria-label="{{ __('Arrastrar capítulo') }}"
+                              data-tooltip="{{ __('Arrastra o usa Enter/Espacio para reordenar este capítulo') }}">
                             <span class="text-lg leading-none select-none">⋮⋮</span>
                         </span>
                         <div>
@@ -83,7 +129,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'video')" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-md text-xs font-semibold">+ Video</button>
                         <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'text')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-md text-xs font-semibold">+ Texto</button>
                         <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'pdf')" class="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-md text-xs font-semibold">+ PDF</button>
@@ -140,7 +186,11 @@
                             @endif
                             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                                 <div class="flex items-center gap-3">
-                                    <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-8 h-8 cursor-move bg-white shadow-inner" title="Arrastrar lección">
+                                    <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-8 h-8 cursor-move bg-white shadow-inner"
+                                          role="button"
+                                          tabindex="0"
+                                          aria-label="{{ __('Arrastrar lección') }}"
+                                          data-tooltip="{{ __('Arrastra o usa Enter/Espacio para reordenar esta lección') }}">
                                         <span class="text-base leading-none">⋮⋮</span>
                                     </span>
                                     <div>
@@ -169,11 +219,16 @@
                                     </label>
                                     <button type="button"
                                             wire:click="focusLesson({{ $lesson['id'] }})"
-                                            class="mt-5 inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $isFocused ? 'border-indigo-200 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300' }}">
+                                            class="mt-5 inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $isFocused ? 'border-indigo-200 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300' }}"
+                                            aria-pressed="{{ $isFocused ? 'true' : 'false' }}"
+                                            title="{{ $isFocused ? __('Lección en foco') : __('Enfocar lección') }}">
                                         <span aria-hidden="true">{{ $isFocused ? '✨' : '👁' }}</span>
                                         {{ $isFocused ? __('En foco') : __('Enfocar') }}
                                     </button>
-                                    <button type="button" wire:click="removeLesson({{ $lesson['id'] }})" class="mt-5 inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700">
+                                    <button type="button"
+                                            wire:click="removeLesson({{ $lesson['id'] }})"
+                                            class="mt-5 inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700"
+                                            title="{{ __('Quitar lección') }}">
                                         <span class="text-sm">✕</span>
                                         Quitar
                                     </button>
@@ -443,13 +498,22 @@
     </div>
     @if($focus)
         @php
-            $focusLesson = $focus['lesson'] ?? [];
-            $focusChapter = $focus['chapter'] ?? [];
+            $focusLesson = data_get($focus, 'lesson', []);
+            $focusChapter = data_get($focus, 'chapter', []);
+            $focusLessonId = $focusLesson['id'] ?? null;
+            $practiceMeta = $focusLesson['practice_meta'] ?? null;
+            $packMeta = $focusLesson['pack_meta'] ?? null;
         @endphp
-        <div class="fixed bottom-6 right-6 w-full max-w-xl rounded-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-500/20 backdrop-blur"
+        @php($focusTabs = [
+            'content' => 'Contenido',
+            'config' => 'Configuración',
+            'practice' => 'Práctica',
+            'gamification' => 'Gamificación',
+        ])
+        <div class="fixed inset-x-4 bottom-4 sm:bottom-6 sm:right-6 sm:left-auto w-auto max-w-full sm:max-w-3xl rounded-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-500/20 backdrop-blur"
              wire:key="builder-focus-panel">
             <div class="p-5 space-y-4">
-                <div class="flex items-start justify-between gap-4">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                         <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-400">Panel de enfoque</p>
                         <h3 class="text-xl font-semibold text-slate-900 flex items-center gap-2">
@@ -464,69 +528,199 @@
                             {{ $focusChapter['title'] ?? __('Capítulo') }} · {{ ucfirst($focusLesson['type'] ?? 'bloque') }}
                         </p>
                     </div>
-                    <button type="button"
-                            wire:click="clearFocus"
-                            class="inline-flex items-center rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50">
-                        ✕ {{ __('Cerrar') }}
-                    </button>
+                    <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500">
+                        @foreach($focusTabs as $tabKey => $tabLabel)
+                            <button type="button"
+                                    wire:click="setFocusTab('{{ $tabKey }}')"
+                                    @class([
+                                        'rounded-full px-3 py-1 transition border',
+                                        'bg-slate-900 text-white border-slate-900 shadow' => $focusTab === $tabKey,
+                                        'bg-white border-slate-200 hover:border-slate-300 text-slate-600' => $focusTab !== $tabKey,
+                                    ])>
+                                {{ $tabLabel }}
+                            </button>
+                        @endforeach
+                        <button type="button"
+                                wire:click="clearFocus"
+                                class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                            ✕ {{ __('Cerrar') }}
+                        </button>
+                    </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-600">
-                    @if($focusLesson['locked'] ?? false)
-                        <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
-                            🔒 {{ __('Bloquea avance') }}
-                        </span>
-                    @endif
-                    @if(!empty($focusLesson['estimated_minutes']))
-                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
-                            ⏱ {{ $focusLesson['estimated_minutes'] }} {{ __('min estimados') }}
-                        </span>
-                    @endif
-                    @if(!empty($focusLesson['release_at']))
-                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-600">
-                            📅 {{ __('Libera el') }} {{ \Illuminate\Support\Carbon::parse($focusLesson['release_at'])->translatedFormat('d M H:i') }}
-                        </span>
-                    @endif
-                    @if($focusChapter && ($focusChapter['metrics']['lessons'] ?? false))
-                        <span class="inline-flex items-center gap-1 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-indigo-700">
-                            📚 {{ $focusChapter['metrics']['lessons'] }} {{ __('lecciones en el capítulo') }}
-                        </span>
-                    @endif
-                </div>
+                @if($focusLessonId)
+                    <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-600">
+                        <button type="button"
+                                wire:click="duplicateLesson({{ $focusLessonId }})"
+                                class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-1.5 text-white shadow hover:bg-slate-800">
+                            ✨ Duplicar lección
+                        </button>
 
-                @if(!empty($focusLesson['stats']))
-                    <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
-                        <p class="text-[11px] uppercase font-semibold text-slate-500 tracking-wide mb-2">{{ __('Estado de tareas vinculadas') }}</p>
-                        <div class="flex flex-wrap gap-2 text-[12px] font-semibold">
-                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white px-3 py-1 text-amber-700">
-                                🕒 {{ __('Pendientes') }}: {{ $focusLesson['stats']['pending'] ?? 0 }}
-                            </span>
-                            <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700">
-                                ✅ {{ __('Aprobadas') }}: {{ $focusLesson['stats']['approved'] ?? 0 }}
-                            </span>
-                            <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-white px-3 py-1 text-rose-700">
-                                ⚠️ {{ __('Rechazadas') }}: {{ $focusLesson['stats']['rejected'] ?? 0 }}
-                            </span>
-                        </div>
+                        <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1">
+                            <span>Mover a</span>
+                            <select class="bg-transparent text-xs focus:outline-none"
+                                    wire:change="quickMoveLesson({{ $focusLessonId }}, $event.target.value)">
+                                <option value="">{{ __('Selecciona capítulo') }}</option>
+                                @foreach($state['chapters'] as $chapterOption)
+                                    <option value="{{ $chapterOption['id'] }}" @selected(($chapterOption['id'] ?? null) === ($focusChapter['id'] ?? null))>
+                                        {{ $chapterOption['title'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1">
+                            <span>{{ __('Convertir a') }}</span>
+                            <select class="bg-transparent text-xs focus:outline-none"
+                                    wire:change="quickConvertLesson({{ $focusLessonId }}, $event.target.value)">
+                                <option value="">{{ __('Selecciona tipo') }}</option>
+                                @foreach($lessonTypes as $value => $label)
+                                    @if($value !== ($focusLesson['type'] ?? null))
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </label>
                     </div>
                 @endif
 
-                <div class="grid gap-3 md:grid-cols-2">
-                    @if(!empty($focusLesson['cta_label']) && !empty($focusLesson['cta_url']))
-                        <div class="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-                            <p class="text-[11px] uppercase font-semibold text-emerald-700">{{ __('CTA configurado') }}</p>
-                            <p class="text-sm font-semibold text-emerald-900">{{ $focusLesson['cta_label'] }}</p>
-                            <p class="text-xs text-emerald-600 break-all">{{ $focusLesson['cta_url'] }}</p>
-                        </div>
-                    @endif
-                    <div class="rounded-2xl border border-slate-100 px-4 py-3">
-                        <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Resumen rápido') }}</p>
-                        <ul class="mt-2 space-y-1 text-sm text-slate-600">
-                            <li>• {{ __('Tipo') }}: {{ ucfirst($focusLesson['type'] ?? __('bloque')) }}</li>
-                            <li>• {{ __('Duración declarada') }}: {{ $focusLesson['length'] ?? '—' }} {{ __('seg') }}</li>
-                            <li>• {{ __('Prerequisito') }}: {{ $focusLesson['prerequisite_lesson_id'] ? __('Sí') : __('No') }}</li>
-                        </ul>
-                    </div>
+                @php
+                    $baseChips = [
+                        ['show' => $focusLesson['locked'] ?? false, 'label' => __('Bloquea avance'), 'icon' => '🔒', 'classes' => 'border-amber-200 bg-amber-50 text-amber-700'],
+                        ['show' => !empty($focusLesson['estimated_minutes']), 'label' => ($focusLesson['estimated_minutes'] ?? 0).' '. __('min estimados'), 'icon' => '⏱', 'classes' => 'border-emerald-200 bg-emerald-50 text-emerald-700'],
+                        ['show' => !empty($focusLesson['release_at']), 'label' => __('Libera el').' '.\Illuminate\Support\Carbon::parse($focusLesson['release_at'])->translatedFormat('d M H:i'), 'icon' => '📅', 'classes' => 'border-slate-200 bg-slate-50 text-slate-600'],
+                        ['show' => $focusChapter && ($focusChapter['metrics']['lessons'] ?? false), 'label' => ($focusChapter['metrics']['lessons'] ?? 0).' '. __('lecciones en el capítulo'), 'icon' => '📚', 'classes' => 'border-indigo-100 bg-indigo-50 text-indigo-700'],
+                    ];
+                @endphp
+                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                    @foreach(($baseChips ?? []) as $chip)
+                        @if($chip['show'])
+                            <span class="inline-flex items-center gap-1 rounded-full border px-3 py-1 {{ $chip['classes'] }}">
+                                <span aria-hidden="true">{{ $chip['icon'] }}</span> {{ $chip['label'] }}
+                            </span>
+                        @endif
+                    @endforeach
+                </div>
+
+                <div class="rounded-2xl border border-slate-100 bg-white px-4 py-3">
+                    @switch($focusTab)
+                        @case('content')
+                            <div class="grid gap-3 md:grid-cols-2 text-sm text-slate-600">
+                                <div>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Detalles de contenido') }}</p>
+                                    <ul class="mt-2 space-y-1">
+                                        <li>• {{ __('Tipo') }}: {{ ucfirst($focusLesson['type'] ?? 'bloque') }}</li>
+                                        <li>• {{ __('Duración declarada') }}: {{ $focusLesson['length'] ?? '—' }} {{ __('seg') }}</li>
+                                        <li>• {{ __('Prerequisito') }}: {{ $focusLesson['prerequisite_lesson_id'] ? __('Sí') : __('No') }}</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('CTA configurado') }}</p>
+                                    @if(!empty($focusLesson['cta_label']) && !empty($focusLesson['cta_url']))
+                                        <p class="mt-1 font-semibold text-slate-900">{{ $focusLesson['cta_label'] }}</p>
+                                        <p class="text-xs text-slate-500 break-all">{{ $focusLesson['cta_url'] }}</p>
+                                    @else
+                                        <p class="mt-1 text-xs text-slate-500">{{ __('Sin CTA activo') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            @break
+
+                        @case('config')
+                            <div class="grid gap-3 md:grid-cols-2 text-sm text-slate-600">
+                                <div>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Bloqueos') }}</p>
+                                    <ul class="mt-2 space-y-1">
+                                        <li>• {{ __('Bloqueada') }}: {{ ($focusLesson['locked'] ?? false) ? __('Sí') : __('No') }}</li>
+                                        <li>• {{ __('Liberación programada') }}: {{ $focusLesson['release_at'] ? \Illuminate\Support\Carbon::parse($focusLesson['release_at'])->diffForHumans() : __('—') }}</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Metadatos') }}</p>
+                                    <ul class="mt-2 space-y-1">
+                                        <li>• {{ __('Badge') }}: {{ $focusLesson['badge'] ?? __('N/A') }}</li>
+                                        <li>• {{ __('CTA label') }}: {{ $focusLesson['cta_label'] ?? __('N/A') }}</li>
+                                        <li>• {{ __('CTA URL') }}: {{ $focusLesson['cta_url'] ? __('Definido') : __('Pendiente') }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            @break
+
+                        @case('practice')
+                            <div class="text-sm text-slate-600 space-y-3">
+                                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                                    @if($practiceMeta)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-indigo-700">
+                                            🎙️ {{ __('Prácticas activas') }}: {{ $practiceMeta['total'] }}
+                                        </span>
+                                        @if($practiceMeta['next_start'] ?? null)
+                                            <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600">
+                                                ⏭ {{ __('Próxima') }}: {{ \Illuminate\Support\Carbon::parse($practiceMeta['next_start'])->translatedFormat('d M H:i') }}
+                                            </span>
+                                        @endif
+                                        @if($practiceMeta['requires_pack'] ?? false)
+                                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
+                                                ⚠️ {{ __('Requiere pack') }}
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="text-xs text-slate-500">{{ __('No hay prácticas vinculadas a esta lección.') }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                                    @if($packMeta)
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
+                                            💼 {{ $packMeta['title'] ?? __('Pack asignado') }}
+                                        </span>
+                                        <span class="text-xs text-slate-500">{{ $packMeta['sessions'] ?? '—' }} {{ __('sesiones') }} · ${{ number_format($packMeta['price'] ?? 0, 0) }} {{ $packMeta['currency'] ?? '' }}</span>
+                                    @else
+                                        <span class="text-xs text-slate-500">{{ __('No hay pack publicado para esta lección.') }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    @if($plannerRoute ?? false)
+                                        <a href="{{ $plannerRoute }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
+                                            {{ __('Abrir planner Discord') }} ↗
+                                        </a>
+                                    @endif
+                                    @if($packsManagerRoute ?? false)
+                                        <a href="{{ $packsManagerRoute }}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 hover:border-emerald-300">
+                                            {{ __('Gestionar packs') }} ↗
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                            @break
+
+                        @case('gamification')
+                            <div class="space-y-3">
+                                @if(!empty($focusLesson['stats']))
+                                    <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                                        <p class="text-[11px] uppercase font-semibold text-slate-500 tracking-wide mb-2">{{ __('Estado de tareas vinculadas') }}</p>
+                                        <div class="flex flex-wrap gap-2 text-[12px] font-semibold">
+                                            <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white px-3 py-1 text-amber-700">
+                                                🕒 {{ __('Pendientes') }}: {{ $focusLesson['stats']['pending'] ?? 0 }}
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700">
+                                                ✅ {{ __('Aprobadas') }}: {{ $focusLesson['stats']['approved'] ?? 0 }}
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-white px-3 py-1 text-rose-700">
+                                                ⚠️ {{ __('Rechazadas') }}: {{ $focusLesson['stats']['rejected'] ?? 0 }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <p class="text-sm text-slate-500">{{ __('Esta lección no tiene tarefas o quizzes vinculados aún.') }}</p>
+                                @endif
+                            </div>
+                            @break
+                    @endswitch
                 </div>
             </div>
         </div>
@@ -558,8 +752,48 @@
                 0% { transform: translateY(-20px) scale(1); opacity: 1; }
                 100% { transform: translateY(40px) scale(0.5); opacity: 0; }
             }
-            [data-builder-root] [data-state="saving"] {
+            [data-lesson-item][data-state="saving"] {
                 pointer-events: none;
+            }
+            [data-builder-root][data-state="dragging"] [data-lesson-item] {
+                opacity: 0.85;
+                transform: scale(0.985);
+            }
+            [data-tooltip] {
+                position: relative;
+            }
+            [data-tooltip]::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                left: 50%;
+                bottom: calc(100% + 6px);
+                transform: translateX(-50%);
+                background: rgba(15, 23, 42, 0.9);
+                color: white;
+                font-size: 10px;
+                letter-spacing: 0.02em;
+                padding: 4px 8px;
+                border-radius: 999px;
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.15s ease;
+                z-index: 10;
+            }
+            [data-tooltip]:focus-visible::after,
+            [data-tooltip]:hover::after {
+                opacity: 1;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                *, *::before, *::after {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+                .builder-toast,
+                .builder-confetti {
+                    animation: none !important;
+                }
             }
         </style>
         <script>
@@ -594,6 +828,13 @@
             });
 
             document.addEventListener('livewire:load', () => {
+                const builderRoot = document.querySelector('[data-builder-root]');
+                const setDragState = (state) => {
+                    if (builderRoot) {
+                        builderRoot.setAttribute('data-state', state);
+                    }
+                };
+
                 const initializeSortables = () => {
                     const chaptersContainer = document.querySelector('[data-sortable-chapters]');
                     if (! chaptersContainer) {
@@ -608,7 +849,12 @@
                         handle: '.drag-handle',
                         animation: 150,
                         ghostClass: 'opacity-50',
-                        onEnd: dispatchOrder,
+                        onChoose: () => setDragState('dragging'),
+                        onUnchoose: () => setDragState('idle'),
+                        onEnd: (evt) => {
+                            setDragState('idle');
+                            dispatchOrder(evt);
+                        },
                     });
 
                     chaptersContainer.querySelectorAll('[data-sortable-lessons]').forEach((lessonsContainer) => {
@@ -621,7 +867,12 @@
                             handle: '.drag-handle',
                             animation: 150,
                             ghostClass: 'opacity-50',
-                            onEnd: dispatchOrder,
+                            onChoose: () => setDragState('dragging'),
+                            onUnchoose: () => setDragState('idle'),
+                            onEnd: (evt) => {
+                                setDragState('idle');
+                                dispatchOrder(evt);
+                            },
                         });
                     });
                 };
@@ -745,6 +996,7 @@
                         launchConfetti();
                     }
                 });
+                Livewire.on('builder:celebrate', () => launchConfetti());
 
                 Livewire.on('builder:focus-open', ({ lessonId } = {}) => {
                     if (! lessonId) {
