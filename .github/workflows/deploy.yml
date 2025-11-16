@@ -12,7 +12,7 @@ jobs:
           npm ci
           npm run build
       - name: Upload via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+        uses: SamKirkland/FTP-Deploy-Action@v4
         with:
           server: ${{ secrets.HOSTINGER_SFTP_SERVER }}
           port: ${{ secrets.HOSTINGER_SFTP_PORT }}
