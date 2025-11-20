@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Page;
+use App\Models\Product;
 use App\Services\PageBuilderService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,8 @@ class PageBuilderEditor extends Component
 
     public string $previewMode = 'desktop';
 
+    public array $productsCatalog = [];
+
     public array $settings = [
         'theme' => [
             'primary' => '#0f172a',
@@ -38,6 +41,7 @@ class PageBuilderEditor extends Component
         $this->kits = config('page_builder.kits', []);
         $this->blocks = $this->prepareBlocks($this->page->currentLayout());
         $this->settings = array_replace_recursive($this->settings, $this->page->currentSettings());
+        $this->loadProductsCatalog();
     }
 
     public function addBlock(string $kitKey): void
@@ -138,6 +142,7 @@ class PageBuilderEditor extends Component
             'previewMode' => $this->previewMode,
             'theme' => $this->settings['theme'] ?? [],
             'presets' => config('page_builder.theme_presets', []),
+            'productsCatalog' => $this->productsCatalog,
         ]);
     }
 
@@ -156,7 +161,18 @@ class PageBuilderEditor extends Component
             }
             if (($block['type'] ?? null) === 'featured-products') {
                 $ids = Arr::get($block, 'props.product_ids', null);
-                Arr::set($block, 'props.product_ids_text', is_array($ids) ? implode(',', $ids) : $ids);
+                if (! is_array($ids)) {
+                    $ids = $ids
+                        ? collect(explode(',', (string) $ids))
+                            ->map(fn ($value) => (int) trim($value))
+                            ->filter()
+                            ->values()
+                            ->all()
+                        : [];
+                }
+
+                Arr::set($block, 'props.product_ids', $ids);
+                Arr::set($block, 'props.product_ids_text', implode(',', $ids));
             }
         }
 
@@ -182,12 +198,21 @@ class PageBuilderEditor extends Component
                 Arr::set($block, 'props.items', $items);
             }
             if (($block['type'] ?? null) === 'featured-products') {
-                $text = Arr::get($block, 'props.product_ids_text');
-                $ids = collect(explode(',', (string) $text))
-                    ->map(fn ($value) => (int) trim($value))
-                    ->filter()
-                    ->values()
-                    ->all();
+                $selected = Arr::get($block, 'props.product_ids', []);
+                if (is_array($selected) && ! empty($selected)) {
+                    $ids = collect($selected)
+                        ->map(fn ($value) => (int) $value)
+                        ->filter()
+                        ->values()
+                        ->all();
+                } else {
+                    $text = Arr::get($block, 'props.product_ids_text');
+                    $ids = collect(explode(',', (string) $text))
+                        ->map(fn ($value) => (int) trim($value))
+                        ->filter()
+                        ->values()
+                        ->all();
+                }
                 Arr::set($block, 'props.product_ids', $ids);
                 unset($block['props']['product_ids_text']);
             }
@@ -236,6 +261,23 @@ class PageBuilderEditor extends Component
             'background' => $preset['background'],
             'font_family' => $preset['font_family'],
         ];
+    }
+
+    protected function loadProductsCatalog(): void
+    {
+        $this->productsCatalog = Product::query()
+            ->published()
+            ->orderBy('title')
+            ->limit(200)
+            ->get(['id', 'title', 'category', 'price_amount', 'price_currency'])
+            ->map(fn (Product $product) => [
+                'id' => $product->id,
+                'title' => $product->title,
+                'category' => $product->category,
+                'price_amount' => (float) $product->price_amount,
+                'price_currency' => $product->price_currency,
+            ])
+            ->toArray();
     }
 }
 

@@ -137,6 +137,12 @@ class PracticePackagesCatalog extends Component
             return;
         }
 
+        if ($package->product->isSoldOut()) {
+            $this->addError('cart', __('El producto ya no tiene cupos disponibles.'));
+
+            return;
+        }
+
         PracticeCart::addProduct($package->product->id);
         $this->flashMessage = __('Pack agregado al carrito.');
         $this->dispatch('notify', message: $this->flashMessage);

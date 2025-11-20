@@ -10,6 +10,7 @@ use App\Models\PracticePackage;
 use App\Models\PracticeTemplate;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -47,6 +48,7 @@ class DiscordPracticePlanner extends Component
     ];
     public array $cohortTemplates = [];
     public ?string $selectedCohortTemplate = null;
+    public ?array $activeCohortTemplate = null;
 
     public string $calendarRangeStart;
     public string $calendarRangeEnd;
@@ -162,6 +164,8 @@ class DiscordPracticePlanner extends Component
             'created_by' => auth()->id(),
             'requires_package' => $data['requires_package'],
         ]);
+
+        $this->markCohortTemplateAsPublished();
 
         $this->reset([
             'selectedLesson',
@@ -292,7 +296,7 @@ class DiscordPracticePlanner extends Component
     {
         if (! $templateKey) {
             $this->selectedCohortTemplate = null;
-
+            $this->activeCohortTemplate = null;
             return;
         }
 
@@ -327,6 +331,7 @@ class DiscordPracticePlanner extends Component
         }
 
         if (! $payload) {
+            $this->activeCohortTemplate = null;
             return;
         }
 
@@ -344,6 +349,23 @@ class DiscordPracticePlanner extends Component
         }
 
         $this->selectedCohortTemplate = $templateKey;
+        $this->activeCohortTemplate = null;
+
+        if ($source === 'db' && isset($template)) {
+            $this->activeCohortTemplate = [
+                'id' => $template->id,
+                'name' => $template->name,
+                'description' => $template->description,
+                'price_amount' => (float) $template->price_amount,
+                'price_currency' => $template->price_currency,
+                'status' => $template->status,
+                'is_featured' => (bool) $template->is_featured,
+                'product_id' => $template->product?->id,
+                'capacity' => (int) $template->capacity,
+                'enrolled_count' => (int) ($template->enrolled_count ?? 0),
+                'available_slots' => $template->remainingSlots(),
+            ];
+        }
 
         $this->dispatch('practice-template-applied', [
             'name' => $payload['name'] ?? $templateKey,
@@ -366,6 +388,48 @@ class DiscordPracticePlanner extends Component
         $this->templates = PracticeTemplate::where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
+    }
+
+    protected function resolveSelectedCohortTemplateId(): ?int
+    {
+        if (! $this->selectedCohortTemplate || ! Str::startsWith($this->selectedCohortTemplate, 'db:')) {
+            return null;
+        }
+
+        [, $id] = explode(':', $this->selectedCohortTemplate, 2);
+
+        return $id ? (int) $id : null;
+    }
+
+    protected function markCohortTemplateAsPublished(bool $reloadTemplates = true, ?int $templateId = null): void
+    {
+        $templateId = $templateId ?? ($this->activeCohortTemplate['id'] ?? null) ?? $this->resolveSelectedCohortTemplateId();
+
+        if (! $templateId) {
+            return;
+        }
+
+        $cohort = CohortTemplate::find($templateId);
+
+        if (! $cohort || $cohort->status === 'archived') {
+            return;
+        }
+
+        if ($cohort->status !== 'published') {
+            $cohort->status = 'published';
+            $cohort->save();
+        }
+
+        if ($reloadTemplates) {
+            $this->loadCohortTemplates();
+        }
+
+        if ($this->activeCohortTemplate && ($this->activeCohortTemplate['id'] ?? null) === $templateId) {
+            $this->activeCohortTemplate['status'] = 'published';
+            $this->activeCohortTemplate['available_slots'] = $cohort->remainingSlots();
+            $this->activeCohortTemplate['enrolled_count'] = (int) ($cohort->enrolled_count ?? 0);
+            $this->activeCohortTemplate['capacity'] = (int) $cohort->capacity;
+        }
     }
 
     public function addTemplateSlot(): void
@@ -588,7 +652,8 @@ class DiscordPracticePlanner extends Component
                 ]),
             ]);
 
-        $databaseTemplates = CohortTemplate::orderBy('name')
+        $databaseTemplates = CohortTemplate::with('product')
+            ->orderBy('name')
             ->get()
             ->mapWithKeys(fn (CohortTemplate $template) => [
                 "db:{$template->id}" => [
@@ -602,7 +667,14 @@ class DiscordPracticePlanner extends Component
                     'requires_package' => $template->requires_package,
                     'practice_package_id' => $template->practice_package_id,
                     'slots' => $template->slots,
+                    'price_amount' => (float) $template->price_amount,
+                    'price_currency' => $template->price_currency,
+                    'status' => $template->status,
+                    'is_featured' => (bool) $template->is_featured,
+                    'product_id' => $template->product?->id,
                     'source' => 'database',
+                    'enrolled_count' => (int) ($template->enrolled_count ?? 0),
+                    'available_slots' => $template->remainingSlots(),
                 ],
             ]);
 

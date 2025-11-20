@@ -15,15 +15,20 @@ on:
         required: false
   schedule:
     - cron: '30 12 * * *'
+  workflow_run:
+    workflows: ['Deploy']
+    types:
+      - completed
 
 jobs:
   smoke:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      BASE_URL: ${{ github.event.inputs.base_url || secrets.HOSTINGER_APP_URL }}
-      LOCALE: ${{ github.event.inputs.locale || 'es' }}
-      EXTRA_PATHS: ${{ github.event.inputs.extra_paths }}
+      BASE_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url != '' && github.event.inputs.base_url || secrets.HOSTINGER_APP_URL }}
+      LOCALE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.locale != '' && github.event.inputs.locale || 'es' }}
+      EXTRA_PATHS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.extra_paths != '' && github.event.inputs.extra_paths || '' }}
     steps:
       - name: Resolver URL base
         id: setup
@@ -64,4 +69,40 @@ jobs:
           done <<< "$endpoints"
 
           echo "✅ Todos los endpoints respondieron correctamente."
+
+      - name: Notify Slack
+        if: ${{ always() && secrets.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CONTEXT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          status_icon="✅"
+          status_text="Smoke OK"
+          if [ "$STATUS" != "success" ]; then
+            status_icon="❌"
+            status_text="Smoke falló"
+          fi
+          case "$CONTEXT" in
+            workflow_run)
+              context_label="post-deploy"
+              ;;
+            schedule)
+              context_label="programado"
+              ;;
+            *)
+              context_label="manual"
+              ;;
+          esac
+
+          payload=$(jq -n \
+            --arg text "$status_icon $status_text ($context_label) — $RUN_URL" \
+            '{text: $text}')
+
+          curl --fail --silent --show-error \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$SLACK_WEBHOOK_URL"
 

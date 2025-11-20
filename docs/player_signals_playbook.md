@@ -43,6 +43,9 @@ Los componentes Alpine usan `emitOnce` al montar (impresión) y `emit` al hacer 
    - Las tarjetas “Abrir recurso” (cuando no hay highlight) y los enlaces de lecciones estáticas generan `cta_view`/`cta_click`.
 6. **Controles del reproductor**  
    - Play/Pause/Seek manual en YouTube, Vimeo y Cloudflare crean eventos `play/pause/seek` con `provider` correcto y `playback_seconds` razonable.
+7. **Ribbon + celebraciones**  
+   - La banda “Progreso del curso” (parcial `player/modes/video`) muestra el porcentaje total y los hitos; al hacer clic en un marcador debe centrarse el timeline (escucha el evento `player-scroll-timeline`).  
+   - El banner de celebración aparece al completar >95 % del video o al aprobar una práctica; verificar que no interfiere con los CTA, respeta `prefers-reduced-motion` y emite `cta_view` solo una vez por sesión.
 
 > Recomendación: usar DataPorter (dataset `video_player_events`) para exportar en CSV/JSON tras las pruebas y adjuntar al reporte de QA.
 

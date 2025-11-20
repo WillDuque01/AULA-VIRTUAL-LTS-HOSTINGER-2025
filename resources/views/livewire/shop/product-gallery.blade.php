@@ -14,6 +14,13 @@
                         <option value="{{ $category }}">{{ $category }}</option>
                     @endforeach
                 </select>
+                    <select wire:model.live="type"
+                            class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-300 focus:border-slate-500 focus:ring-slate-500">
+                        <option value="all">{{ __('Todos los tipos') }}</option>
+                        @foreach($types as $typeOption)
+                            <option value="{{ $typeOption }}">{{ \Illuminate\Support\Str::headline($typeOption) }}</option>
+                        @endforeach
+                    </select>
                 <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
                     <input type="checkbox" wire:model="onlyFeatured" class="rounded border-slate-300">
                     {{ __('Destacados') }}
@@ -33,7 +40,8 @@
 
     <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         @forelse($products as $product)
-            <article class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4">
+            @php($isSoldOut = $product->isSoldOut())
+            <article class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4 {{ $isSoldOut ? 'opacity-75' : '' }}">
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         @if($product->category)
@@ -59,16 +67,49 @@
                         </span>
                     @endif
                 </div>
+                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-500">
+                    <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                        {{ \Illuminate\Support\Str::headline($product->type) }}
+                    </span>
+                    @if($product->is_featured)
+                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                            ⭐ {{ __('Destacado') }}
+                        </span>
+                    @endif
+                </div>
                 @if($product->productable instanceof \App\Models\PracticePackage)
                     <p class="text-sm text-slate-500">
                         {{ trans_choice(':count sesión guiada|:count sesiones guiadas', $product->productable->sessions_count, ['count' => $product->productable->sessions_count]) }}
                         · {{ $product->productable->delivery_platform === 'discord' ? __('Discord') : ucfirst($product->productable->delivery_platform) }}
                     </p>
+                @elseif($product->productable instanceof \App\Models\CohortTemplate)
+                    <div class="text-sm text-slate-500 space-y-1">
+                        <p>
+                            {{ __('Cohorte') }}
+                            @if($product->productable->cohort_label)
+                                · {{ $product->productable->cohort_label }}
+                            @endif
+                        </p>
+                        <p>
+                            {{ __('Duración :minutes min · :slots bloques', [
+                                'minutes' => $product->productable->duration_minutes,
+                                'slots' => count($product->productable->slots ?? []),
+                            ]) }}
+                        </p>
+                        <p class="font-semibold {{ $isSoldOut ? 'text-rose-600' : 'text-emerald-600' }}">
+                            @if($isSoldOut)
+                                {{ __('Agotado') }}
+                            @else
+                                {{ __('Cupos disponibles: :count', ['count' => $product->inventory ?? $product->productable->remainingSlots()]) }}
+                            @endif
+                        </p>
+                    </div>
                 @endif
                 <button type="button"
                         wire:click="addToCart({{ $product->id }})"
-                        class="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                    {{ __('Añadir') }}
+                        @disabled($isSoldOut)
+                        class="w-full rounded-full px-4 py-2 text-sm font-semibold text-white transition {{ $isSoldOut ? 'cursor-not-allowed bg-slate-400' : 'bg-slate-900 hover:bg-slate-800' }}">
+                    {{ $isSoldOut ? __('Agotado') : __('Añadir') }}
                 </button>
             </article>
         @empty

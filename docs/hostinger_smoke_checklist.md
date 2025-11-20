@@ -1,6 +1,9 @@
 # Checklist de smoke tests — Hostinger
 
-Este checklist se ejecuta manualmente cada vez que se realiza un deploy al ambiente Hostinger (workflow actual `deploy.yml`). Mientras habilitamos `workflow_dispatch` y la cadena automática de smoke, se debe completar y adjuntar evidencia en la tarjeta correspondiente.
+Desde noviembre 2025 el pipeline `deploy.yml` dispara automáticamente `smoke.yml` (manual, programado y encadenado vía `workflow_run`). Usa este checklist sólo como respaldo cuando se requiera verificación manual o para documentar incidencias detectadas por los workflows.
+
+- `deploy.yml` envía un resumen al canal Slack configurado en `SLACK_WEBHOOK_URL`.
+- `smoke.yml` notifica al mismo canal con el contexto (manual/programado/post-deploy) y enlace al run.
 
 ---
 

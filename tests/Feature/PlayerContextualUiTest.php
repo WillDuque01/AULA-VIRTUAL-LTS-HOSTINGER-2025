@@ -117,6 +117,32 @@ class PlayerContextualUiTest extends TestCase
             ->assertSee((string) number_format(1850, 0, ',', '.'), false);
     }
 
+    public function test_progress_ribbon_is_visible_when_timeline_exists(): void
+    {
+        [$lessonCurrent, $user] = $this->createCourseStructure(withUser: true);
+
+        Livewire::actingAs($user)
+            ->test(Player::class, ['lesson' => $lessonCurrent])
+            ->assertSee('Progreso del curso', false);
+    }
+
+    public function test_completion_celebration_triggers_when_video_is_finished(): void
+    {
+        [$lessonCurrent, $user] = $this->createCourseStructure(withUser: true);
+
+        VideoProgress::create([
+            'lesson_id' => $lessonCurrent->id,
+            'user_id' => $user->id,
+            'last_second' => 590,
+            'watched_seconds' => 590,
+            'source' => 'youtube',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(Player::class, ['lesson' => $lessonCurrent])
+            ->assertSet('celebration.title', '¡Lección completada!');
+    }
+
     /**
      * @return array{Lesson, User|null}
      */

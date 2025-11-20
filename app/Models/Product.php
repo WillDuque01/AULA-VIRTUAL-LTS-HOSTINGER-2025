@@ -54,6 +54,20 @@ class Product extends Model
     {
         return sprintf('%s %s', $this->price_currency, number_format((float) $this->price_amount, 2));
     }
+
+    public function isSoldOut(): bool
+    {
+        if ($this->inventory === null) {
+            return false;
+        }
+
+        return (int) $this->inventory <= 0;
+    }
+
+    public function getIsSoldOutAttribute(): bool
+    {
+        return $this->isSoldOut();
+    }
 }
 
 

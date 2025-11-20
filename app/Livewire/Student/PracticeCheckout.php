@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Student;
 
+use App\Exceptions\CohortSoldOutException;
 use App\Models\Page;
 use App\Models\PageConversion;
+use App\Models\CohortTemplate;
 use App\Models\PracticePackage;
 use App\Services\PracticePackageOrderService;
+use App\Services\CohortEnrollmentService;
 use App\Support\Practice\PracticeCart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +37,7 @@ class PracticeCheckout extends Component
         return view('livewire.student.practice-checkout');
     }
 
-    public function process(PracticePackageOrderService $service): void
+    public function process(PracticePackageOrderService $service, CohortEnrollmentService $cohortEnrollment): void
     {
         $this->validate([
             'paymentMethod' => ['required', 'in:card,transfer'],
@@ -48,7 +51,7 @@ class PracticeCheckout extends Component
         }
 
         try {
-            DB::transaction(function () use ($service): void {
+            DB::transaction(function () use ($service, $cohortEnrollment): void {
                 $user = Auth::user();
 
                 foreach ($this->items as $product) {
@@ -57,11 +60,32 @@ class PracticeCheckout extends Component
                     if ($resource instanceof PracticePackage) {
                         $order = $service->createPendingOrder($user->id, $resource);
                         $service->markAsPaid($order, 'SHOP-'.Str::upper(Str::random(8)));
+                    } elseif ($resource instanceof CohortTemplate) {
+                        $cohortEnrollment->enroll(
+                            $user,
+                            $resource,
+                            (float) $product->price_amount,
+                            $product->price_currency,
+                            'COHORT-'.Str::upper(Str::random(8)),
+                            [
+                                'product_id' => $product->id,
+                                'product_title' => $product->title,
+                            ]
+                        );
                     }
                 }
 
                 $this->logLandingConversion();
             });
+        } catch (CohortSoldOutException $exception) {
+            report($exception);
+            if (app()->environment('testing')) {
+                throw $exception;
+            }
+            session()->flash('checkout_error', $exception->getMessage());
+            $this->redirectRoute('shop.cart', ['locale' => app()->getLocale()]);
+
+            return;
         } catch (\Throwable $exception) {
             report($exception);
             if (app()->environment('testing')) {

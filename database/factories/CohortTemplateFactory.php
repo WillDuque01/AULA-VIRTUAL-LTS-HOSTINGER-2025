@@ -26,6 +26,11 @@ class CohortTemplateFactory extends Factory
             'cohort_label' => $this->faker->randomElement(['B1-AM', 'B2-PM', 'Coaching']),
             'duration_minutes' => $this->faker->numberBetween(45, 90),
             'capacity' => $this->faker->numberBetween(6, 20),
+            'enrolled_count' => 0,
+            'price_amount' => $this->faker->randomElement([79, 99, 129]),
+            'price_currency' => 'USD',
+            'status' => $this->faker->randomElement(['draft', 'published']),
+            'is_featured' => $this->faker->boolean(),
             'requires_package' => $this->faker->boolean(),
             'practice_package_id' => null,
             'slots' => [

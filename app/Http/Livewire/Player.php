@@ -42,6 +42,7 @@ class Player extends Component
     public ?array $returnHint = null;
     public ?array $ctaHighlight = null;
     public array $playerStats = [];
+    public ?array $celebration = null;
 
     protected ?VideoProgress $progressRecord = null;
 
@@ -75,6 +76,7 @@ class Player extends Component
         $this->calculateProgressPercent();
         $this->buildReturnHint();
         $this->loadPlayerStats();
+        $this->evaluateCelebration();
     }
 
     public function render()
@@ -104,6 +106,7 @@ class Player extends Component
             'ctaHighlight' => $this->ctaHighlight,
             'heatmapHighlights' => $this->heatmapHighlights,
             'playerStats' => $this->playerStats,
+            'celebration' => $this->celebration,
         ]);
     }
 
@@ -579,6 +582,45 @@ class Player extends Component
                 ? $lastCompletion->locale(app()->getLocale())->translatedFormat('d M · H:i')
                 : null,
         ];
+    }
+
+    private function evaluateCelebration(): void
+    {
+        $this->celebration = null;
+
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        if ($this->lesson->type === 'video' && $this->progressPercent >= 95) {
+            $this->celebration = [
+                'title' => __('¡Lección completada!'),
+                'message' => __('Repasaste el :percent% de este módulo. Anota tus aprendizajes clave y comparte una duda en Discord.', [
+                    'percent' => number_format($this->progressPercent, 1),
+                ]),
+                'streak' => $this->playerStats['streak'] ?? null,
+                'xp' => $this->playerStats['xp'] ?? null,
+            ];
+
+            return;
+        }
+
+        if ($this->lesson->assignment && $this->lesson->assignment->requires_approval) {
+            $submission = AssignmentSubmission::where('assignment_id', $this->lesson->assignment->id)
+                ->where('user_id', $user->id)
+                ->latest()
+                ->first();
+
+            if ($submission && in_array($submission->status, ['approved', 'graded'], true)) {
+                $this->celebration = [
+                    'title' => __('¡Entrega evaluada!'),
+                    'message' => __('Revisa el feedback del docente y agenda una práctica para reforzar lo aprendido.'),
+                    'streak' => $this->playerStats['streak'] ?? null,
+                    'xp' => $this->playerStats['xp'] ?? null,
+                ];
+            }
+        }
     }
 }
 

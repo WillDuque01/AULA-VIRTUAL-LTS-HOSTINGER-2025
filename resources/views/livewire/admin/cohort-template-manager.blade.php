@@ -36,23 +36,65 @@
                             </button>
                         </div>
                     </div>
+                    @php($availableSlots = $template->remainingSlots())
                     <div class="flex flex-wrap gap-2 text-[11px] text-slate-500">
                         <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">⌛ {{ $template->duration_minutes }} min</span>
                         <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">👥 {{ $template->capacity }} {{ __('cupos') }}</span>
+                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                            ✅ {{ __('Inscritos: :count', ['count' => $template->enrolled_count ?? 0]) }}
+                        </span>
+                        <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 {{ $availableSlots > 0 ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-rose-200 text-rose-600 bg-rose-50' }}">
+                            @if($availableSlots > 0)
+                                🔓 {{ __('Cupos disponibles: :count', ['count' => $availableSlots]) }}
+                            @else
+                                ⛔ {{ __('Agotado') }}
+                            @endif
+                        </span>
                         <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 capitalize">{{ $template->type }}</span>
+                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                            ${{ number_format($template->price_amount, 2) }} {{ $template->price_currency }}
+                        </span>
                         @if($template->cohort_label)
                             <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">{{ $template->cohort_label }}</span>
                         @endif
+                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                            {{ __('Estado') }}: {{ __($template->status) }}
+                        </span>
                         @if($template->requires_package)
                             <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700">
                                 🎟 {{ __('Requiere pack') }}
                             </span>
                         @endif
+                        @if($template->is_featured)
+                            <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-700">
+                                ⭐ {{ __('Destacado') }}
+                            </span>
+                        @endif
+                        @php($productMeta = $connectedProducts[$template->id] ?? null)
+                        @if($productMeta && !empty($productMeta['product_id']))
+                            <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-slate-600">
+                                🛒 {{ __('Producto') }} #{{ $productMeta['product_id'] }}
+                            </span>
+                            @if(strtolower($productMeta['status'] ?? '') !== strtolower($template->status))
+                                <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700">
+                                    ⚠ {{ __('Desincronizado') }}
+                                </span>
+                            @endif
+                            @if(! is_null($productMeta['inventory']))
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                    🧮 {{ __('Inventario producto: :count', ['count' => max(0, $productMeta['inventory'])]) }}
+                                </span>
+                            @endif
+                        @endif
                     </div>
                     @php
-                        $slotSummary = collect($template->slots)->map(fn($slot) => ucfirst($weekdayOptions[$slot['weekday']] ?? $slot['weekday']).' · '.$slot['time'])->implode(' | ');
+                        $slotSummary = collect($template->slots ?? [])
+                            ->map(fn($slot) => ucfirst($weekdayOptions[$slot['weekday']] ?? $slot['weekday']).' · '.$slot['time'])
+                            ->implode(' | ');
                     @endphp
-                    <p class="text-xs text-slate-500">{{ $slotSummary }}</p>
+                    @if(! empty($slotSummary))
+                        <p class="text-xs text-slate-500">{{ $slotSummary }}</p>
+                    @endif
                 </article>
             @empty
                 <p class="text-sm text-slate-500">{{ __('Aún no hay plantillas guardadas.') }}</p>
@@ -100,6 +142,28 @@
                     <input type="number" wire:model.defer="form.capacity" class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm">
                 </label>
             </div>
+            <div class="grid gap-3 md:grid-cols-3">
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Precio') }}
+                    <input type="number" step="0.01" min="0" wire:model.defer="form.price_amount" class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm">
+                </label>
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Moneda') }}
+                    <input type="text" wire:model.defer="form.price_currency" class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm uppercase">
+                </label>
+                <label class="block text-xs font-semibold text-slate-600">
+                    {{ __('Estado') }}
+                    <select wire:model.defer="form.status" class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm">
+                        <option value="draft">{{ __('Borrador') }}</option>
+                        <option value="published">{{ __('Publicado') }}</option>
+                        <option value="archived">{{ __('Archivado') }}</option>
+                    </select>
+                </label>
+            </div>
+            <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <input type="checkbox" wire:model="form.is_featured" class="rounded border-slate-300 text-slate-600 focus:ring-slate-500">
+                {{ __('Destacar en el catálogo') }}
+            </label>
             <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
                 <input type="checkbox" wire:model="form.requires_package" class="rounded border-slate-300 text-slate-600 focus:ring-slate-500">
                 {{ __('Requiere pack') }}

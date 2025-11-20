@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\CohortRegistration;
+use App\Models\CohortTemplate;
 use App\Models\PracticePackage;
+use App\Observers\CohortRegistrationObserver;
+use App\Observers\CohortTemplateObserver;
 use App\Observers\PracticePackageObserver;
 use App\Support\Integrations\IntegrationConfigurator;
 use App\Support\Telemetry\Drivers\Ga4Driver;
@@ -34,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
         IntegrationConfigurator::apply();
         URL::defaults(['locale' => config('app.locale', 'es')]);
         PracticePackage::observe(PracticePackageObserver::class);
+        CohortTemplate::observe(CohortTemplateObserver::class);
+        CohortRegistration::observe(CohortRegistrationObserver::class);
     }
 }
 

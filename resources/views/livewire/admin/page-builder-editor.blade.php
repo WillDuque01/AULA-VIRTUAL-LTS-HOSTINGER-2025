@@ -1,3 +1,26 @@
+@once
+    <style>
+        [data-inline-edit] {
+            outline: none;
+        }
+        [data-inline-edit][data-placeholder]:empty::before {
+            content: attr(data-placeholder);
+            color: #94a3b8;
+        }
+        [data-inline-edit][data-multiline] {
+            white-space: pre-wrap;
+            min-height: 2.25rem;
+        }
+        [data-page-builder-canvas] {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        [data-page-builder-canvas][data-state="dragging"] {
+            border-color: rgb(147 197 253);
+            box-shadow: 0 25px 45px rgba(15, 23, 42, 0.08);
+        }
+    </style>
+@endonce
+
 <div class="space-y-6">
     <header class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -45,6 +68,73 @@
             </div>
         @endif
     </header>
+
+    @php
+        $builderTheme = $theme ?? [];
+    @endphp
+    <section class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Canvas interactivo') }}</p>
+                <p class="text-sm text-slate-500">{{ __('Arrastra los bloques directamente en el canvas y edita el contenido inline.') }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-500">
+                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1">
+                    ⇅ {{ __('Arrastra para reordenar') }}
+                </span>
+                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1">
+                    ✎ {{ __('Haz clic para editar texto') }}
+                </span>
+            </div>
+        </div>
+        <div class="rounded-[2.5rem] border border-dashed border-slate-200 bg-slate-50/70 p-4 sm:p-6">
+            <div
+                class="space-y-4"
+                data-page-builder-canvas
+                data-state="idle"
+                style="
+                    --page-primary: {{ $builderTheme['primary'] ?? '#0f172a' }};
+                    --page-secondary: {{ $builderTheme['secondary'] ?? '#14b8a6' }};
+                    --page-background: {{ $builderTheme['background'] ?? '#f8fafc' }};
+                    --page-font: {{ $builderTheme['font_family'] ?? 'Inter, sans-serif' }};
+                ">
+                @forelse($blocks as $index => $block)
+                    @php
+                        $blockUid = $block['uid'] ?? $index;
+                    @endphp
+                    <article
+                        class="group relative rounded-[2rem] border border-transparent bg-white shadow-sm transition hover:border-indigo-200/80 hover:shadow-lg"
+                        data-canvas-block
+                        data-block-uid="{{ $blockUid }}">
+                        <div class="absolute left-5 top-5 z-10 flex items-center gap-2 text-[11px] font-semibold text-slate-500 opacity-0 transition group-hover:opacity-100">
+                            <span class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1" data-canvas-handle aria-label="{{ __('Arrastrar bloque') }}">
+                                ⇅
+                            </span>
+                            <span class="rounded-full border border-slate-100 bg-white px-3 py-1">{{ \Illuminate\Support\Str::headline($block['type']) }}</span>
+                        </div>
+                        <div class="rounded-[2rem] bg-white p-4 sm:p-6 md:p-8">
+                            @php
+                                $previewView = 'livewire.admin.page-builder.preview.'.($block['type'] ?? '');
+                            @endphp
+                            @includeFirst(
+                                [$previewView, 'page.blocks.'.($block['type'] ?? 'hero')],
+                                [
+                                    'index' => $index,
+                                    'block' => $block,
+                                    'props' => $block['props'] ?? [],
+                                    'isBuilderPreview' => true,
+                                ]
+                            )
+                        </div>
+                    </article>
+                @empty
+                    <div class="rounded-[2rem] border border-dashed border-slate-200 bg-white/80 p-8 text-center text-sm text-slate-500">
+                        {{ __('Agrega bloques con los kits de la derecha para comenzar.') }}
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </section>
 
     <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
         <aside class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-6">
@@ -128,7 +218,7 @@
                     @includeWhen($block['type'] === 'cta', 'livewire.admin.page-builder.blocks.cta-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'pricing', 'livewire.admin.page-builder.blocks.pricing-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'testimonials', 'livewire.admin.page-builder.blocks.testimonials-editor', ['index' => $index, 'block' => $block])
-                    @includeWhen($block['type'] === 'featured-products', 'livewire.admin.page-builder.blocks.featured-products-editor', ['index' => $index, 'block' => $block])
+                    @includeWhen($block['type'] === 'featured-products', 'livewire.admin.page-builder.blocks.featured-products-editor', ['index' => $index, 'block' => $block, 'productsCatalog' => $productsCatalog ?? []])
                     @includeWhen($block['type'] === 'gallery', 'livewire.admin.page-builder.blocks.gallery-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'team', 'livewire.admin.page-builder.blocks.team-editor', ['index' => $index, 'block' => $block])
                     @includeWhen($block['type'] === 'faq', 'livewire.admin.page-builder.blocks.faq-editor', ['index' => $index, 'block' => $block])
@@ -146,3 +236,63 @@
     </div>
 </div>
 
+@once
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha256-Ros5pTKty+O+kO5OVwOB1p5MNDoAuCEi0aKBslZx2XY=" crossorigin="anonymous"></script>
+    @endpush
+@endonce
+
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:load', () => {
+            const initCanvasSortable = () => {
+                const canvas = document.querySelector('[data-page-builder-canvas]');
+                if (!canvas || typeof Sortable === 'undefined') {
+                    return;
+                }
+
+                if (canvas._sortable) {
+                    canvas._sortable.destroy();
+                }
+
+                const componentId = canvas.closest('[wire\\:id]')?.getAttribute('wire:id');
+                if (!componentId) {
+                    return;
+                }
+
+                const callReorder = () => {
+                    const instance = window.Livewire?.find(componentId);
+                    if (!instance) {
+                        return;
+                    }
+
+                    const payload = Array.from(canvas.querySelectorAll('[data-canvas-block]')).map((block) => ({
+                        value: block.dataset.blockUid,
+                    }));
+
+                    instance.call('reorderBlocks', payload);
+                };
+
+                canvas._sortable = Sortable.create(canvas, {
+                    handle: '[data-canvas-handle]',
+                    animation: 200,
+                    ghostClass: 'opacity-40',
+                    onChoose: () => canvas.setAttribute('data-state', 'dragging'),
+                    onUnchoose: () => canvas.setAttribute('data-state', 'idle'),
+                    onEnd: () => {
+                        canvas.setAttribute('data-state', 'idle');
+                        callReorder();
+                    },
+                });
+            };
+
+            initCanvasSortable();
+
+            Livewire.hook('morph.updated', (component) => {
+                if (component.el?.querySelector('[data-page-builder-canvas]')) {
+                    setTimeout(initCanvasSortable, 60);
+                }
+            });
+        });
+    </script>
+@endpush

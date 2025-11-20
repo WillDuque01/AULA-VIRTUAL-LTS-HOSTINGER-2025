@@ -11,6 +11,7 @@ class ProductGallery extends Component
     public string $category = 'all';
     public bool $onlyFeatured = false;
     public ?string $flash = null;
+    public string $type = 'all';
 
     public function addToCart(int $productId): void
     {
@@ -28,6 +29,12 @@ class ProductGallery extends Component
             return;
         }
 
+        if ($product->isSoldOut()) {
+            $this->addError('cart', __('Ya no hay cupos disponibles para este producto.'));
+
+            return;
+        }
+
         PracticeCart::addProduct($productId);
         $this->flash = __('Producto agregado al carrito. Completa tu compra desde el checkout.');
         $this->dispatch('notify', message: $this->flash);
@@ -38,6 +45,7 @@ class ProductGallery extends Component
         $products = Product::query()
             ->published()
             ->when($this->category !== 'all', fn ($query) => $query->where('category', $this->category))
+            ->when($this->type !== 'all', fn ($query) => $query->where('type', $this->type))
             ->when($this->onlyFeatured, fn ($query) => $query->featured())
             ->orderByDesc('is_featured')
             ->orderBy('title')
@@ -52,9 +60,16 @@ class ProductGallery extends Component
             ->filter()
             ->values();
 
+        $types = Product::query()
+            ->select('type')
+            ->distinct()
+            ->pluck('type')
+            ->values();
+
         return view('livewire.shop.product-gallery', [
             'products' => $products,
             'categories' => $categories,
+            'types' => $types,
         ]);
     }
 }

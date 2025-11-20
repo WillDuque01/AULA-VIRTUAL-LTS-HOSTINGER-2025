@@ -91,6 +91,31 @@ Este playbook documenta los patrones visuales e interactivos que ya están imple
 5. **Responsividad**: `flex-col md:flex-row`, `grid gap-3 md:grid-cols-2`, etc.
 6. **Integraciones**: vincular guías/links relevantes (planner, DataPorter, help).
 
+---
+
+## 7. Player UIX 2030
+
+- **Ribbon de progreso**: tarjeta blanca con headline `tracking-[0.35em]`, barra `bg-slate-100` y relleno degradado `from-emerald-400 to-emerald-600`. Los marcadores son botones circulares (`border-2 border-white`, `focus:ring-emerald-400`) y disparan el evento `player-scroll-timeline`.
+- **Celebraciones**: banner degradado (`from-emerald-50 via-white to-emerald-50`) con confeti sutil (`player-confetti`) y métricas compactas (racha, XP). Siempre respeta `prefers-reduced-motion` y se coloca antes del reproductor.
+- **CTA highlight**: cuando existe `practiceCta`, `practicePackCta` o `ctaLabel`, se muestra una tarjeta pill (`border-indigo/emerald/amber`) y dispara `cta_view` / `cta_click` con `origin: highlight`.
+- **Timeline sticky**: `max-h-[70vh] overflow-y-auto` y escuchador Alpine para `player-scroll-timeline`. Los puntos activos usan `shadow` y `motion-safe:animate-pulse`.
+- **Heatmap**: barras verticales con gradiente `from-slate-200 to-indigo-400` y highlights en tarjetas `border-slate-100`.
+
+> Estado actual: estos patrones están implementados en Livewire/tests pero todavía no se reflejan en `livewire/player.blade.php` en `main`. El merge pendiente debe reinyectar ribbon + celebraciones (o formalizar los parciales `player/modes/*`) antes de publicarlo en producción.
+
+Seguir estos patrones al extender el Player garantiza consistencia con la experiencia “UIX 2030” y mantiene la telemetría (`playerSignals`) funcionando sin ajustes extra.
+
 Cumplir estos puntos garantiza que nuevos módulos mantengan la UIX 2030 establecida en builder, dashboards y experiencias asociadas.
+
+---
+
+## 8. Catálogo unificado
+
+- **Filtros rápidos**: la cabecera muestra selects redondeados para categoría y tipo (`Practice Pack`, `Cohort`, etc.) más un toggle “Destacados”. Mantener spacing `gap-3` y borde `border-slate-200`.
+- **Chips por tipo**: cada tarjeta utiliza `Str::headline($product->type)` dentro de un badge (`border rounded-full px-2 py-0.5`) y, si aplica, un segundo chip verde para el estado destacado.
+- **Metadatos contextuales**:
+  - Packs muestran sessions + plataforma.
+  - Cohortes muestran etiqueta (`cohort_label`), duración y cupos recomendados.
+- **Acciones**: botón `Añadir` ocupa todo el ancho (`rounded-full bg-slate-900`) y reacciona con notificación Livewire. El enlace al carrito mantiene contador mediante `PracticeCart::count()`.
 
 

@@ -26,7 +26,8 @@
             </div>
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach($products as $product)
-                    <article class="rounded-3xl border border-slate-100 p-5 shadow-sm">
+                    @php($isSoldOut = $product->isSoldOut())
+                    <article class="rounded-3xl border border-slate-100 p-5 shadow-sm {{ $isSoldOut ? 'opacity-80' : '' }}">
                         <div class="flex items-center justify-between">
                             <p class="text-sm font-semibold text-slate-500">{{ $product->category }}</p>
                             @if($showBadges && $product->is_featured)
@@ -35,12 +36,34 @@
                         </div>
                         <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ $product->title }}</h3>
                         <p class="text-sm text-slate-500">{{ $product->excerpt }}</p>
+                        @php($resource = $product->productable)
+                        @if($resource instanceof \App\Models\CohortTemplate)
+                            <div class="mt-2 space-y-1 text-xs">
+                                <p class="text-slate-500">
+                                    {{ __('Cohorte :label · :minutes min', [
+                                        'label' => $resource->cohort_label ?? __('Sin etiqueta'),
+                                        'minutes' => $resource->duration_minutes,
+                                    ]) }}
+                                </p>
+                                <p class="{{ $isSoldOut ? 'text-rose-600 font-semibold' : 'text-emerald-600 font-semibold' }}">
+                                    @if($isSoldOut)
+                                        {{ __('Agotado') }}
+                                    @else
+                                        {{ __('Cupos disponibles: :count', ['count' => $product->inventory ?? $resource->remainingSlots()]) }}
+                                    @endif
+                                </p>
+                            </div>
+                        @elseif($resource instanceof \App\Models\PracticePackage)
+                            <p class="mt-2 text-xs text-slate-500">
+                                {{ trans_choice(':count sesión|:count sesiones', $resource->sessions_count, ['count' => $resource->sessions_count]) }}
+                            </p>
+                        @endif
                         <p class="mt-4 text-2xl font-bold text-slate-900">
                             ${{ number_format($product->price_amount, 2) }} {{ $product->price_currency }}
                         </p>
                         <a href="{{ route('shop.catalog', ['locale' => app()->getLocale()]) }}"
-                           class="mt-4 inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                            {{ __('Agregar') }}
+                           class="mt-4 inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-white {{ $isSoldOut ? 'cursor-not-allowed bg-slate-400' : 'bg-slate-900 hover:bg-slate-800' }}">
+                            {{ $isSoldOut ? __('Agotado') : __('Agregar') }}
                         </a>
                     </article>
                 @endforeach

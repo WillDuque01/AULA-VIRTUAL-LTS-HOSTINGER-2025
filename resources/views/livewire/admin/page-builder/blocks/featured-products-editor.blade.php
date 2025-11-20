@@ -18,6 +18,36 @@
                class="rounded border-slate-300">
         {{ __('Mostrar badges de estado/precio') }}
     </label>
+    @if(!empty($productsCatalog))
+        @php($selectedProducts = collect($productsCatalog)->whereIn('id', $block['props']['product_ids'] ?? [])->values())
+        <div class="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">{{ __('Catálogo conectado') }}</p>
+            <label class="block text-xs font-semibold text-slate-600">
+                {{ __('Selecciona productos publicados') }}
+                <select multiple
+                        size="6"
+                        wire:model.defer="blocks.{{ $index }}.props.product_ids"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-slate-900 focus:ring-slate-900">
+                    @foreach($productsCatalog as $product)
+                        <option value="{{ $product['id'] }}">
+                            #{{ $product['id'] }} · {{ $product['title'] }} ({{ $product['category'] ?? '—' }}) — ${{ number_format($product['price_amount'] ?? 0, 0) }} {{ $product['price_currency'] ?? '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </label>
+            <p class="text-[11px] text-slate-500">{{ __('Mantén Ctrl/⌘ para elegir múltiples opciones. Puedes refinar el orden exacto con los IDs manuales.') }}</p>
+            @if($selectedProducts->isNotEmpty())
+                <ul class="space-y-1">
+                    @foreach($selectedProducts as $product)
+                        <li class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                            <span>{{ $product['title'] }}</span>
+                            <span class="text-[11px] text-slate-400">#{{ $product['id'] }} · {{ $product['category'] ?? '—' }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    @endif
     <label class="block text-sm font-semibold text-slate-700">
         {{ __('Filtrar por categoría (opcional)') }}
         <input type="text"

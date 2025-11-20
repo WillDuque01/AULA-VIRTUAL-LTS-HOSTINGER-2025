@@ -53,3 +53,27 @@ jobs:
           curl --fail --show-error --silent "${{ secrets.HOSTINGER_APP_URL }}/es" >/dev/null
           curl --fail --show-error --silent "${{ secrets.HOSTINGER_APP_URL }}/es/dashboard" >/dev/null
 
+      - name: Notify Slack
+        if: ${{ always() && secrets.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          status_icon="✅"
+          status_text="Deploy completado"
+          if [ "$STATUS" != "success" ]; then
+            status_icon="❌"
+            status_text="Deploy con fallas"
+          fi
+
+          payload=$(jq -n \
+            --arg text "$status_icon $status_text — $RUN_URL" \
+            '{text: $text}')
+
+          curl --fail --silent --show-error \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$SLACK_WEBHOOK_URL"
+

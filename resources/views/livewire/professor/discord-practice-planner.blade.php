@@ -97,10 +97,88 @@
                                 <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
                                     👥 {{ $preset['capacity'] ?? 10 }}
                                 </span>
+                                @if(isset($preset['enrolled_count']))
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                        ✅ {{ __('Inscritos: :count', ['count' => $preset['enrolled_count']]) }}
+                                    </span>
+                                @endif
+                                @if(array_key_exists('available_slots', $preset))
+                                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 {{ ($preset['available_slots'] ?? 0) > 0 ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-rose-200 text-rose-600 bg-rose-50' }}">
+                                        @if(($preset['available_slots'] ?? 0) > 0)
+                                            🔓 {{ __('Cupos disponibles: :count', ['count' => $preset['available_slots']]) }}
+                                        @else
+                                            ⛔ {{ __('Agotado') }}
+                                        @endif
+                                    </span>
+                                @endif
+                                @if(isset($preset['price_amount']))
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                        💰 ${{ number_format($preset['price_amount'], 0) }} {{ $preset['price_currency'] ?? 'USD' }}
+                                    </span>
+                                @endif
+                                @if(isset($preset['status']))
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 capitalize">
+                                        🏷 {{ __($preset['status']) }}
+                                    </span>
+                                @endif
+                                @if(!empty($preset['is_featured']))
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                                        ⭐ {{ __('Destacado') }}
+                                    </span>
+                                @endif
                             </div>
                         </button>
                     @endforeach
                 </div>
+                @if($activeCohortTemplate)
+                    <div class="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 space-y-3">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs uppercase font-semibold tracking-wide text-indigo-500">{{ __('Cohorte vinculada al catálogo') }}</p>
+                                <p class="text-sm text-slate-500">{{ __('Los cambios que programes actualizarán su ficha pública.') }}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600">
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                    💰 {{ __('Precio referencial') }}: ${{ number_format($activeCohortTemplate['price_amount'], 2) }} {{ $activeCohortTemplate['price_currency'] }}
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 capitalize">
+                                    🏷 {{ __('Estado') }}: {{ __($activeCohortTemplate['status']) }}
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                    👥 {{ __('Cupos') }}: {{ $activeCohortTemplate['capacity'] ?? '—' }}
+                                </span>
+                                @if(isset($activeCohortTemplate['enrolled_count']))
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">
+                                        ✅ {{ __('Inscritos: :count', ['count' => $activeCohortTemplate['enrolled_count']]) }}
+                                    </span>
+                                @endif
+                                @if(array_key_exists('available_slots', $activeCohortTemplate))
+                                    <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 {{ ($activeCohortTemplate['available_slots'] ?? 0) > 0 ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-rose-200 text-rose-600 bg-rose-50' }}">
+                                        @if(($activeCohortTemplate['available_slots'] ?? 0) > 0)
+                                            🔓 {{ __('Cupos disponibles: :count', ['count' => $activeCohortTemplate['available_slots']]) }}
+                                        @else
+                                            ⛔ {{ __('Agotado') }}
+                                        @endif
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                            <a href="{{ route('shop.catalog', ['locale' => app()->getLocale()]) }}"
+                               target="_blank"
+                               class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-slate-600 hover:border-slate-300">
+                                🛒 {{ __('Ver en el catálogo') }}
+                            </a>
+                            @if(!empty($activeCohortTemplate['product_id']) && auth()->user()?->hasAnyRole(['Admin', 'teacher_admin']))
+                                <a href="{{ route('admin.products', ['locale' => app()->getLocale()]) }}?highlight={{ $activeCohortTemplate['product_id'] }}"
+                                   target="_blank"
+                                   class="inline-flex items-center gap-2 rounded-full border border-indigo-200 px-3 py-1 text-indigo-600 hover:border-indigo-300">
+                                    ⚙ {{ __('Abrir en Admin') }}
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
         @endif
         <div class="rounded-2xl border border-amber-100 bg-amber-50/60 p-4 text-xs text-amber-900 space-y-2">

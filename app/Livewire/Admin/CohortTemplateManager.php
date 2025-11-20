@@ -21,6 +21,10 @@ class CohortTemplateManager extends Component
         'cohort_label' => '',
         'duration_minutes' => 60,
         'capacity' => 10,
+        'price_amount' => 99,
+        'price_currency' => 'USD',
+        'status' => 'draft',
+        'is_featured' => false,
         'requires_package' => false,
         'practice_package_id' => null,
         'slots' => [
@@ -39,6 +43,7 @@ class CohortTemplateManager extends Component
     ];
 
     public Collection $packages;
+    public array $connectedProducts = [];
 
     public function mount(): void
     {
@@ -65,6 +70,10 @@ class CohortTemplateManager extends Component
             'cohort_label' => $template->cohort_label,
             'duration_minutes' => $template->duration_minutes,
             'capacity' => $template->capacity,
+            'price_amount' => $template->price_amount,
+            'price_currency' => $template->price_currency,
+            'status' => $template->status,
+            'is_featured' => $template->is_featured,
             'requires_package' => $template->requires_package,
             'practice_package_id' => $template->practice_package_id,
             'slots' => $this->normalizeSlots($template->slots),
@@ -96,6 +105,10 @@ class CohortTemplateManager extends Component
             'cohort_label' => '',
             'duration_minutes' => 60,
             'capacity' => 10,
+            'price_amount' => 99,
+            'price_currency' => 'USD',
+            'status' => 'draft',
+            'is_featured' => false,
             'requires_package' => false,
             'practice_package_id' => null,
             'slots' => [
@@ -115,6 +128,10 @@ class CohortTemplateManager extends Component
             'form.cohort_label' => ['nullable', 'string', 'max:120'],
             'form.duration_minutes' => ['required', 'integer', 'min:15', 'max:240'],
             'form.capacity' => ['required', 'integer', 'min:1', 'max:60'],
+            'form.price_amount' => ['required', 'numeric', 'min:0'],
+            'form.price_currency' => ['required', 'string', 'size:3'],
+            'form.status' => ['required', 'in:draft,published,archived'],
+            'form.is_featured' => ['boolean'],
             'form.requires_package' => ['boolean'],
             'form.practice_package_id' => ['nullable', 'exists:practice_packages,id'],
             'form.slots' => ['required', 'array', 'min:1'],
@@ -136,6 +153,10 @@ class CohortTemplateManager extends Component
             'cohort_label' => $data['cohort_label'],
             'duration_minutes' => $data['duration_minutes'],
             'capacity' => $data['capacity'],
+            'price_amount' => $data['price_amount'],
+            'price_currency' => Str::upper($data['price_currency']),
+            'status' => $data['status'],
+            'is_featured' => (bool) $data['is_featured'],
             'requires_package' => (bool) $data['requires_package'],
             'practice_package_id' => $data['practice_package_id'],
             'slots' => $this->normalizeSlots($data['slots']),
@@ -165,6 +186,14 @@ class CohortTemplateManager extends Component
     protected function loadTemplates(): void
     {
         $this->templates = CohortTemplate::orderBy('name')->get();
+
+        $this->connectedProducts = $this->templates
+            ->mapWithKeys(fn (CohortTemplate $template) => [$template->id => [
+                'product_id' => $template->product?->id,
+                'status' => $template->product?->status,
+                'inventory' => $template->product?->inventory,
+            ]])
+            ->all();
     }
 
     private function normalizeSlots(array $slots): array
