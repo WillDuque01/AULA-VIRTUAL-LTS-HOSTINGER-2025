@@ -9,6 +9,15 @@ jobs:
     env:
       HOSTINGER_APP_URL: ${{ secrets.HOSTINGER_APP_URL }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      HOSTINGER_SFTP_SERVER: ${{ secrets.HOSTINGER_SFTP_SERVER }}
+      HOSTINGER_SFTP_PORT: ${{ secrets.HOSTINGER_SFTP_PORT }}
+      HOSTINGER_SFTP_USERNAME: ${{ secrets.HOSTINGER_SFTP_USERNAME }}
+      HOSTINGER_SFTP_PASSWORD: ${{ secrets.HOSTINGER_SFTP_PASSWORD }}
+      HOSTINGER_PATH: ${{ secrets.HOSTINGER_PATH }}
+      HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+      HOSTINGER_SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      HOSTINGER_SSH_PASSWORD: ${{ secrets.HOSTINGER_SSH_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - name: Build assets
@@ -16,15 +25,16 @@ jobs:
           npm ci
           npm run build
       - name: Upload via SFTP
+        if: ${{ env.HOSTINGER_SFTP_SERVER != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.HOSTINGER_SFTP_SERVER }}
-          port: ${{ secrets.HOSTINGER_SFTP_PORT }}
-          username: ${{ secrets.HOSTINGER_SFTP_USERNAME }}
-          password: ${{ secrets.HOSTINGER_SFTP_PASSWORD }}
+          server: ${{ env.HOSTINGER_SFTP_SERVER }}
+          port: ${{ env.HOSTINGER_SFTP_PORT }}
+          username: ${{ env.HOSTINGER_SFTP_USERNAME }}
+          password: ${{ env.HOSTINGER_SFTP_PASSWORD }}
           protocol: sftp
           local-dir: ./
-          server-dir: ${{ secrets.HOSTINGER_PATH }}
+          server-dir: ${{ env.HOSTINGER_PATH }}
           exclude: |
             **/.git*
             **/.github/**
@@ -34,14 +44,15 @@ jobs:
             storage/logs/**
             tests/**
       - name: SSH post-deploy
+        if: ${{ env.HOSTINGER_SSH_HOST != '' }}
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.HOSTINGER_SSH_HOST }}
-          port: ${{ secrets.HOSTINGER_SSH_PORT }}
-          username: ${{ secrets.HOSTINGER_SSH_USER }}
-          password: ${{ secrets.HOSTINGER_SSH_PASSWORD }}
+          host: ${{ env.HOSTINGER_SSH_HOST }}
+          port: ${{ env.HOSTINGER_SSH_PORT }}
+          username: ${{ env.HOSTINGER_SSH_USER }}
+          password: ${{ env.HOSTINGER_SSH_PASSWORD }}
           script: |
-            cd ${{ secrets.HOSTINGER_PATH }}
+            cd ${{ env.HOSTINGER_PATH }}
             if [ ! -f composer.phar ]; then curl -sS https://getcomposer.org/installer | php; fi
             php composer.phar install --no-dev --prefer-dist --no-progress --no-interaction
             php artisan config:cache
