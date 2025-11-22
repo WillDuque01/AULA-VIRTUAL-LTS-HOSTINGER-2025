@@ -55,9 +55,9 @@ Esta memoria condensa el estado actual del LMS, los bloques implementados y los 
   - Extender builder con drag & drop para secciones completas y kits dinámicos.
   - Añadir reportes de cohortes pagadas en DataPorter para marketing/cohort ops.
 
-## 7. Estado operativo (20-nov-2025)
-- Suite local verde (193 pruebas) después del cierre de inventario en cohortes. Los workflows `deploy` y `smoke` en GitHub se están ajustando para respetar dependencias de migraciones (falla actual: orden entre `practice_packages` y snapshots).
-- Último push (`23810d0`) publica las mejoras de inventario y documentación. Se requiere remover restos de `dump()`/logs de depuración en `DiscordPracticePlanner` antes del siguiente push y reintentar CI.
-- El monitoreo activo consiste en: (a) limpiar logs locales, (b) rerun `php artisan test` y (c) reactivar smoke automático un vez CI vuelva a verde.
+## 7. Estado operativo (22-nov-2025)
+- Suite local verde (193 pruebas) y `php artisan test --env=testing` alineado con CI. Los workflows `ci.yml`, `deploy.yml` y `smoke.yml` están en verde después de la corrección del orden de llaves foráneas en snapshots y el fix del planner; el run “Fix planner publish flake #92” tomó 2m31s.
+- Último push (`803f54f`) corrige el flake del planner (`PlannerCohortTemplateTest`) asegurando que las cohortes aplicadas desde la BD se publiquen aun cuando requieran pack. Los dumps de depuración fueron removidos y se añadió cache del ID seleccionado.
+- Monitoreo activo: verificar métricas `enrolled_count`/`Product.inventory`, revisar los runs encadenados (`deploy` + `smoke`) tras cada push y mantener actualizado `hostinger_smoke_checklist.md` si surge algún hallazgo durante el despliegue.
 
 Con esta memoria, cualquier integrante puede retomar el proyecto entendiendo arquitectura, flujos críticos, documentación disponible y focos de evolución inmediata, además del estado de monitoreo post-entrega.
