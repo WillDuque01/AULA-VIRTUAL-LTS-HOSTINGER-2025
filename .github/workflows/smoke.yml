@@ -31,7 +31,12 @@ jobs:
       EXTRA_PATHS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.extra_paths != '' && github.event.inputs.extra_paths || '' }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
+      - name: Base URL no configurada, omitiendo smoke
+        if: ${{ env.BASE_URL == '' }}
+        run: echo "ℹ️ BASE_URL no está definido (input o secreto HOSTINGER_APP_URL). Se omite el smoke run."
+
       - name: Resolver URL base
+        if: ${{ env.BASE_URL != '' }}
         id: setup
         run: |
           base="${BASE_URL%/}"
@@ -43,6 +48,7 @@ jobs:
           echo "✅ Usando base: $base"
 
       - name: Ejecutar smoke tests
+        if: ${{ env.BASE_URL != '' }}
         run: |
           set -euo pipefail
           base="${{ steps.setup.outputs.base }}"
@@ -72,7 +78,7 @@ jobs:
           echo "✅ Todos los endpoints respondieron correctamente."
 
       - name: Notify Slack
-        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' && env.BASE_URL != '' }}
         env:
           SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
           STATUS: ${{ job.status }}
