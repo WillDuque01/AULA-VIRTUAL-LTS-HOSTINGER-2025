@@ -49,6 +49,7 @@ class DiscordPracticePlanner extends Component
     public array $cohortTemplates = [];
     public ?string $selectedCohortTemplate = null;
     public ?array $activeCohortTemplate = null;
+    public ?int $selectedCohortTemplateId = null;
 
     public string $calendarRangeStart;
     public string $calendarRangeEnd;
@@ -180,6 +181,7 @@ class DiscordPracticePlanner extends Component
             'requires_package',
             'practice_package_id',
         ]);
+        $this->selectedCohortTemplateId = null;
 
         $this->loadPractices();
         $this->dispatch('practice-planned');
@@ -297,6 +299,7 @@ class DiscordPracticePlanner extends Component
         if (! $templateKey) {
             $this->selectedCohortTemplate = null;
             $this->activeCohortTemplate = null;
+            $this->selectedCohortTemplateId = null;
             return;
         }
 
@@ -312,6 +315,7 @@ class DiscordPracticePlanner extends Component
             if (! $template) {
                 return;
             }
+            $this->selectedCohortTemplateId = $template->id;
             $payload = [
                 'name' => $template->name,
                 'type' => $template->type,
@@ -324,6 +328,7 @@ class DiscordPracticePlanner extends Component
                 'slots' => $template->slots,
             ];
         } else {
+            $this->selectedCohortTemplateId = null;
             $payload = $this->cohortTemplates["config:{$key}"] ?? $this->cohortTemplates[$templateKey] ?? config("practice.cohort_templates.{$key}");
             if ($payload && ! isset($payload['name'])) {
                 $payload['name'] = $key;
@@ -332,6 +337,7 @@ class DiscordPracticePlanner extends Component
 
         if (! $payload) {
             $this->activeCohortTemplate = null;
+            $this->selectedCohortTemplateId = null;
             return;
         }
 
@@ -392,6 +398,10 @@ class DiscordPracticePlanner extends Component
 
     protected function resolveSelectedCohortTemplateId(): ?int
     {
+        if ($this->selectedCohortTemplateId) {
+            return $this->selectedCohortTemplateId;
+        }
+
         if (! $this->selectedCohortTemplate || ! Str::startsWith($this->selectedCohortTemplate, 'db:')) {
             return null;
         }

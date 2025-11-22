@@ -53,6 +53,7 @@ class PlannerCohortTemplateTest extends TestCase
         ]);
         $template = CohortTemplate::factory()->create([
             'status' => 'draft',
+            'requires_package' => false,
             'price_amount' => 149,
             'price_currency' => 'USD',
             'slots' => [
@@ -64,6 +65,7 @@ class PlannerCohortTemplateTest extends TestCase
             ->test(DiscordPracticePlanner::class)
             ->call('applyCohortTemplate', "db:{$template->id}")
             ->assertSet('selectedCohortTemplate', "db:{$template->id}")
+            ->assertSet('selectedCohortTemplateId', $template->id)
             ->assertSet('activeCohortTemplate.price_currency', 'USD')
             ->set('selectedLesson', $lesson->id)
             ->set('title', 'Cohorte piloto')
