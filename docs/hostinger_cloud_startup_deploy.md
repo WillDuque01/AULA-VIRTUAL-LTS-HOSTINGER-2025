@@ -131,8 +131,9 @@ Revisa `storage/logs/laravel.log` si aparece algún error.
 
 ## 8. Caches, cron y tareas finales
 
-1. Ejecuta:
+1. Borra cualquier caché previa y ejecútalas de nuevo (en orden):
    ```bash
+   rm -f bootstrap/cache/*.php
    php artisan config:cache
    php artisan route:cache
    php artisan view:cache
