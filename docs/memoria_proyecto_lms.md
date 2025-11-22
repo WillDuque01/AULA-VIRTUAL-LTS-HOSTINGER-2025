@@ -6,9 +6,9 @@ Esta memoria condensa el estado actual del LMS, los bloques implementados y los 
 
 ## 1. Contexto general
 - **Objetivo**: entregar un LMS modular con constructor de cursos/páginas, planner Discord, player 2030 y catálogo unificado de productos/cohortes listo para venta directa.
-- **Estado**: 100 % de los bloques comprometidos están implementados y documentados. El backlog activo se centra en monitoreo y ajustes finos post-entrega.
-- **Pruebas**: 190+ tests `php artisan test` cubren builder, planner, player, catálogo, checkout y pipelines de datos.
-- **Infra / CI-CD**: Workflows `ci.yml`, `deploy.yml` y `smoke.yml` orquestan validaciones + despliegues Hostinger con `workflow_dispatch`, `workflow_run` y alertas Slack.
+- **Estado**: 100 % de los bloques comprometidos están implementados y documentados. El backlog activo se centra en monitoreo y ajustes finos post-entrega (limpieza de logs, health-check de pipelines y smoke encadenado).
+- **Pruebas**: 193 tests (`php artisan test`) cubren builder, planner, player, catálogo, checkout, integraciones y pipelines de datos. La suite completa corre en ~35 s en local.
+- **Infra / CI-CD**: Workflows `ci.yml`, `deploy.yml` y `smoke.yml` orquestan validaciones + despliegues Hostinger con `workflow_dispatch`, `workflow_run` y alertas Slack. El smoke se dispara manual, cron y post-deploy.
 
 ## 2. Bloques implementados
 1. **UIX Course Builder (100 %)**  
@@ -25,15 +25,15 @@ Esta memoria condensa el estado actual del LMS, los bloques implementados y los 
    - Deploy manual/automático, smoke encadenado y notificaciones Slack; scripts listos para `workflow_dispatch` y cron.
 
 ## 3. Arquitectura y flujos clave
-- **Catálogo**: `Product` centraliza pricing/estado/inventario. Observers sincronizan packs (`PracticePackageObserver`) y cohortes (`CohortTemplateObserver`) con metadatos para UI y checkout.
+- **Catálogo**: `Product` centraliza pricing/estado/inventario. Observers sincronizan packs (`PracticePackageObserver`) y cohortes (`CohortTemplateObserver`) con metadatos para UI, disponibilidad y checkout. Los bloques públicos (`featured-products`) consumen la misma fuente.
 - **Cohortes pagadas**:
   - Migraciones añaden `price_*`, `status`, `is_featured`, `enrolled_count` y tabla `cohort_registrations`.
-  - `CohortEnrollmentService` usa `lockForUpdate`, recalcula métricas y lanza `CohortSoldOutException` al agotar cupos.
-  - `CohortRegistrationObserver` mantiene inventario en `Product` y `CohortTemplate`.
-- **Carrito/Checkout**: `PracticeCart` guarda IDs de producto; `PracticeCheckout` recorre items y despacha el servicio correspondiente (packs/cohortes) dentro de una transacción global, registrando conversiones (`PageConversion`).
-- **Planner**: Plantillas DB/config, autopublicación, consumo de datos comerciales para el staff y duplicaciones masivas + semana base.
-- **Builder/Page**: Editor Livewire `PageBuilderEditor` guarda revisiones, soporta inline editing y arrastre directo, y alimenta bloques públicos conectados al catálogo.
-- **Player**: Vista `livewire/player.blade.php` resuelve `playerMode` y carga parciales; las integraciones (heatmap, CTAs, celebraciones) se documentan en su playbook.
+  - `CohortEnrollmentService` usa `lockForUpdate`, recalcula métricas y lanza `CohortSoldOutException` al agotar cupos; soporta inventario compartido con `PracticeCart`.
+  - `CohortRegistrationObserver` mantiene inventario e índices en `Product`/`CohortTemplate`.
+- **Carrito/Checkout**: `PracticeCart` guarda IDs de producto; `PracticeCheckout` recorre items, despacha el servicio correspondiente (packs/cohortes) dentro de una transacción global, registra conversiones (`PageConversion`) y devuelve messaging amigable si la cohorte está agotada.
+- **Planner**: Plantillas DB/config, autopublicación al crear prácticas o duplicar series, snapshot comercial en UI (precio, cupos, inscritos) y duplicación semanal para Discord.
+- **Builder/Page**: Editor Livewire `PageBuilderEditor` guarda revisiones, soporta inline editing y arrastre directo, y alimenta bloques públicos conectados al catálogo; incluye kits Hero/CTA/Pricing y featured-products.
+- **Player**: Vista `livewire/player.blade.php` resuelve `playerMode` y carga parciales (`modes/*`); integra heatmap, CTAs contextuales, celebraciones y ribbon documentados en `player_signals_playbook`.
 
 ## 4. Operación y documentación
 - **Runbooks**:  
@@ -44,17 +44,20 @@ Esta memoria condensa el estado actual del LMS, los bloques implementados y los 
 - **Guías rápidas**: Experience Guides (HelpHub) configuran botones flotantes y panel contextual en builder/planner/player.
 
 ## 5. Pruebas y monitoreo
-- `tests/Feature/Catalog/CohortProductTest.php` y `CohortSoldOutTest.php` aseguran sincronización e inventario.
-- Suites adicionales cubren builder (`PageBuilderTest`), planner (`PlannerCohortTemplateTest`), player (`PlayerContextualUiTest`), operaciones Discord y DataPorter.
-- Smoke Hostinger automatizado (`smoke.yml`) + checklist manual como respaldo.
+- `tests/Feature/Catalog/CohortProductTest.php` y `CohortSoldOutTest.php` aseguran sincronización/inventario; `PlannerCohortTemplateTest.php` valida que el planner publique las cohortes DB al planificar.
+- Suites adicionales cubren builder (`PageBuilderTest`), player (`PlayerContextualUiTest`/`PlayerLockTest`), operaciones Discord y DataPorter.
+- Smoke Hostinger automatizado (`smoke.yml`) + checklist manual (`docs/hostinger_smoke_checklist.md`) como respaldo.
 
 ## 6. Seguimiento y próximos pasos
-- **Monitoreo**: validar métricas `enrolled_count` tras cada ciclo de ventas y supervisar `CohortSoldOutException` en logs (alerta Sentry/Slack).
+- **Monitoreo**: validar métricas `enrolled_count` tras cada ciclo de ventas, supervisar `CohortSoldOutException` en logs (Sentry/Slack) y vigilar que `Product.inventory` refleje los cupos disponibles.
 - **Evoluciones sugeridas**:
-  - Integrar proveedor de pago real (Stripe/PayPal) reusando `CohortEnrollmentService`.
+  - Integrar proveedor de pago real (Stripe/PayPal) reutilizando `CohortEnrollmentService`.
   - Extender builder con drag & drop para secciones completas y kits dinámicos.
   - Añadir reportes de cohortes pagadas en DataPorter para marketing/cohort ops.
 
-Con esta memoria, cualquier integrante puede retomar el proyecto entendiendo arquitectura, flujos críticos, documentación disponible y focos de evolución inmediata.
+## 7. Estado operativo (20-nov-2025)
+- Suite local verde (193 pruebas) después del cierre de inventario en cohortes. Los workflows `deploy` y `smoke` en GitHub se están ajustando para respetar dependencias de migraciones (falla actual: orden entre `practice_packages` y snapshots).
+- Último push (`23810d0`) publica las mejoras de inventario y documentación. Se requiere remover restos de `dump()`/logs de depuración en `DiscordPracticePlanner` antes del siguiente push y reintentar CI.
+- El monitoreo activo consiste en: (a) limpiar logs locales, (b) rerun `php artisan test` y (c) reactivar smoke automático un vez CI vuelva a verde.
 
-
+Con esta memoria, cualquier integrante puede retomar el proyecto entendiendo arquitectura, flujos críticos, documentación disponible y focos de evolución inmediata, además del estado de monitoreo post-entrega.

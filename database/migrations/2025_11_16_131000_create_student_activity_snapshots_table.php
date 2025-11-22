@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->foreignId('course_id')->nullable()->constrained();
             $table->foreignId('lesson_id')->nullable()->constrained();
-            $table->foreignId('practice_package_id')->nullable()->constrained();
+            $table->foreignId('practice_package_id')->nullable();
             $table->string('category', 50);
             $table->string('scope', 50)->nullable();
             $table->unsignedInteger('value')->nullable();
