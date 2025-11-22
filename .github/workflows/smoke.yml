@@ -29,6 +29,7 @@ jobs:
       BASE_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url != '' && github.event.inputs.base_url || secrets.HOSTINGER_APP_URL }}
       LOCALE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.locale != '' && github.event.inputs.locale || 'es' }}
       EXTRA_PATHS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.extra_paths != '' && github.event.inputs.extra_paths || '' }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - name: Resolver URL base
         id: setup
@@ -71,9 +72,9 @@ jobs:
           echo "✅ Todos los endpoints respondieron correctamente."
 
       - name: Notify Slack
-        if: ${{ always() && secrets.SLACK_WEBHOOK_URL != '' }}
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
           STATUS: ${{ job.status }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           CONTEXT: ${{ github.event_name }}

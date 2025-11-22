@@ -6,6 +6,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      HOSTINGER_APP_URL: ${{ secrets.HOSTINGER_APP_URL }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v4
       - name: Build assets
@@ -48,15 +51,15 @@ jobs:
             php artisan optimize
             php artisan storage:link || true
       - name: Smoke tests
-        if: ${{ secrets.HOSTINGER_APP_URL != '' }}
+        if: ${{ env.HOSTINGER_APP_URL != '' }}
         run: |
-          curl --fail --show-error --silent "${{ secrets.HOSTINGER_APP_URL }}/es" >/dev/null
-          curl --fail --show-error --silent "${{ secrets.HOSTINGER_APP_URL }}/es/dashboard" >/dev/null
+          curl --fail --show-error --silent "${{ env.HOSTINGER_APP_URL }}/es" >/dev/null
+          curl --fail --show-error --silent "${{ env.HOSTINGER_APP_URL }}/es/dashboard" >/dev/null
 
       - name: Notify Slack
-        if: ${{ always() && secrets.SLACK_WEBHOOK_URL != '' }}
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
           STATUS: ${{ job.status }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
