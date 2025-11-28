@@ -16,6 +16,10 @@ class DemoQuizSeeder extends Seeder
             return;
         }
 
+        if (DB::table('quizzes')->where('lesson_id', $lesson->id)->exists()) {
+            return;
+        }
+
         $quizId = DB::table('quizzes')->insertGetId([
             'lesson_id' => $lesson->id,
             'created_at' => now(),

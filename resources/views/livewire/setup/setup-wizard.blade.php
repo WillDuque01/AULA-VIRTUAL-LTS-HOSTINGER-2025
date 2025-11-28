@@ -1,12 +1,12 @@
-<div class="min-h-screen bg-slate-900 text-slate-100">
-    <div class="mx-auto max-w-5xl px-6 py-16">
+<div class="min-h-screen bg-slate-900 text-slate-100 overflow-x-hidden">
+    <div class="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:py-16">
         <header class="mb-12 text-center">
             <p class="text-xs font-semibold uppercase tracking-[0.28em] text-blue-400">{{ __('First-time configuration') }}</p>
             <h1 class="mt-3 text-3xl font-semibold">{{ __('Bienvenido al asistente de puesta en marcha') }}</h1>
             <p class="mt-2 text-sm text-slate-400">{{ __('Configura tu cuenta administrativa, conecta tus integraciones críticas y deja lista la pasarela de pago preferida.') }}</p>
         </header>
 
-        <div class="grid gap-8 md:grid-cols-[260px,1fr]">
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-[260px,1fr]">
             <aside class="space-y-2">
                 @foreach($steps as $index => $label)
                     <div class="rounded-lg border {{ $step === $index ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700' }} px-4 py-3">

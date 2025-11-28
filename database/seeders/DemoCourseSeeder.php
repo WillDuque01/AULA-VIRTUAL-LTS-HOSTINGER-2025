@@ -9,6 +9,10 @@ class DemoCourseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (DB::table('courses')->where('slug', 'espanol-a1')->exists()) {
+            return;
+        }
+
         DB::transaction(function () {
             $courseId = DB::table('courses')->insertGetId([
                 'slug' => 'espanol-a1',
