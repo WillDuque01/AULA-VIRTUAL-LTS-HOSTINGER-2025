@@ -28,22 +28,31 @@
                     @include('setup.partials.step-payments')
                 @endif
 
-                <div class="mt-8 flex items-center justify-between border-t border-slate-800 pt-6">
-                    <div>
+                <div class="mt-8 flex flex-col gap-3 border-t border-slate-800 pt-6 md:flex-row md:items-center md:justify-between">
+                    <div class="order-2 w-full md:order-1 md:w-auto">
                         @if($step > 1)
-                            <button type="button" wire:click="previous" class="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:border-slate-500">
+                            <button
+                                type="button"
+                                wire:click="previous"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:border-slate-500 md:w-auto">
                                 <span>&larr;</span>{{ __('Atrás') }}
                             </button>
                         @endif
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="order-1 flex w-full flex-col gap-3 md:order-2 md:w-auto md:flex-row md:items-center">
                         @if($step < count($steps))
-                            <button type="button" wire:click="next" class="inline-flex items-center gap-2 rounded-full bg-blue-500 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-400">
+                            <button
+                                type="button"
+                                wire:click="next"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-500 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-400 md:w-auto">
                                 {{ __('Guardar y continuar') }}<span>&rarr;</span>
                             </button>
                         @else
-                            <button type="button" wire:click="finish" class="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-400">
+                            <button
+                                type="button"
+                                wire:click="finish"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-400 md:w-auto">
                                 {{ __('Finalizar configuración') }}
                             </button>
                         @endif

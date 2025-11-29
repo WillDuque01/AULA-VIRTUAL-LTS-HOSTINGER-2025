@@ -131,11 +131,10 @@ Revisa `storage/logs/laravel.log` si aparece algún error.
 
 ## 8. Caches, cron y tareas finales
 
-1. Borra cualquier caché previa y ejecútalas de nuevo (en orden):
+1. Borra cualquier caché previa y ejecútalas de nuevo (en orden). **No uses `route:cache`** porque Fortify define rutas con nombres duplicados y el comando falla en producción.
    ```bash
    rm -f bootstrap/cache/*.php
    php artisan config:cache
-   php artisan route:cache
    php artisan view:cache
    php artisan optimize
    ```
@@ -157,6 +156,27 @@ Revisa `storage/logs/laravel.log` si aparece algún error.
 | Correo (opcional) | hPanel → Email | dirección y contraseña de cada buzón |
 | Secrets para GitHub Actions | GitHub → Settings → Secrets | SFTP, SSH, rutas, URL pública y webhook Slack |
 
+---
+
+## 10. Recuperación rápida si el wizard se queda a medias
+
+En los despliegues recientes detectamos que, si el paso 3 del wizard falla, la instalación queda “en limbo”. Puedes completarla manualmente:
+
+1. **Editar `.env`** con todas las credenciales (Pusher, Mixpanel, Google, SMTP, etc.). Después ejecuta:
+   ```bash
+   php artisan config:clear
+   php artisan config:cache
+   ```
+2. **Marcar el setup como completado**:
+   ```bash
+   php artisan tinker --execute="App\Models\SetupState::markCompleted(['admin_email' => 'tucorreo@dominio.com']);"
+   ```
+3. **Restablecer la contraseña del admin (si hace falta)**:
+   ```bash
+   php artisan tinker --execute="use App\Models\User; use Illuminate\Support\Facades\Hash; User::updateOrCreate(['email' => 'admin@dominio.com'], ['name' => 'Admin', 'password' => Hash::make('ClaveNueva123')]);"
+   ```
+4. **Forzar redirecciones con locale**: si accedes a `/login` sin prefijo `/{locale}`, Laravel devolverá 500. Añade `Route::redirect('/login', '/es/login');` (o el idioma que uses) antes del grupo localizado.
+
+Con este checklist puedes completar el despliegue aun cuando el wizard no llegue al botón “Finalizar configuración”.
+
 Con estos pasos documentados podrás repetir el despliegue o delegarlo a cualquier miembro del equipo sin perder detalle.
-
-

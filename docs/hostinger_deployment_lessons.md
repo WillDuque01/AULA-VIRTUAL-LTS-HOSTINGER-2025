@@ -49,6 +49,19 @@ Este documento resume los errores encontrados durante los despliegues en Hosting
 - **Causa**: la grilla principal forzaba dos columnas (`md:grid-cols`) sin declarar el fallback `grid-cols-1`, por lo que el sidebar ocupaba un ancho fijo incluso en móviles.
 - **Fix**: `resources/views/setup/index.blade.php` define clases personalizadas para el layout guest y `resources/views/livewire/setup/setup-wizard.blade.php` usa `grid grid-cols-1 gap-8 md:grid-cols-[260px,1fr]` más `overflow-x-hidden`, asegurando una sola columna en dispositivos pequeños.
 
+## 11. URLs sin prefijo de idioma lanzaban HTTP 500
+- **Síntoma**: acceder a `/login` o `/dashboard` sin `/{locale}` devolvía un 500 (Laravel trataba de resolver rutas que esperan el parámetro `locale`).
+- **Causa**: todas las rutas públicas viven dentro del grupo `/{locale}`; al entrar sin prefijo, la app no encontraba coincidencia válida.
+- **Fix**: se añadieron redirecciones globales en `routes/web.php` (`/`, `/login`, `/register`) hacia `/{config('app.locale')}/...` para que siempre haya un locale por defecto.
+
+## 12. Recuperación manual del entorno cuando el wizard no termina
+- **Escenario**: si el wizard falla (por ejemplo, `finish` no escribe en `.env`), se puede continuar el despliegue cargando las credenciales manualmente.
+- **Procedimiento**:
+  1. Editar `.env` con las claves recopiladas, luego ejecutar `php artisan config:clear && php artisan config:cache`.
+  2. Marcar la instalación como completa vía Tinker: `App\Models\SetupState::markCompleted(['admin_email' => '...']);`.
+  3. Si hace falta restablecer la contraseña del admin, usar `User::updateOrCreate()` + `Hash::make()` desde Tinker.
+- Documentar este flujo evita repetir todo el deploy cuando el wizard se queda a medias.
+
 Mantener esta lista actualizada evita reintroducir regresiones en futuros despliegues y sirve como referencia rápida cuando un síntoma reaparece.
 
 

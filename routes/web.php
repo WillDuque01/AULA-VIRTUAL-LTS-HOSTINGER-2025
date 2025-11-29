@@ -42,7 +42,9 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/es');
+Route::redirect('/', '/'.config('app.locale', 'es'));
+Route::redirect('/login', '/'.config('app.locale', 'es').'/login')->name('login.fallback');
+Route::redirect('/register', '/'.config('app.locale', 'es').'/register')->name('register.fallback');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/certificates/verify/{code}', [CertificateController::class, 'verify'])->name('certificates.verify');
 Route::middleware('auth')->get('/whatsapp/redirect', WhatsAppRedirectController::class)->name('whatsapp.redirect');
