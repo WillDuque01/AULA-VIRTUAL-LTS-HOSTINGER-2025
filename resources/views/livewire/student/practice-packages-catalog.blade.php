@@ -1,4 +1,4 @@
-<div id="practice-packs" class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+<div id="practice-packs" class="bg-white border border-slate-200 rounded-2xl shadow-sm font-[family:'Onest',var(--brand-body-font,'Inter'),sans-serif]">
     <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div>
             <p class="text-xs uppercase font-semibold text-emerald-500 tracking-[0.2em]">Prácticas premium</p>
@@ -29,7 +29,7 @@
                 {{ $flashMessage }}
             </div>
         @endif
-        <div class="grid gap-4 lg:grid-cols-3 sm:grid-cols-2">
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             @forelse($packages as $package)
                 @php
                     $pricePerSession = $package->sessions_count > 0 ? $package->price_amount / $package->sessions_count : $package->price_amount;
@@ -47,11 +47,16 @@
                     $isHighlighted = $highlightPackageId === $package->id;
                 @endphp
                 <div @class([
-                        'rounded-2xl border p-4 bg-gradient-to-b from-white to-slate-50 flex flex-col gap-4 shadow-sm transition',
-                        'border-emerald-200 ring-2 ring-emerald-200/70 shadow-emerald-100' => $isHighlighted,
+                        'relative rounded-2xl border p-4 bg-gradient-to-b from-white to-slate-50 flex flex-col gap-4 shadow-sm transition',
+                        'border-emerald-200 ring-2 ring-emerald-500 shadow-emerald-100' => $isHighlighted,
                         'border-slate-100 ring-1 ring-transparent hover:ring-emerald-200' => ! $isHighlighted,
                     ])>
-                    <div>
+                    @if($isHighlighted)
+                        <span class="absolute -top-3 right-4 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-0.5 text-[11px] font-semibold text-white shadow-lg">
+                            ⭐ {{ __('Best Value') }}
+                        </span>
+                    @endif
+                    <div class="space-y-1">
                         <p class="text-xs uppercase text-emerald-600 font-semibold tracking-wide">{{ $badge }}</p>
                         <h5 class="text-xl font-semibold text-slate-900 leading-snug">{{ $package->title }}</h5>
                         @if($package->subtitle)
@@ -85,12 +90,16 @@
                     <div class="mt-auto grid gap-2">
                         <button type="button"
                                 wire:click="startCheckout({{ $package->id }})"
-                                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                                wire:loading.attr="disabled"
+                                wire:target="startCheckout({{ $package->id }})"
+                                class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70">
                             {{ $package->is_global ? __('Comprar ahora') : __('Reservar con mi profe') }}
                         </button>
                         <button type="button"
                                 wire:click="addToCart({{ $package->id }})"
-                                class="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-emerald-300 hover:text-emerald-700">
+                                wire:loading.attr="disabled"
+                                wire:target="addToCart({{ $package->id }})"
+                                class="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-700 disabled:opacity-70">
                             🛒 {{ __('Agregar al carrito') }}
                         </button>
                     </div>
@@ -121,7 +130,9 @@
     @endif
 
     @if($showCheckout)
-        @php($package = $packages->firstWhere('id', $checkoutPackageId))
+        @php
+            $package = $packages->firstWhere('id', $checkoutPackageId);
+        @endphp
         @if($package)
             <div class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/70 p-4">
                 <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl p-6 space-y-4">

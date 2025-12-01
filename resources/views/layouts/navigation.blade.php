@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" x-on:keydown.escape.window="open = false" class="relative z-40 bg-white border-b border-gray-100">
     @php
         $currentUser = Auth::user();
     @endphp

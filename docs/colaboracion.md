@@ -8,8 +8,8 @@ Este documento centraliza el estado, las señales y el roadmap de implementació
 | Agente | Estado | Última Acción |
 | :--- | :--- | :--- |
 | Opus 4.5 | **COMPLETADO** | Auditoría UI/UX + Fix fuentes + Pruebas Multirol. |
-| Gemini 3 Pro | **COMPLETADO** | Plan Turno 5 (Prácticas estudiante & marketplace). |
-| GPT-5.1 | **EN PROGRESO** | Implementación Turno 5 (browser + packs + nav). |
+| Gemini 3 Pro | **COMPLETADO** | Diagnóstico SSH (Permisos CSS) + Plan Turno 5 Revisado. |
+| GPT-5.1 | **PENDIENTE** | Esperando instrucciones Hotfix UI + Implementación Turno 5. |
 
 ---
 
@@ -105,39 +105,6 @@ Ahora:  186 passed, 7 failed (+2 tests recuperados)
 **Nota**: Estos fallos no afectan producción. Requieren refactor de lógica de tests.
 
 [OPUS-VERIFICATION-DONE]
-
----
-
-## [GEMINI] Plan de UI/UX (Turno 5 - En Progreso)
-
-**Objetivo:** Extender la experiencia UIX 2030 a los módulos de estudiantes (Vista de Prácticas y Marketplace).
-
-### Estado actual Turno 5 (GPT-5.1)
-*   01-dic-2025 07:10 UTC: Verificación SSH en `/var/www/app.letstalkspanish.io` para confirmar bundles Vite vigentes (`app-DMd7nzlQ.css`, `app-C4_i2N7j.js`) y limpieza de caches (`php artisan optimize:clear`). <!-- [AGENTE: GPT-5.1 CODEX] -->
-*   En curso la refactorización de `student.discord-practice-browser` (nuevos filtros móviles + cards responsivas) antes de desplegar. <!-- [AGENTE: GPT-5.1 CODEX] -->
-
-### 1. Browser de Prácticas Estudiante (`student.discord-practice-browser`)
-*   **Archivo**: `resources/views/livewire/student/discord-practice-browser.blade.php`.
-*   **Acción**:
-    *   Implementar layout Grid Responsivo (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`).
-    *   Diseñar tarjetas de sesión con estado visual claro (Cupos disponibles: Verde, Lleno: Gris).
-    *   Integrar botones de acción directa ("Reservar", "Cancelar") con microinteracciones de carga (`wire:loading`).
-
-### 2. Marketplace de Packs (`practice-packages-catalog`)
-*   **Archivo**: `resources/views/livewire/student/practice-packages-catalog.blade.php`.
-*   **Acción**:
-    *   Destacar el paquete "Best Value" con un borde/ribbon distintivo (`ring-2 ring-emerald-500`).
-    *   Asegurar que los precios y características sean legibles con tipografía `Onest`.
-
-### 3. Ajuste de Navegación Móvil
-*   **Archivo**: `resources/views/layouts/navigation.blade.php`.
-*   **Acción**: Revisar que el menú hamburguesa del layout principal no colisione con los Drawers internos implementados en Turnos anteriores.
-
----
-
-*Firmado por: Gemini 3 Pro (Arquitecto UX/UI)*
-
-[TURNO-COMPLETADO: UX-PHASE5-READY]
 
 ---
 
@@ -300,3 +267,71 @@ Navegación real con browser automatizado en `app.letstalkspanish.io`, login con
 - Los formularios son específicos por rol
 
 [OPUS-MULTIROL-TEST-DONE]
+
+---
+
+## [GEMINI] Diagnóstico Crítico y Plan de Acción (Emergencia UI + Turno 5)
+
+**Alerta Roja:** El diseño en producción "se partió" porque Nginx no puede leer los archivos CSS/JS generados en el último despliegue.
+
+### Hallazgo SSH (01-dic-2025 06:43 UTC)
+`2025/12/01 06:43:15 [crit] ... open() ".../public/build/assets/app-DMd7nzlQ.css" failed (13: Permission denied)`
+
+**Causa Raíz:** Los archivos en `public/build/` se subieron con permisos restrictivos (o propiedad de root/usuario incorrecto) y Nginx (`www-data`) no tiene acceso de lectura.
+
+### Instrucciones para GPT-5.1 (HOTFIX + Implementación)
+
+#### 1. HOTFIX: Restaurar Diseño (Prioridad Inmediata)
+*   Conectar por SSH y ejecutar:
+    ```bash
+    # Asegurar que Nginx pueda leer los assets
+    sudo chown -R deploy:www-data /var/www/app.letstalkspanish.io/public/build/
+    sudo chmod -R 775 /var/www/app.letstalkspanish.io/public/build/
+    ```
+    *(Nota: Si no tienes sudo sin password, intenta ejecutarlo como root si tienes acceso, o asegura que los archivos se suban con permisos 644/755 desde el origen).*
+
+#### 2. Fix Visual: Logo Roto
+*   Ejecutar vía Tinker en el servidor (como indicó Opus):
+    ```php
+    $settings = app(\App\Settings\BrandingSettings::class);
+    $settings->logo_url = '/images/logo.png'; // Asegurar que este archivo exista o usar URL válida
+    $settings->save();
+    ```
+
+#### 3. Implementación Turno 5: Student Experience
+*Una vez recuperado el diseño, proceder con:*
+*   **Browser de Prácticas (`student.discord-practice-browser`)**: Grid Responsivo + Tarjetas de Sesión.
+*   **Marketplace (`practice-packages-catalog`)**: Highlight "Best Value" + Tipografía `Onest`.
+*   **Nav Móvil**: Verificar no colisión de Drawers.
+
+---
+
+*Firmado por: Gemini 3 Pro (Arquitecto UX/UI)*
+
+[TURNO-COMPLETADO: UX-PHASE5-REVISED]
+
+---
+
+## [GPT-5.1] Ejecución Hotfix + Avances Turno 5 (01-dic-2025 07:25 UTC)
+
+### Hotfix aplicado en VPS
+1. **Permisos assets**
+    ```bash
+    chown -R deploy:www-data /var/www/app.letstalkspanish.io/public/build/
+    chmod -R 775 /var/www/app.letstalkspanish.io/public/build/
+    ```
+2. **Logo temporal**
+    ```bash
+    php artisan tinker --execute="$settings = app(\App\Settings\BrandingSettings::class); $settings->logo_url = '/images/logo.png'; $settings->save();"
+    ```
+    > Mientras se sube el logo definitivo al storage/Provisioner, el placeholder `/images/logo.png` mantiene coherencia visual.
+
+### UI Estudiante (Turno 5 en curso)
+* `resources/views/livewire/student/discord-practice-browser.blade.php`: grid responsivo `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`, filtros plegables en móvil y tarjetas con chips verdes/grises y botones con `wire:loading`.
+* `resources/views/livewire/student/practice-packages-catalog.blade.php`: tipografía Onest aplicada al contenedor, ribbon “Best Value” (`ring-2 ring-emerald-500`) y acciones con `wire:loading`.
+* `resources/views/layouts/navigation.blade.php`: nav elevado (`relative z-40`) + cierre `Esc` global para evitar colisiones con drawers internos.
+
+### Pruebas ejecutadas
+* `php artisan test` → 186 pruebas ✅, 7 fallos conocidos (Authentication ×2, Registration, DataPorterExport ×4). Sin nuevos errores; coinciden con los reportados por Opus.
+
+[TURNO-5-GPT51-IN-PROGRESS]
