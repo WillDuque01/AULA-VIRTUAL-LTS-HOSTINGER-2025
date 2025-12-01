@@ -24,3 +24,35 @@
 
 [TURNO-COMPLETADO: PREPARACIÓN-OK]
 
+---
+
+[OPUS] Evaluación Backend (01-dic-2025 05:28 UTC)
+
+**Diagnóstico SSH ejecutado**:
+- `supervisorctl status lts-queue` → RUNNING (pid 219629, uptime 42min) ✅
+- `curl -sI https://app.letstalkspanish.io/es/login` → HTTP/2 200 ✅
+- Headers de seguridad verificados: HSTS, X-Frame-Options, CSP, Permissions-Policy ✅
+- Logs nginx: errores antiguos del socket (30/nov) ya resueltos; solo intentos de escaneo bloqueados ✅
+
+**Pruebas de integración ejecutadas**:
+1. `backend_role_smoke.php` → Todos los roles (Admin, Teacher Admin, Teacher, Student) pasan ✅
+   - Rutas críticas: dashboard, branding, provisioner, assignments, planner, player, checkout → 200 OK
+   - Telemetría player (`POST /es/api/player/events`) → `{"ok":true}` ✅
+2. `real_integrations_smoke.php` → Todas las integraciones externas operativas ✅
+   - Pusher, Mixpanel, reCAPTCHA, Make, Discord, PayPal, Sentry → OK
+
+**Archivos modificados**:
+| Archivo | Cambio | Firma |
+|---------|--------|-------|
+| `scripts/backend_role_smoke.php` | Fix advertencias PHP: RuntimeException/Throwable prefijados con `\` | `// [AGENTE: OPUS 4.5]` |
+
+**Hallazgos de seguridad**:
+- Rate limiting activo en login (5/min), register (3/min), player-events (60/min) ✅
+- CSRF tokens rotados por sesión ✅
+- Intentos de acceso a `.env`, `.git/config` bloqueados por nginx ✅
+- WhatsApp: deshabilitado intencionalmente (`WHATSAPP_ENABLED=false`) — documentado
+
+**Alertas UX**: Ninguna. El backend no impone restricciones que limiten el diseño propuesto.
+
+**Resultado**: BACKEND ESTABLE. Listo para commit, push y despliegue.
+
