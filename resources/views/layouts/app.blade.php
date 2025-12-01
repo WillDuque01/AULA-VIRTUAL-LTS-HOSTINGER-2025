@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-@php($branding = app(\App\Settings\BrandingSettings::class))
+@php
+    $branding = app(\App\Settings\BrandingSettings::class);
+@endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -9,8 +11,9 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
+        {{-- [AGENTE: OPUS 4.5] - Fix: Cargar Inter y Onest según UIX 2030 (tailwind.config.js) --}}
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=onest:400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -52,8 +55,10 @@
         ?>
         @if($routeName && isset($routeParams['locale']))
             @foreach(['es','en'] as $localeOption)
-                @php($altParams = $routeParams)
-                @php($altParams['locale'] = $localeOption)
+                @php
+                    $altParams = $routeParams;
+                    $altParams['locale'] = $localeOption;
+                @endphp
                 <link rel="alternate" hreflang="{{ $localeOption }}" href="{{ route($routeName, $altParams) }}">
             @endforeach
             <link rel="canonical" href="{{ route($routeName, $routeParams) }}">
@@ -63,7 +68,9 @@
         <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
             @include('layouts.navigation')
             @auth
-                @php($__profileSummary = auth()->user()->profileSummary())
+                @php
+                    $__profileSummary = auth()->user()->profileSummary();
+                @endphp
                 @if(!($__profileSummary['is_complete'] ?? false))
                     <span class="sr-only" aria-hidden="true">{{ __('Completa tu perfil') }}</span>
                 @endif

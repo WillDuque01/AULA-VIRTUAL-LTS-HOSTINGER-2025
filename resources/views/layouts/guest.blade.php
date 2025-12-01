@@ -14,8 +14,9 @@
         </title>
 
         <!-- Fonts -->
+        {{-- [AGENTE: OPUS 4.5] - Fix: Cargar Inter y Onest según UIX 2030 (tailwind.config.js) --}}
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=onest:400,500,600,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -7,9 +7,9 @@ Este documento centraliza el estado, las señales y el roadmap de implementació
 ## ESTADO DEL PROYECTO
 | Agente | Estado | Última Acción |
 | :--- | :--- | :--- |
-| Opus 4.5 | **COMPLETADO** | Auditoría Post-Despliegue y Fix de Tests base. |
-| Gemini 3 Pro | **COMPLETADO** | Diseño de la Fase 4 (Dashboards) y revisión de la Fase 3. |
-| GPT-5.1 | **COMPLETADO** | Turno 4 ejecutado (dashboards/professor planner). |
+| Opus 4.5 | **COMPLETADO** | Auditoría UI/UX + Fix de fuentes (Inter/Onest). |
+| Gemini 3 Pro | **COMPLETADO** | Plan Turno 5 (Prácticas estudiante & marketplace). |
+| GPT-5.1 | **EN PROGRESO** | Implementación Turno 5 (browser + packs + nav). |
 
 ---
 
@@ -70,40 +70,6 @@ Este documento centraliza el estado, las señales y el roadmap de implementació
 
 ---
 
-## [GEMINI] Plan de UI/UX (En espera de nuevas instrucciones)
-
-*(El plan para Turno 5 se agregará aquí cuando Gemini publique nuevas pautas.)*
-
-[TURNO-COMPLETADO: IMPLEMENTATION-DONE]
-
-### 1. Refactorización Dashboard Profesor
-*   **Archivo**: `resources/views/livewire/teacher/dashboard.blade.php` (o la ruta exacta de la vista del componente `TeacherDashboard`).
-*   **Acción**:
-    *   Reemplazar contenedores `bg-white overflow-hidden shadow-sm` por el token de tarjeta `rounded-3xl border border-slate-100 bg-white/85 shadow-xl shadow-slate-200/60`.
-    *   Asegurar que los contadores de métricas usen la animación `animatedCount` (copiar lógica de Builder).
-    *   Añadir bienvenida personalizada con hora del día (`Buenos días, {Nombre}`).
-
-### 2. Planner Responsivo
-*   **Archivo**: `resources/views/livewire/professor/discord-practice-planner.blade.php`.
-*   **Acción**:
-    *   En móvil (`< md`), ocultar la tabla tradicional (`hidden md:block`).
-    *   Crear una vista de lista/tarjetas para móvil (`md:hidden`) donde cada fila de la tabla sea una tarjeta independiente con sus acciones.
-    *   Usar Drawer para el formulario de "Nueva Práctica" en móvil (reutilizar patrón del Player: `x-data="{ sidebarOpen: false }"`).
-
-### 3. Ajustes de Rendimiento
-*   **Acción Global**: Buscar componentes Livewire de carga pesada en `dashboard.blade.php` o layouts principales y añadir `lazy` en su inclusión:
-    ```blade
-    <livewire:professor.practice-packages-manager lazy />
-    ```
-
----
-
-*Firmado por: Gemini 3 Pro (Arquitecto UX/UI)*
-
-[TURNO-COMPLETADO: UX-PHASE4-READY]
-
----
-
 ## [OPUS] Verificación Post-Turno4 (01-dic-2025 06:15 UTC)
 
 ### Verificación en Producción ✅
@@ -139,3 +105,85 @@ Ahora:  186 passed, 7 failed (+2 tests recuperados)
 **Nota**: Estos fallos no afectan producción. Requieren refactor de lógica de tests.
 
 [OPUS-VERIFICATION-DONE]
+
+---
+
+## [GEMINI] Plan de UI/UX (Turno 5 - En Progreso)
+
+**Objetivo:** Extender la experiencia UIX 2030 a los módulos de estudiantes (Vista de Prácticas y Marketplace).
+
+### Estado actual Turno 5 (GPT-5.1)
+*   01-dic-2025 07:10 UTC: Verificación SSH en `/var/www/app.letstalkspanish.io` para confirmar bundles Vite vigentes (`app-DMd7nzlQ.css`, `app-C4_i2N7j.js`) y limpieza de caches (`php artisan optimize:clear`). <!-- [AGENTE: GPT-5.1 CODEX] -->
+*   En curso la refactorización de `student.discord-practice-browser` (nuevos filtros móviles + cards responsivas) antes de desplegar. <!-- [AGENTE: GPT-5.1 CODEX] -->
+
+### 1. Browser de Prácticas Estudiante (`student.discord-practice-browser`)
+*   **Archivo**: `resources/views/livewire/student/discord-practice-browser.blade.php`.
+*   **Acción**:
+    *   Implementar layout Grid Responsivo (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`).
+    *   Diseñar tarjetas de sesión con estado visual claro (Cupos disponibles: Verde, Lleno: Gris).
+    *   Integrar botones de acción directa ("Reservar", "Cancelar") con microinteracciones de carga (`wire:loading`).
+
+### 2. Marketplace de Packs (`practice-packages-catalog`)
+*   **Archivo**: `resources/views/livewire/student/practice-packages-catalog.blade.php`.
+*   **Acción**:
+    *   Destacar el paquete "Best Value" con un borde/ribbon distintivo (`ring-2 ring-emerald-500`).
+    *   Asegurar que los precios y características sean legibles con tipografía `Onest`.
+
+### 3. Ajuste de Navegación Móvil
+*   **Archivo**: `resources/views/layouts/navigation.blade.php`.
+*   **Acción**: Revisar que el menú hamburguesa del layout principal no colisione con los Drawers internos implementados en Turnos anteriores.
+
+---
+
+*Firmado por: Gemini 3 Pro (Arquitecto UX/UI)*
+
+[TURNO-COMPLETADO: UX-PHASE5-READY]
+
+---
+
+## [OPUS] Auditoría UI/UX en Producción (01-dic-2025 07:00 UTC)
+
+### Análisis Visual Completo vía Browser
+
+**Metodología**: Conexión SSH + navegación real con capturas de pantalla en `app.letstalkspanish.io`.
+
+### ✅ Elementos Funcionando Correctamente
+
+| Componente | Estado | Observación |
+|------------|--------|-------------|
+| **Texto/Traducciones** | ✅ OK | Se renderiza correctamente (problema de accessibility snapshot, no del sitio) |
+| **Estructura de layouts** | ✅ OK | Formularios, navegación y tarjetas funcionando |
+| **Guía contextual** | ✅ OK | Tooltip bien diseñado y legible |
+| **Dashboard general** | ✅ OK | Tarjetas, botones, colores y tipografía correctos |
+| **Assets Vite** | ✅ OK | `app-DMd7nzlQ.css` (79KB), `app-C4_i2N7j.js` (92KB) |
+
+### ❌ Problemas Identificados y Corregidos
+
+| Problema | Causa Raíz | Solución | Estado |
+|----------|------------|----------|--------|
+| **Fuentes incorrectas** | Layouts cargaban `Figtree` en vez de `Inter/Onest` | Actualizado `app.blade.php` y `guest.blade.php` | ✅ Corregido y desplegado |
+| **Logo roto** | CDN `cdn.letstalkspanish.io/qa/logo-horizontal.png` no responde | Requiere actualizar BrandingSettings | ⚠️ Pendiente |
+
+### Archivos Modificados
+
+| Archivo | Cambio | Firma |
+|---------|--------|-------|
+| `resources/views/layouts/app.blade.php` | `figtree` → `inter:400,500,600,700&family=onest:400,500,600,700` | `// [AGENTE: OPUS 4.5]` |
+| `resources/views/layouts/guest.blade.php` | `figtree` → `inter:400,500,600,700&family=onest:400,500,600,700` | `// [AGENTE: OPUS 4.5]` |
+
+### Capturas de Referencia
+
+- `login_full_analysis.png` — Página de login con diseño funcional
+- `dashboard_ui_analysis.png` — Dashboard admin con tarjetas UIX 2030
+- `dashboard_general.png` — Vista con guía contextual activa
+
+### Recomendación para Logo
+
+El logo apunta a un CDN externo que no responde. **Opciones**:
+1. Subir logo a `storage/app/public/` y actualizar BrandingSettings
+2. Configurar logo_url con URL válida desde el Provisioner (`/es/provisioner`)
+3. Usar placeholder temporal: `/images/logo.png`
+
+**Para GPT-5.1**: Si el Turno 5 incluye ajustes de branding, corregir la URL del logo desde el panel de Branding o vía Tinker.
+
+[OPUS-UI-AUDIT-DONE]
