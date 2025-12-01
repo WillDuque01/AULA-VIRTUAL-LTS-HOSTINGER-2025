@@ -11,8 +11,8 @@ export default {
 
     theme: {
         extend: {
-            fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+            fontFamily: { // [AGENTE: GPT-5.1 CODEX] - Se redefine el mapa de fuentes base para alinearlo con UIX 2030
+                sans: ['Inter', 'Onest', ...defaultTheme.fontFamily.sans], // [AGENTE: GPT-5.1 CODEX] - Inter/Onest sustituyen a Figtree según el plan de Gemini
             },
         },
     },

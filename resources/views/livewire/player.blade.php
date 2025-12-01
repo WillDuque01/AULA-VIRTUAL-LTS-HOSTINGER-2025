@@ -1,13 +1,13 @@
         @if($returnHint)
-            <div x-data
-                 x-init="window.playerSignals?.emitOnce('return_hint_view_{{ $lesson->id }}', 'banner_view', { metadata: { banner: 'return_hint' } })"
-                 class="player-slide-up flex flex-wrap items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">
+            <div x-data {{-- // [AGENTE: GPT-5.1 CODEX] - Contenedor Alpine para el banner de retorno --}}
+                 x-init="window.playerSignals?.emitOnce('return_hint_view_{{ $lesson->id }}', 'banner_view', { metadata: { banner: 'return_hint' } })" {{-- // [AGENTE: GPT-5.1 CODEX] - Emisión de señal única para telemetría --}}
+                 class="player-slide-up flex flex-wrap items-center gap-3 rounded-2xl border border-amber-100 bg-amber-50/80 px-4 py-3 text-sm font-medium text-amber-900 shadow-lg shadow-amber-200/40 backdrop-blur-sm transition duration-200" {{-- // [AGENTE: GPT-5.1 CODEX] - Mejora de contraste y feedback visual --}}>
                 <div class="flex items-center gap-2">
                     <span class="text-base" aria-hidden="true">⏪</span>
-                    <p class="font-semibold">{{ __('Retoma desde :time', ['time' => $returnHint['label']]) }}</p>
+                    <p class="font-semibold tracking-wide">{{ __('Retoma desde :time', ['time' => $returnHint['label']]) }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Se añade tracking para jerarquía tipográfica --}}
                 </div>
                 <button type="button"
-                        class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-700 hover:border-amber-300"
+                        class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-700 transition-all duration-200 hover:border-amber-300 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
                         x-on:click.prevent="
                             window.dispatchEvent(new CustomEvent('player:seek-to', { detail: { time: {{ $returnHint['seconds'] ?? 0 }}, source: 'return_hint' } }));
                             window.playerSignals?.emit('banner_click', { metadata: { banner: 'return_hint' } });
@@ -28,13 +28,13 @@
     $remainingSeconds = $durationSeconds !== null ? max(0, $durationSeconds - $resumeSeconds) : null;
     $remainingLabel = $remainingSeconds !== null ? gmdate('H:i:s', $remainingSeconds) : null;
 
-    $assignmentStatusMeta = [
-        'pending' => ['label' => __('player.timeline.assignment.pending'), 'class' => 'bg-slate-200 text-slate-700'],
-        'submitted' => ['label' => __('player.timeline.assignment.submitted'), 'class' => 'bg-sky-100 text-sky-700'],
-        'graded' => ['label' => __('player.timeline.assignment.graded'), 'class' => 'bg-violet-100 text-violet-700'],
-        'approved' => ['label' => __('player.timeline.assignment.approved'), 'class' => 'bg-emerald-100 text-emerald-700'],
-        'rejected' => ['label' => __('player.timeline.assignment.rejected'), 'class' => 'bg-rose-100 text-rose-700'],
-    ];
+    $assignmentStatusMeta = [ // [AGENTE: GPT-5.1 CODEX] - Unificamos los tokens visuales de los chips según el plan UIX 2030
+        'pending' => ['label' => __('player.timeline.assignment.pending'), 'class' => 'border border-amber-200 bg-amber-50 text-amber-700'], // [AGENTE: GPT-5.1 CODEX] - Estados pendientes usan el set ámbar documentado
+        'submitted' => ['label' => __('player.timeline.assignment.submitted'), 'class' => 'border border-sky-200 bg-sky-50 text-sky-700'], // [AGENTE: GPT-5.1 CODEX] - Submitted pasa a tokens sky para diferenciación
+        'graded' => ['label' => __('player.timeline.assignment.graded'), 'class' => 'border border-violet-200 bg-violet-50 text-violet-700'], // [AGENTE: GPT-5.1 CODEX] - Graded mantiene contraste con violeta pastel
+        'approved' => ['label' => __('player.timeline.assignment.approved'), 'class' => 'border border-emerald-200 bg-emerald-50 text-emerald-700'], // [AGENTE: GPT-5.1 CODEX] - Approved usa tokens verdes consistentes
+        'rejected' => ['label' => __('player.timeline.assignment.rejected'), 'class' => 'border border-rose-200 bg-rose-50 text-rose-700'], // [AGENTE: GPT-5.1 CODEX] - Rejected aprovecha el set rose
+    ]; // [AGENTE: GPT-5.1 CODEX] - Cierre del mapa de estados con tokens armonizados
     $typeGlyphs = [
         'video' => '▶️',
         'audio' => '🎧',
@@ -86,9 +86,9 @@
     @endpush
 @endonce
 
-<div class="grid gap-6 lg:grid-cols-[320px,1fr]">
+<div x-data="{ sidebarOpen: false }" x-on:keydown.escape.window="sidebarOpen = false" class="relative space-y-4 lg:space-y-0 lg:grid lg:gap-6 lg:grid-cols-[320px,1fr]"> {{-- // [AGENTE: GPT-5.1 CODEX] - Contenedor principal ahora controla el drawer responsivo --}}
+    <div x-show="sidebarOpen" x-transition.opacity x-cloak class="fixed inset-0 z-40 bg-slate-900/60 lg:hidden" x-on:click="sidebarOpen = false"></div> {{-- // [AGENTE: GPT-5.1 CODEX] - Backdrop móvil para cerrar el drawer al hacer clic fuera --}}
     <aside
-        class="lg:sticky lg:top-28 space-y-4"
         x-data="playerInsights(
             {{ json_encode([
                 'progress' => $progressPercent,
@@ -98,7 +98,17 @@
             {{ json_encode([
                 'milestones' => $progressMarkers,
             ]) }}
-        )">
+        )"
+        x-cloak {{-- // [AGENTE: GPT-5.1 CODEX] - Evitamos parpadeo del drawer en móvil --}}
+        x-bind:class="sidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'" {{-- // [AGENTE: GPT-5.1 CODEX] - Transición condicional para mostrar/ocultar --}}
+        class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85%] space-y-4 transform bg-white/95 p-4 transition-transform duration-300 ease-out lg:sticky lg:top-28 lg:z-auto lg:w-full lg:max-w-none lg:translate-x-0 lg:transform-none lg:bg-transparent lg:p-0" {{-- // [AGENTE: GPT-5.1 CODEX] - Drawer móvil y panel sticky en escritorio --}}
+    >
+        <div class="flex items-center justify-between pb-3 lg:hidden"> {{-- // [AGENTE: GPT-5.1 CODEX] - Contenedor del encabezado móvil del drawer --}}
+            <p class="text-sm font-semibold text-slate-700">{{ __('Tu hoja de ruta') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Etiqueta accesible para el drawer móvil --}}
+            <button type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition-all duration-200 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/50" x-on:click="sidebarOpen = false"> {{-- // [AGENTE: GPT-5.1 CODEX] - Acción para cerrar la sidebar en móvil --}}
+                {{ __('Cerrar') }} ✕ {{-- // [AGENTE: GPT-5.1 CODEX] - Botón de cierre del drawer --}}
+            </button>
+        </div>
         <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60">
             <div class="flex items-center justify-between">
                 <div>
@@ -135,7 +145,7 @@
                                         <span class="h-2.5 w-2.5 rounded-full {{ $dotClasses }}"></span>
                                     </span>
                                     <a href="{{ route('lessons.player', ['locale' => app()->getLocale(), 'lesson' => $timelineLesson['id']]) }}"
-                                       class="group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition transform {{ $itemClasses }}"
+                                       class="group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition duration-200 transform {{ $itemClasses }}" {{-- // [AGENTE: GPT-5.1 CODEX] - Añadimos duración para suavizar los estados hover/focus --}}
                                        data-timeline-link
                                        @if($isCurrent) aria-current="true" @endif>
                                         <span class="text-base" aria-hidden="true">{{ $glyph }}</span>
@@ -164,7 +174,7 @@
                                         </p>
                                         @if($practiceRoute)
                                             <a href="{{ $practiceRoute }}"
-                                               class="mt-1 inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-[11px] font-semibold text-white shadow hover:bg-indigo-700">
+                                               class="mt-1 inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-[11px] font-semibold text-white shadow transition-all duration-200 hover:bg-indigo-700"> {{-- // [AGENTE: GPT-5.1 CODEX] - Microinteracción suave para CTA de agenda --}}
                                                 {{ __('Abrir agenda') }} ↗
                                             </a>
                                         @endif
@@ -177,7 +187,7 @@
                                         </p>
                                         @if($practiceRoute)
                                             <a href="{{ $practiceRoute }}"
-                                               class="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white shadow hover:bg-emerald-700">
+                                               class="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white shadow transition-all duration-200 hover:bg-emerald-700"> {{-- // [AGENTE: GPT-5.1 CODEX] - Microinteracción equivalente para CTA de packs --}}
                                                 {{ $practicePackCta['has_order'] ? __('Gestionar sesiones') : __('Ver packs') }} ↗
                                             </a>
                                         @endif
@@ -194,6 +204,15 @@
     </aside>
 
     <div>
+        <div class="mb-4 flex items-center justify-between rounded-2xl border border-slate-100 bg-white/80 px-4 py-3 shadow-sm lg:hidden"> {{-- // [AGENTE: GPT-5.1 CODEX] - CTA móvil para abrir el drawer de timeline --}}
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Tu progreso') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Etiqueta compacta coherente con tokens --}}
+                <p class="text-sm font-semibold text-slate-900">{{ __('Ver agenda y contenidos') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Mensaje que explica el botón --}}
+            </div>
+            <button type="button" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition-all duration-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60" x-on:click="sidebarOpen = true">
+                {{ __('Abrir timeline') }} ☰ {{-- // [AGENTE: GPT-5.1 CODEX] - Control hamburguesa para dispositivos móviles --}}
+            </button>
+        </div>
         @php
             $playerMode = 'default';
 
