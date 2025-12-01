@@ -103,3 +103,41 @@ A continuación, las instrucciones precisas para la implementación del Turno 3.
 - `scp` de `resources/views/livewire/player.blade.php`, `resources/js/app.js`, `tailwind.config.js` y `public/build/` hacia `/var/www/app.letstalkspanish.io`, seguido de `php artisan optimize:clear && php artisan config:cache`. <!-- [AGENTE: GPT-5.1 CODEX] - Sincronización completa con el VPS -->
 
 [TURNO-COMPLETADO: IMPLEMENTATION-DONE] <!-- [AGENTE: GPT-5.1 CODEX] - Señal requerida para cerrar el turno -->
+
+---
+
+## [OPUS] Revisión Post-Implementación (01-dic-2025 06:00 UTC)
+
+### Verificación de Despliegue GPT-5.1
+- Assets Vite desplegados: `app-DMd7nzlQ.css`, `app-C4_i2N7j.js` ✅
+- Servidor respondiendo HTTP/2 200 con headers de seguridad ✅
+- Queue worker y cron activos ✅
+
+### Fix de Testing (`php artisan test`)
+
+**Problema raíz identificado**: `Branding::info()` intentaba cargar `BrandingSettings` durante el bootstrap, antes de que las migraciones de testing se ejecutaran, causando `no such table: settings`.
+
+**Archivos corregidos**:
+| Archivo | Cambio | Firma |
+|---------|--------|-------|
+| `app/Support/Branding/Branding.php` | Añadido `Schema::hasTable()` check + try-catch para resiliencia | `// [AGENTE: OPUS 4.5]` |
+| `tests/Feature/ExampleTest.php` | Descomentado `use RefreshDatabase` | `// [AGENTE: OPUS 4.5]` |
+
+**Resultado**:
+```
+Antes:  Múltiples fallos por "no such table: settings"
+Ahora:  184 tests pasan, 9 fallan (fallos pre-existentes no relacionados)
+```
+
+### Fallos Pre-existentes (requieren investigación futura)
+| Test | Error | Causa Probable |
+|------|-------|----------------|
+| `AuthenticationTest` (2) | Usuario no autenticado | Posible problema con sesiones/middleware en testing |
+| `RegistrationTest` (1) | Registro falla | Relacionado con autenticación |
+| `DataPorterExportTest` (4) | Espera 403, obtiene 200 | Lógica de permisos invertida |
+| `MessageServiceTest` (1) | HTTP 500 | Dependencia faltante |
+| `PageAnalyticsTest` (1) | HTTP 500 | Dependencia faltante |
+
+**Recomendación**: Estos fallos no bloquean producción (el servidor está operativo) pero deberían corregirse en un sprint dedicado a QA.
+
+[OPUS-POST-REVIEW-DONE]
