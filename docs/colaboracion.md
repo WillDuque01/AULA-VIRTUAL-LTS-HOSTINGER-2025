@@ -7,7 +7,7 @@ Este documento centraliza el estado, las señales y el roadmap de implementació
 ## ESTADO DEL PROYECTO
 | Agente | Estado | Última Acción |
 | :--- | :--- | :--- |
-| Opus 4.5 | **COMPLETADO** | Auditoría UI/UX + Fix de fuentes (Inter/Onest). |
+| Opus 4.5 | **COMPLETADO** | Auditoría UI/UX + Fix fuentes + Pruebas Multirol. |
 | Gemini 3 Pro | **COMPLETADO** | Plan Turno 5 (Prácticas estudiante & marketplace). |
 | GPT-5.1 | **EN PROGRESO** | Implementación Turno 5 (browser + packs + nav). |
 
@@ -239,3 +239,64 @@ php artisan tinker
 ```
 
 [OPUS-COMPARISON-DONE]
+
+---
+
+## [OPUS] Pruebas Multirol en Producción (01-dic-2025 07:10 UTC)
+
+### Metodología
+Navegación real con browser automatizado en `app.letstalkspanish.io`, login con credenciales de QA.
+
+### Usuarios Probados
+
+| Usuario | Email | Rol | Login | Dashboard | Acceso Correcto |
+|---------|-------|-----|-------|-----------|-----------------|
+| LTS Academy Admin | academy@letstalkspanish.io | Admin + teacher_admin | ✅ | `/es/dashboard` | ✅ Nav completa |
+| Student QA | student@letstalkspanish.io | student_paid | ✅ | `/es/student/dashboard` | ✅ Nav estudiante |
+| Teacher QA 01 | teacher.qa01@letstalkspanish.io | teacher | ✅ | `/es/teacher/dashboard` | ✅ Nav profesor |
+| QA Academic Lead | teacher.admin.qa@letstalkspanish.io | teacher_admin | ✅ | `/es/dashboard` | ✅ Nav admin + `/es/professor/*` |
+
+### Contraseñas de QA Utilizadas
+
+| Rol | Patrón de Contraseña |
+|-----|---------------------|
+| Admin QA | `AdminQA2025!` |
+| Teacher Admin | `TeacherAdminQA2025!` |
+| Teacher | `TeacherQA2025!01` (formato `TeacherQA2025!XX`) |
+| Student | `StudentQA2025!` |
+
+### Capturas de Referencia
+
+- `rol_admin_dashboard.png` — Dashboard Admin con guía contextual
+- `rol_student_dashboard.png` — Dashboard Estudiante con progreso de perfil
+- `rol_teacher_dashboard.png` — Dashboard Teacher con perfil profesional
+- `rol_professor_planner.png` — Planner Discord para programar sesiones
+
+### Verificaciones de Permisos
+
+| Ruta | Admin | Teacher Admin | Teacher | Student |
+|------|-------|---------------|---------|---------|
+| `/es/dashboard` | ✅ | ✅ | ✅ | ✅ |
+| `/es/professor/practices` | ✅ | ✅ | ❌ 403 | ❌ 403 |
+| `/es/admin/dashboard` | ✅ | ✅ | — | — |
+| `/es/teacher/dashboard` | — | — | ✅ | — |
+| `/es/student/dashboard` | — | — | — | ✅ |
+
+### Observaciones UI/UX por Rol
+
+| Rol | Guía Contextual | Navegación | Formularios |
+|-----|-----------------|------------|-------------|
+| **Admin** | "Resumen ejecutivo" - Dashboard cambia según rol | Completa (Panel, Branding, Integraciones, Outbox, Pago, DataPorter, Mensajes) | Perfil de profesor |
+| **Student** | "Panel estudiante" - Gamificación + recordatorios | Reducida (Panel, Mensajes) | Datos básicos, Contacto, Ubicación |
+| **Teacher** | Similar a Student pero con propuestas | Reducida (Panel, Mensajes) | Perfil profesional completo |
+| **Teacher Admin** | Como Admin | Completa + acceso a `/professor/*` | Planner Discord, gestión de sesiones |
+
+### Conclusión
+
+✅ **Sistema de roles funcionando correctamente**:
+- Los permisos se aplican correctamente (403 Forbidden donde corresponde)
+- Cada rol ve su navegación y contenido apropiado
+- La guía contextual se adapta al rol del usuario
+- Los formularios son específicos por rol
+
+[OPUS-MULTIROL-TEST-DONE]
