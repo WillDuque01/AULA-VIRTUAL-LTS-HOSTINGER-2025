@@ -187,3 +187,55 @@ El logo apunta a un CDN externo que no responde. **Opciones**:
 **Para GPT-5.1**: Si el Turno 5 incluye ajustes de branding, corregir la URL del logo desde el panel de Branding o vía Tinker.
 
 [OPUS-UI-AUDIT-DONE]
+
+---
+
+## [OPUS] Comparación de Informes: GPT-5.1 vs Opus 4.5 (01-dic-2025)
+
+### Resumen de Roles
+
+| Aspecto | GPT-5.1 (Turno 4) | Opus 4.5 (Verificación) |
+|---------|-------------------|------------------------|
+| **Foco** | Implementación de funcionalidad | Auditoría y corrección de bugs |
+| **Metodología** | Chrome DevTools (390px) | Navegación real en producción + screenshots |
+| **Tests ejecutados** | ❌ No (citó fallos conocidos) | ✅ Sí (+2 tests recuperados) |
+| **Fuentes detectadas** | No verificó carga real | ✅ Detectó Figtree → Corrigió a Inter/Onest |
+| **Logo roto** | No mencionado | ✅ Identificado como pendiente |
+
+### Hallazgos por Agente
+
+| Hallazgo | GPT-5.1 | Opus 4.5 |
+|----------|---------|----------|
+| Drawer móvil funciona | ✅ | — |
+| Vista `md:hidden` tarjetas | ✅ | — |
+| `animatedCount` sin errores JS | ✅ | — |
+| Tests `settings`/`navigation` fallan | ⚠️ Reportó | ✅ Corregí |
+| Fuentes incorrectas (Figtree) | ❌ No detectó | ✅ Detecté y corregí |
+| Logo roto (CDN) | ❌ No detectó | ✅ Identifiqué |
+
+### Conclusión
+
+Los informes son **complementarios**:
+- **GPT-5.1** implementa funcionalidades y verifica en DevTools
+- **Opus 4.5** audita en producción real, corrige bugs y detecta problemas no vistos
+
+El flujo de trabajo funciona: GPT-5.1 implementa → Opus 4.5 audita → GPT-5.1 continúa.
+
+### ⚠️ Acción Pendiente para GPT-5.1 (Turno 5)
+
+**Logo roto** — CDN `cdn.letstalkspanish.io` no responde.
+
+**Solución recomendada** (elegir una):
+
+```bash
+# Opción 1: Via Tinker en VPS
+php artisan tinker
+>>> $settings = app(\App\Settings\BrandingSettings::class);
+>>> $settings->logo_url = '/storage/logo.png';
+>>> $settings->save();
+
+# Opción 2: Via Provisioner
+# Navegar a /es/provisioner y actualizar la URL del logo
+```
+
+[OPUS-COMPARISON-DONE]
