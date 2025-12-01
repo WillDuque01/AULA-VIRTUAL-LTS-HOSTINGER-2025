@@ -7,19 +7,21 @@
 
     <div class="py-10">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @php($user = auth()->user())
+            @php
+                $user = auth()->user();
+            @endphp
             @if($user && $user->hasRole('Admin'))
-                <livewire:admin.dashboard />
+                <livewire:admin.dashboard lazy /> {{-- [AGENTE: GPT-5.1 CODEX] - Se carga bajo demanda para reducir el TTFB --}}
             @elseif($user && $user->hasAnyRole(['teacher_admin', 'Profesor']))
-                <livewire:professor.dashboard />
+                <livewire:professor.dashboard lazy /> {{-- [AGENTE: GPT-5.1 CODEX] - Dashboard docente pesado se carga en diferido --}}
                 <div class="mt-10 space-y-10">
-                    <livewire:professor.discord-practice-planner />
-                    <livewire:professor.practice-packages-manager />
+                    <livewire:professor.discord-practice-planner lazy /> {{-- [AGENTE: GPT-5.1 CODEX] - Planner se inicializa al entrar en viewport --}}
+                    <livewire:professor.practice-packages-manager lazy /> {{-- [AGENTE: GPT-5.1 CODEX] - Módulo de paquetes también usa lazy --}}
                 </div>
             @elseif($user && $user->hasRole('teacher'))
-                <livewire:teacher.dashboard />
+                <livewire:teacher.dashboard lazy /> {{-- [AGENTE: GPT-5.1 CODEX] - Dashboard teacher con carga diferida --}}
             @else
-                <livewire:student.dashboard />
+                <livewire:student.dashboard lazy /> {{-- [AGENTE: GPT-5.1 CODEX] - Student dashboard se renderiza cuando es necesario --}}
             @endif
         </div>
     </div>

@@ -1,7 +1,16 @@
 <div class="space-y-6">
     @php
-        $profGuides = $guideContext['cards'] ?? [];
-        $teacherPlaybook = $integrationPlaybook ?? [];
+        $profGuides = $guideContext['cards'] ?? []; // [AGENTE: GPT-5.1 CODEX] - Guías rápidas para el panel
+        $teacherPlaybook = $integrationPlaybook ?? []; // [AGENTE: GPT-5.1 CODEX] - Integraciones clave disponibles
+        $teacherUser = auth()->user(); // [AGENTE: GPT-5.1 CODEX] - Usuario autenticado para personalizar el saludo
+        $localizedNow = now()->setTimezone($teacherUser?->timezone ?? config('app.timezone')); // [AGENTE: GPT-5.1 CODEX] - Fecha/hora ajustada al timezone del docente
+        $currentHour = (int) $localizedNow->format('H'); // [AGENTE: GPT-5.1 CODEX] - Hora actual para elegir el saludo
+        $greetingLabel = match (true) { // [AGENTE: GPT-5.1 CODEX] - Selecciona saludo contextual
+            $currentHour < 12 => __('Buenos días'),
+            $currentHour < 19 => __('Buenas tardes'),
+            default => __('Buenas noches'),
+        }; // [AGENTE: GPT-5.1 CODEX] - Cierre del saludo contextual
+        $shortTeacherName = trim(explode(' ', $teacherUser?->name ?? __('Docente'))[0] ?? __('Docente')); // [AGENTE: GPT-5.1 CODEX] - Extrae primer nombre para el mensaje
     @endphp
     @if(!empty($profGuides))
         <x-help.contextual-panel
@@ -9,34 +18,56 @@
             :title="$guideContext['title'] ?? __('Guía rápida')"
             :subtitle="$guideContext['subtitle'] ?? null" />
     @endif
+    <div class="rounded-3xl border border-slate-100 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 shadow-2xl shadow-slate-900/30 text-white" {{-- // [AGENTE: GPT-5.1 CODEX] - Banner de bienvenida estilo UIX 2030 --}}
+         x-data="{ pulse: false }" x-init="setTimeout(() => { pulse = true }, 300)"> {{-- // [AGENTE: GPT-5.1 CODEX] - Microanimación inicial --}}
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between" {{-- // [AGENTE: GPT-5.1 CODEX] - Layout responsivo para el saludo --}}
+        >
+            <div>
+                <p class="text-xs uppercase tracking-[0.35em] text-slate-300">{{ __('Panel docente') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Meta etiqueta --}}
+                <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ $greetingLabel }}, {{ $shortTeacherName }} 👋</h1> {{-- // [AGENTE: GPT-5.1 CODEX] - Saludo personalizado --}}
+                <p class="mt-2 text-sm text-slate-200">{{ __('Este es tu resumen diario de estudiantes, prácticas y entregas destacados.') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Texto contextual --}}
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur" {{-- // [AGENTE: GPT-5.1 CODEX] - Indicador de hora local --}}
+            >
+                <p class="text-xs uppercase tracking-wide text-slate-200">{{ __('Hora local') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Etiqueta --}}
+                <p class="text-lg font-mono">{{ $localizedNow->format('H:i') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Hora en formato 24h --}}
+            </div>
+        </div>
+    </div>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Estudiantes activos (7d)</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ $metrics['active_students'] }}</p>
+        <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60" {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta métrica UIX 2030 --}}
+             x-data="animatedCount({{ (int) ($metrics['active_students'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Cuenta animada --}}
+            <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-slate-400">{{ __('Estudiantes activos (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Etiqueta --}}
+            <p class="mt-2 text-3xl font-semibold text-slate-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] - Valor animado --}}
         </div>
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Progreso nuevo (7d)</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ $metrics['recent_updates'] }}</p>
+        <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60" {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta métrica --}}
+             x-data="animatedCount({{ (int) ($metrics['recent_updates'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Animación --}}
+            <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-slate-400">{{ __('Progreso nuevo (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+            <p class="mt-2 text-3xl font-semibold text-slate-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
         </div>
-        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Completitud promedio</p>
-            <p class="text-3xl font-bold text-slate-900 mt-2">{{ $metrics['avg_completion'] }}%</p>
+        <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60" {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+             x-data="animatedCount({{ (int) ($metrics['avg_completion'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+            <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-slate-400">{{ __('Completitud promedio') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+            <p class="mt-2 text-3xl font-semibold text-slate-900"><span x-text="display"></span>%</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Valor con porcentaje --}}
         </div>
     </div>
 
     @if(!empty($submissionStats))
         <div class="grid gap-4 sm:grid-cols-3">
-            <div class="bg-white border border-amber-200 rounded-2xl p-4 shadow-sm">
-                <p class="text-xs uppercase font-semibold text-amber-600 tracking-wide">{{ __('Propuestas pendientes') }}</p>
-                <p class="text-3xl font-bold text-slate-900 mt-2">{{ $submissionStats['pending'] ?? 0 }}</p>
+            <div class="rounded-3xl border border-amber-200 bg-amber-50/70 p-4 shadow-lg shadow-amber-200/40" {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta estado pendientes --}}
+                 x-data="animatedCount({{ (int) ($submissionStats['pending'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-amber-700">{{ __('Propuestas pendientes') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="mt-2 text-3xl font-semibold text-amber-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
-            <div class="bg-white border border-emerald-200 rounded-2xl p-4 shadow-sm">
-                <p class="text-xs uppercase font-semibold text-emerald-600 tracking-wide">{{ __('Aprobadas (7d)') }}</p>
-                <p class="text-3xl font-bold text-slate-900 mt-2">{{ $submissionStats['approved_7d'] ?? 0 }}</p>
+            <div class="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-lg shadow-emerald-200/40" {{-- // [AGENTE: GPT-5.1 CODEX] - Aprobadas --}}
+                 x-data="animatedCount({{ (int) ($submissionStats['approved_7d'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-emerald-700">{{ __('Aprobadas (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="mt-2 text-3xl font-semibold text-emerald-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
-            <div class="bg-white border border-rose-200 rounded-2xl p-4 shadow-sm">
-                <p class="text-xs uppercase font-semibold text-rose-600 tracking-wide">{{ __('Rechazadas (7d)') }}</p>
-                <p class="text-3xl font-bold text-slate-900 mt-2">{{ $submissionStats['rejected_7d'] ?? 0 }}</p>
+            <div class="rounded-3xl border border-rose-200 bg-rose-50/70 p-4 shadow-lg shadow-rose-200/40" {{-- // [AGENTE: GPT-5.1 CODEX] - Rechazadas --}}
+                 x-data="animatedCount({{ (int) ($submissionStats['rejected_7d'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-rose-700">{{ __('Rechazadas (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="mt-2 text-3xl font-semibold text-rose-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
         </div>
 
@@ -159,17 +190,17 @@
             </a>
         </div>
         <div class="px-6 py-5 grid gap-4 sm:grid-cols-3">
-            <div>
-                <p class="text-xs uppercase text-slate-500">Próximas</p>
-                <p class="text-3xl font-bold text-slate-900">{{ $practiceStats['upcoming'] ?? 0 }}</p>
+            <div x-data="animatedCount({{ (int) ($practiceStats['upcoming'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta estadísticas próximas --}}
+                <p class="text-xs uppercase text-slate-500">{{ __('Próximas') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="text-3xl font-bold text-slate-900"><span x-text="display"></span></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
-            <div>
-                <p class="text-xs uppercase text-slate-500">Reservas</p>
-                <p class="text-3xl font-bold text-emerald-600">{{ $practiceStats['slots_filled'] ?? 0 }}</p>
+            <div x-data="animatedCount({{ (int) ($practiceStats['slots_filled'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Reservas --}}
+                <p class="text-xs uppercase text-slate-500">{{ __('Reservas') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="text-3xl font-bold text-emerald-600"><span x-text="display"></span></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
-            <div>
-                <p class="text-xs uppercase text-slate-500">Solicitudes</p>
-                <p class="text-3xl font-bold text-amber-500">{{ $practiceStats['requests'] ?? 0 }}</p>
+            <div x-data="animatedCount({{ (int) ($practiceStats['requests'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Solicitudes --}}
+                <p class="text-xs uppercase text-slate-500">{{ __('Solicitudes') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                <p class="text-3xl font-bold text-amber-500"><span x-text="display"></span></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
         </div>
         <div class="divide-y divide-slate-100">
@@ -384,14 +415,16 @@
                         <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
                             ✅ {{ __('dashboard.assignments.professor_approved_chip', ['count' => $assignment['approved'] ?? 0]) }}
                         </span>
-                        @php($profWhats = \App\Support\Integrations\WhatsAppLink::assignment(
-                            [
-                                'title' => $assignment['title'],
-                                'status' => ($assignment['pending'] ?? 0) > 0 ? 'pending' : 'approved',
-                            ],
-                            'professor.dashboard.assignments',
-                            ['assignment_id' => $assignment['id'] ?? null]
-                        ))
+                        @php
+                            $profWhats = \App\Support\Integrations\WhatsAppLink::assignment(
+                                [
+                                    'title' => $assignment['title'],
+                                    'status' => ($assignment['pending'] ?? 0) > 0 ? 'pending' : 'approved',
+                                ],
+                                'professor.dashboard.assignments',
+                                ['assignment_id' => $assignment['id'] ?? null]
+                            );
+                        @endphp
                         @if($profWhats)
                             <a href="{{ $profWhats }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600 hover:border-slate-400">
                                 {{ __('whatsapp.assignment.followup_cta') }} ↗
@@ -407,3 +440,42 @@
         </div>
     </div>
 </div>
+
+@once
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => { // [AGENTE: GPT-5.1 CODEX] - Inicializa animatedCount cuando Alpine está listo
+                if (Alpine && Alpine.store && Alpine.store('animatedCountReady')) { // [AGENTE: GPT-5.1 CODEX] - Evita registrar múltiples veces
+                    return; // [AGENTE: GPT-5.1 CODEX] - Salida temprana si ya existe
+                }
+
+                Alpine.data('animatedCount', (targetValue = 0) => ({ // [AGENTE: GPT-5.1 CODEX] - Define el componente Alpine
+                    target: Number(targetValue) || 0, // [AGENTE: GPT-5.1 CODEX] - Valor objetivo numérico
+                    display: 0, // [AGENTE: GPT-5.1 CODEX] - Valor mostrado en UI
+                    started: false, // [AGENTE: GPT-5.1 CODEX] - Flag para evitar reinicios
+                    start() { // [AGENTE: GPT-5.1 CODEX] - Método que dispara la animación
+                        if (this.started) { // [AGENTE: GPT-5.1 CODEX] - Previene múltiples ejecuciones
+                            return; // [AGENTE: GPT-5.1 CODEX] - Salida si ya corrió
+                        }
+
+                        this.started = true; // [AGENTE: GPT-5.1 CODEX] - Marca la animación como iniciada
+                        const totalSteps = Math.max(12, Math.min(60, Math.round(this.target / 2) || 18)); // [AGENTE: GPT-5.1 CODEX] - Ajusta suavidad
+                        let current = 0; // [AGENTE: GPT-5.1 CODEX] - Contador interno
+                        const tick = () => { // [AGENTE: GPT-5.1 CODEX] - Función recursiva para `requestAnimationFrame`
+                            current += 1; // [AGENTE: GPT-5.1 CODEX] - Incrementa el paso
+                            this.display = Math.round((this.target / totalSteps) * current); // [AGENTE: GPT-5.1 CODEX] - Actualiza valor mostrado
+                            if (current < totalSteps) { // [AGENTE: GPT-5.1 CODEX] - Continua animación
+                                requestAnimationFrame(tick); // [AGENTE: GPT-5.1 CODEX] - Siguiente frame
+                            } else { // [AGENTE: GPT-5.1 CODEX] - Último paso
+                                this.display = this.target; // [AGENTE: GPT-5.1 CODEX] - Ajuste final exacto
+                            }
+                        }; // [AGENTE: GPT-5.1 CODEX] - Cierre tick
+                        requestAnimationFrame(tick); // [AGENTE: GPT-5.1 CODEX] - Lanza la animación
+                    }, // [AGENTE: GPT-5.1 CODEX] - Fin del método start
+                })); // [AGENTE: GPT-5.1 CODEX] - Cierre del componente Alpine
+
+                Alpine.store('animatedCountReady', true); // [AGENTE: GPT-5.1 CODEX] - Flag global para evitar duplicados
+            }); // [AGENTE: GPT-5.1 CODEX] - Cierre del listener
+        </script>
+    @endpush
+@endonce

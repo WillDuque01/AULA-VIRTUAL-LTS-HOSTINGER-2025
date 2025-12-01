@@ -1,9 +1,31 @@
-<div class="space-y-6">
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
+<div class="space-y-6" x-data="{ plannerDrawer: false }"> {{-- // [AGENTE: GPT-5.1 CODEX] - Controla el drawer móvil del formulario --}}
+    <div class="rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-lg shadow-slate-300/40 lg:hidden flex items-center justify-between"> {{-- // [AGENTE: GPT-5.1 CODEX] - CTA móvil para abrir el drawer --}}
+        <div>
+            <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-400">{{ __('Gestión rápida') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+            <p class="text-sm font-semibold text-slate-800">{{ __('Programa una nueva práctica') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+        </div>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/60" {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                x-on:click="plannerDrawer = true">
+            {{ __('Abrir formulario') }} ☰ {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+        </button>
+    </div>
+    <div x-cloak x-show="plannerDrawer" x-transition.opacity class="fixed inset-0 z-40 bg-slate-900/60 lg:hidden" x-on:click="plannerDrawer = false"></div> {{-- // [AGENTE: GPT-5.1 CODEX] - Backdrop móvil --}}
+    <div
+        x-cloak
+        x-bind:class="plannerDrawer ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-full pointer-events-none'"
+        class="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-y-auto rounded-t-3xl border border-slate-200 bg-white/95 p-6 shadow-2xl shadow-slate-900/20 transition duration-300 ease-out lg:static lg:z-auto lg:max-h-none lg:rounded-2xl lg:border-slate-200 lg:bg-white lg:p-6 lg:shadow-sm lg:opacity-100 lg:translate-y-0 lg:pointer-events-auto space-y-6"> {{-- // [AGENTE: GPT-5.1 CODEX] - Drawer móvil + tarjeta desktop --}}
         <div class="flex flex-col gap-1">
             <p class="text-xs uppercase text-slate-500 tracking-wide">Programar práctica</p>
             <h3 class="text-lg font-semibold text-slate-900">Sesiones 1:1 / Cohorte en Discord</h3>
             <p class="text-xs text-slate-500">Configura un slot y luego ajusta detalles desde el calendario semanal.</p>
+        </div>
+        <div class="flex items-center justify-end lg:hidden"> {{-- // [AGENTE: GPT-5.1 CODEX] - Contenedor para el botón de cierre del drawer --}}
+            <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-400"
+                    x-on:click="plannerDrawer = false">
+                {{ __('Cerrar') }} ✕ {{-- // [AGENTE: GPT-5.1 CODEX] - Botón para cerrar el drawer en móvil --}}
+            </button>
         </div>
         @php
             $weekdayOptions = [
@@ -67,7 +89,20 @@
                     @foreach($cohortTemplates as $templateKey => $preset)
                         @php
                             $slotSummary = collect($preset['slots'] ?? [])
-                                ->map(fn ($slot) => ($weekdayOptions[$slot['weekday']] ?? ucfirst($slot['weekday'])) . ' · ' . $slot['time'])
+                                ->map(function ($slot) use ($weekdayOptions) {
+                                    $weekdayKey = strtolower((string) ($slot['weekday'] ?? ''));
+                                    $weekdayLabel = $weekdayKey
+                                        ? ($weekdayOptions[$weekdayKey] ?? ucfirst($weekdayKey))
+                                        : __('Sin día');
+                                    $timeLabel = $slot['time'] ?? '--:--';
+
+                                    if (! $weekdayKey && $timeLabel === '--:--') {
+                                        return null;
+                                    }
+
+                                    return "{$weekdayLabel} · {$timeLabel}";
+                                })
+                                ->filter()
                                 ->implode(', ');
                             $source = $preset['source'] ?? 'config';
                         @endphp
@@ -341,10 +376,54 @@
     </div>
 
     @php
-        $weekStart = \Illuminate\Support\Carbon::parse($calendarRangeStart);
-        $weekEnd = \Illuminate\Support\Carbon::parse($calendarRangeEnd);
-        $practicesBySlot = $practices->groupBy(fn ($practice) => optional($practice->start_at)->format('Y-m-d H:i'));
+        $weekStart = \Illuminate\Support\Carbon::parse($calendarRangeStart); // [AGENTE: GPT-5.1 CODEX] - Inicio visible de semana
+        $weekEnd = \Illuminate\Support\Carbon::parse($calendarRangeEnd); // [AGENTE: GPT-5.1 CODEX] - Fin visible de semana
+        $practicesBySlot = $practices->groupBy(fn ($practice) => optional($practice->start_at)->format('Y-m-d H:i')); // [AGENTE: GPT-5.1 CODEX] - Agrupa por slot exacto
+        $practicesByDay = $practices->groupBy(fn ($practice) => optional($practice->start_at)->toDateString()); // [AGENTE: GPT-5.1 CODEX] - Agrupa por día para la vista móvil
     @endphp
+
+    <div class="md:hidden space-y-4"> {{-- // [AGENTE: GPT-5.1 CODEX] - Vista en tarjetas para móviles --}}
+        @foreach($this->calendarDays as $day) {{-- // [AGENTE: GPT-5.1 CODEX] - Recorre cada día de la semana --}}
+            @php
+                $dayKey = $day['date']->toDateString(); // [AGENTE: GPT-5.1 CODEX] - Clave del día
+                $dayPractices = collect($practicesByDay[$dayKey] ?? [])->sortBy(fn ($practice) => optional($practice->start_at)->timestamp ?? 0); // [AGENTE: GPT-5.1 CODEX] - Ordena prácticas por hora
+            @endphp
+            <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/50"> {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta de día --}}
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-semibold text-slate-900">{{ $day['date']->translatedFormat('l d M') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                    <span class="text-[11px] font-semibold text-slate-400">{{ trans_choice('{0}Sin slots|{1}:count slot|[2,*]:count slots', $dayPractices->count(), ['count' => $dayPractices->count()]) }}</span> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                </div>
+                <div class="mt-3 space-y-3">
+                    @forelse($dayPractices as $practice) {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                        <div class="rounded-2xl border border-slate-100 bg-white/90 p-3 text-sm text-slate-600"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                            <div class="flex items-center justify-between">
+                                <p class="font-semibold text-slate-900">{{ $practice->title }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                                <span class="text-[11px] font-semibold text-slate-400">{{ optional($practice->start_at)->format('H:i') }}</span> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                            </div>
+                            <p class="text-[11px] text-slate-500">
+                                {{ data_get($practice->lesson?->chapter?->course, 'slug') }} · {{ data_get($practice->lesson?->config, 'title', __('Lección')) }}
+                            </p>
+                            <p class="mt-1 text-[11px] text-slate-400">{{ __('Cupos') }} {{ $practice->reservations->count() }} / {{ $practice->capacity }} · {{ ucfirst($practice->type) }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                            <div class="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
+                                <button type="button"
+                                        wire:click="duplicatePractice({{ $practice->id }}, 1)"
+                                        class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-0.5 text-slate-600 hover:border-indigo-200 hover:text-indigo-700">
+                                    ⤴︎ +1 día {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                                </button>
+                                <button type="button"
+                                        wire:click="duplicatePractice({{ $practice->id }}, 7)"
+                                        class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-0.5 text-slate-600 hover:border-indigo-200 hover:text-indigo-700">
+                                    ⤴︎ +1 semana {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-xs text-slate-400">{{ __('No hay sesiones programadas para este día.') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                    @endforelse
+                </div>
+            </div>
+        @endforeach
+    </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -390,7 +469,7 @@
             </div>
         </div>
 
-        <div class="px-4 pb-6 overflow-x-auto">
+        <div class="hidden px-4 pb-6 overflow-x-auto md:block"> {{-- // [AGENTE: GPT-5.1 CODEX] - El calendario tipo grilla solo se muestra en desktop --}}
             <div
                 x-data="{
                     dragged: null,
@@ -419,7 +498,9 @@
                         @foreach($this->calendarDays as $day)
                             <div class="space-y-4">
                                 @foreach($calendarHours as $hour)
-                                    @php($slotKey = $day['date']->format('Y-m-d').' '.$hour)
+                                @php
+                                    $slotKey = $day['date']->format('Y-m-d').' '.$hour;
+                                @endphp
                                     <div
                                         class="relative h-20 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-2"
                                         @dragover.prevent
