@@ -1,16 +1,11 @@
 import './bootstrap';
-
-import Alpine from 'alpinejs';
 import registerCelebrations from './modules/celebrations.js';
 import { animatedCount } from './animations.js'; // [AGENTE: GPT-5.1 CODEX] - Extraemos la lógica compartida de contadores
 
-window.Alpine = Alpine;
-
-Alpine.data('animatedCount', animatedCount); // [AGENTE: GPT-5.1 CODEX] - Registra el helper globalmente
-
-registerCelebrations();
-
-Alpine.start();
+document.addEventListener('alpine:init', () => { // [AGENTE: GPT-5.1 CODEX] - Usa la instancia Alpine que provee Livewire
+    window.Alpine?.data('animatedCount', animatedCount);
+    registerCelebrations();
+});
 
 window.addEventListener('notify', (event) => { // [AGENTE: GPT-5.1 CODEX] - Listener global para los toasts UIX 2030
     const { message, style = 'success' } = event.detail ?? {};

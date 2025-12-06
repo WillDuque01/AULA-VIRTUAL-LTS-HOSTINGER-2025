@@ -14,7 +14,7 @@
     {{ $attributes->class('relative') }}
     x-data="{
         open: false,
-        selected: @if($wireModel) @entangle($wireModel) @else null @endif,
+        selected: @if($wireModel) @entangle($wireModel).live @else null @endif,
         options: @js($flatOptions),
         placeholder: '{{ $placeholder }}',
         selectedLabel() {
@@ -24,8 +24,9 @@
             this.selected = value;
             this.open = false;
         }
-    }" {{-- // [AGENTE: GPT-5.1 CODEX] - Estado Alpine para manejar el dropdown --}}
+    }"
     x-on:keydown.escape.prevent.stop="open = false"
+    x-cloak
 >
     <button
         type="button"
