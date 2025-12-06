@@ -484,7 +484,7 @@
     "El Playbook te ayuda a validar credenciales antes de cada deploy.": "The Playbook helps validate credentials before each deploy.",
     "Los paneles inferiores agrupan WhatsApp, XP, certificados y outbox.": "The lower panels group WhatsApp, XP, certificates and outbox.",
     "Completa tu perfil": "Complete your profile",
-    "Tu perfil está completado al": "Your profile is",
+    "Tu perfil está completado al :percent%": "Your profile is :percent% complete",
     "Añade tus datos para personalizar recomendaciones, certificados y recordatorios.": "Add your details to personalize recommendations, certificates and reminders.",
     "Datos básicos": "Basic data",
     "Nombres y apellidos tal como aparecerán en certificados.": "Names as they will appear on certificates.",
