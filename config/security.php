@@ -13,7 +13,7 @@ return [
             "img-src 'self' data: https://images.unsplash.com https://i.vimeocdn.com https://img.youtube.com;",
             "font-src 'self' https://fonts.bunny.net;",
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net;",
-            "script-src 'self' 'unsafe-inline';",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval';", // [AGENTE: OPUS 4.5] - Fix: Alpine.js requiere unsafe-eval
             "frame-src 'self' https://player.vimeo.com https://www.youtube-nocookie.com https://iframe.mediadelivery.net https://stream.cloudflare.com https://*.cloudflarestream.com;",
             "connect-src 'self' https://fonts.bunny.net https://player.vimeo.com https://*.pusher.com wss://*.pusher.com https://stream.cloudflare.com https://*.cloudflarestream.com;",
             "media-src 'self' https://stream.cloudflare.com https://*.cloudflarestream.com;",
