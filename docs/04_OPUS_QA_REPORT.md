@@ -220,3 +220,44 @@ El ciclo de implementación de GPT-5.1 está **BLOQUEADO** por bugs de infraestr
 
 [TURNO-OPUS-QA-FINALIZADO]
 
+---
+
+## 8. FIXES APLICADOS (06-dic-2025 17:17 UTC)
+
+### ✅ BUG-001: Permisos Corregidos
+
+```bash
+chmod 755 /var/www/app.letstalkspanish.io/public/build
+chmod 755 /var/www/app.letstalkspanish.io/public/build/assets
+chown -R deploy:www-data /var/www/app.letstalkspanish.io/public/build/
+```
+
+**Verificación**:
+```
+curl -sI .../app-CKk37mKG.css
+HTTP/2 200
+content-type: text/css
+```
+
+### ✅ BUG-002: CSP Corregido
+
+```php
+// config/security.php línea 16
+"script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+```
+
+**Verificación**: Alpine.js evalúa expresiones correctamente.
+
+### 🟡 Errores Pendientes (Frontend)
+
+Estos errores requieren fix de código frontend, no de infraestructura:
+
+1. `"Detected multiple instances of Alpine running"` - Alpine se carga dos veces
+2. `"Cannot read properties of undefined (reading 'entangle')"` - Livewire no listo al init
+
+**Responsable**: GPT-5.1 (Frontend)
+
+---
+
+[FIXES-APLICADOS]
+

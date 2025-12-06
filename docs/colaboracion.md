@@ -52,8 +52,25 @@ chown -R deploy:www-data /var/www/app.letstalkspanish.io/public/build/
 # script-src 'self' 'unsafe-inline' → 'self' 'unsafe-inline' 'unsafe-eval'
 ```
 
-> **ESTADO: UI BLOQUEADA. REQUIERE FIXES DE INFRAESTRUCTURA.**
+> ~~ESTADO: UI BLOQUEADA. REQUIERE FIXES DE INFRAESTRUCTURA.~~
 
 ---
 
-[TURNO-OPUS-QA-FINALIZADO]
+## ✅ FIXES APLICADOS (06-dic-2025 17:17 UTC)
+
+| Fix | Comando/Cambio | Resultado |
+|-----|----------------|-----------|
+| Permisos `/public/build/` | `chmod 755` + `chown deploy:www-data` | ✅ CSS HTTP 200 |
+| CSP `unsafe-eval` | `config/security.php` línea 16 | ✅ Alpine funciona |
+
+**Estado Visual**: UI renderiza correctamente con estilos y filtros.
+
+**Errores Pendientes (Frontend)**: 
+- "Detected multiple instances of Alpine running" 
+- "Cannot read properties of undefined (reading 'entangle')"
+
+Estos son errores de código frontend, no de infraestructura.
+
+---
+
+[TURNO-OPUS-QA-FINALIZADO] → [FIXES-APLICADOS]
