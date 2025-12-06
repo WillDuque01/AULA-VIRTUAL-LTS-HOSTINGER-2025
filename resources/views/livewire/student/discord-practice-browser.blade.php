@@ -7,7 +7,10 @@
         </div>
         <button type="button"
                 wire:click="requestSlot"
-                class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-blue-400 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200">
+                wire:loading.attr="disabled"
+                wire:target="requestSlot"
+                class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-blue-400 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:opacity-60">
+            <span wire:loading wire:target="requestSlot" class="animate-spin text-xs">⏳</span>
             {{ __('Pedir más fechas') }}
         </button>
     </div>
@@ -64,28 +67,32 @@
                         {{ __('Filtros') }} <span x-text="filtersOpen ? '✕' : '☰'"></span>
                     </button>
                 </div>
-                <div x-cloak x-show="filtersOpen" class="space-y-1">
-                    <select wire:model="selectedLesson" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">{{ __('Todas las lecciones con práctica') }}</option>
-                        @foreach($availableLessons as $lesson)
-                            <option value="{{ $lesson->id }}">
-                                {{ data_get($lesson->chapter?->course, 'slug') }} · {{ data_get($lesson->config, 'title', __('Lesson')) }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div x-cloak x-show="filtersOpen" class="space-y-2">
+                    <x-ui.select-grouped
+                        wire:model="selectedLesson"
+                        :groups="$lessonGroups"
+                        :placeholder="__('Todas las lecciones con práctica')"
+                        class="w-full"
+                    /> {{-- // [AGENTE: GPT-5.1 CODEX] - Selector agrupado por curso --}}
                     <div class="flex items-end">
                         <button type="button"
                                 wire:click="resetFilters"
-                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700">
+                                wire:loading.attr="disabled"
+                                wire:target="resetFilters"
+                                class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-60">
+                            <span wire:loading wire:target="resetFilters" class="animate-spin text-xs">⏳</span>
                             {{ __('Limpiar filtros') }}
                         </button>
                     </div>
+                    @error('request')
+                        <p class="text-[11px] font-semibold text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
         </div>
         <div class="grid gap-4 lg:grid-cols-3 md:grid-cols-2">
             @forelse($practices as $practice)
-                <div class="rounded-2xl border border-slate-100 bg-white/90 p-4 shadow hover:shadow-lg transition">
+                <div class="rounded-2xl border border-slate-100 bg-white/90 p-4 shadow hover:shadow-lg transition" wire:key="practice-{{ $practice['id'] }}">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-semibold text-slate-900">{{ $practice['title'] }}</p>
@@ -118,7 +125,10 @@
                                 @if($practice['can_cancel'])
                                     <button type="button"
                                             wire:click="cancelReservation({{ $practice['id'] }})"
-                                            class="inline-flex items-center gap-2 rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:border-rose-300">
+                                            wire:loading.attr="disabled"
+                                            wire:target="cancelReservation({{ $practice['id'] }})"
+                                            class="inline-flex items-center gap-2 rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:border-rose-300 disabled:opacity-60">
+                                        <span wire:loading wire:target="cancelReservation({{ $practice['id'] }})" class="animate-spin text-xs">⏳</span>
                                         {{ __('Cancelar reserva') }}
                                     </button>
                                 @endif
@@ -154,7 +164,10 @@
                         @else
                             <button type="button"
                                     wire:click="requestSlot({{ $practice['lesson_id'] }})"
-                                    class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-blue-400 hover:text-blue-600">
+                                    wire:loading.attr="disabled"
+                                    wire:target="requestSlot({{ $practice['lesson_id'] }})"
+                                    class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-blue-400 hover:text-blue-600 disabled:opacity-60">
+                                <span wire:loading wire:target="requestSlot({{ $practice['lesson_id'] }})" class="animate-spin text-xs">⏳</span>
                                 {{ __('Lista de espera') }}
                             </button>
                         @endif

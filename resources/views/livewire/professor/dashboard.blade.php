@@ -36,17 +36,17 @@
     </div>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60" {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta métrica UIX 2030 --}}
-             x-data="animatedCount({{ (int) ($metrics['active_students'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Cuenta animada --}}
+             x-data="animatedCount({{ (int) ($metrics['active_students'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] - Cuenta animada --}}
             <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-slate-400">{{ __('Estudiantes activos (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Etiqueta --}}
             <p class="mt-2 text-3xl font-semibold text-slate-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] - Valor animado --}}
         </div>
         <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60" {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta métrica --}}
-             x-data="animatedCount({{ (int) ($metrics['recent_updates'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Animación --}}
+             x-data="animatedCount({{ (int) ($metrics['recent_updates'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] - Animación --}}
             <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-slate-400">{{ __('Progreso nuevo (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             <p class="mt-2 text-3xl font-semibold text-slate-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
         </div>
         <div class="rounded-3xl border border-slate-100 bg-white/85 p-4 shadow-xl shadow-slate-200/60" {{-- // [AGENTE: GPT-5.1 CODEX] --}}
-             x-data="animatedCount({{ (int) ($metrics['avg_completion'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+             x-data="animatedCount({{ (int) ($metrics['avg_completion'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-slate-400">{{ __('Completitud promedio') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             <p class="mt-2 text-3xl font-semibold text-slate-900"><span x-text="display"></span>%</p> {{-- // [AGENTE: GPT-5.1 CODEX] - Valor con porcentaje --}}
         </div>
@@ -55,17 +55,17 @@
     @if(!empty($submissionStats))
         <div class="grid gap-4 sm:grid-cols-3">
             <div class="rounded-3xl border border-amber-200 bg-amber-50/70 p-4 shadow-lg shadow-amber-200/40" {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta estado pendientes --}}
-                 x-data="animatedCount({{ (int) ($submissionStats['pending'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                 x-data="animatedCount({{ (int) ($submissionStats['pending'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-amber-700">{{ __('Propuestas pendientes') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="mt-2 text-3xl font-semibold text-amber-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
             <div class="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-lg shadow-emerald-200/40" {{-- // [AGENTE: GPT-5.1 CODEX] - Aprobadas --}}
-                 x-data="animatedCount({{ (int) ($submissionStats['approved_7d'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                 x-data="animatedCount({{ (int) ($submissionStats['approved_7d'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-emerald-700">{{ __('Aprobadas (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="mt-2 text-3xl font-semibold text-emerald-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
             <div class="rounded-3xl border border-rose-200 bg-rose-50/70 p-4 shadow-lg shadow-rose-200/40" {{-- // [AGENTE: GPT-5.1 CODEX] - Rechazadas --}}
-                 x-data="animatedCount({{ (int) ($submissionStats['rejected_7d'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
+                 x-data="animatedCount({{ (int) ($submissionStats['rejected_7d'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="text-[11px] uppercase font-semibold tracking-[0.35em] text-rose-700">{{ __('Rechazadas (7d)') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="mt-2 text-3xl font-semibold text-rose-900" x-text="display"></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
@@ -190,15 +190,15 @@
             </a>
         </div>
         <div class="px-6 py-5 grid gap-4 sm:grid-cols-3">
-            <div x-data="animatedCount({{ (int) ($practiceStats['upcoming'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta estadísticas próximas --}}
+            <div x-data="animatedCount({{ (int) ($practiceStats['upcoming'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] - Tarjeta estadísticas próximas --}}
                 <p class="text-xs uppercase text-slate-500">{{ __('Próximas') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="text-3xl font-bold text-slate-900"><span x-text="display"></span></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
-            <div x-data="animatedCount({{ (int) ($practiceStats['slots_filled'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Reservas --}}
+            <div x-data="animatedCount({{ (int) ($practiceStats['slots_filled'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] - Reservas --}}
                 <p class="text-xs uppercase text-slate-500">{{ __('Reservas') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="text-3xl font-bold text-emerald-600"><span x-text="display"></span></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
-            <div x-data="animatedCount({{ (int) ($practiceStats['requests'] ?? 0) }})" x-init="start()"> {{-- // [AGENTE: GPT-5.1 CODEX] - Solicitudes --}}
+            <div x-data="animatedCount({{ (int) ($practiceStats['requests'] ?? 0) }})"> {{-- // [AGENTE: GPT-5.1 CODEX] - Solicitudes --}}
                 <p class="text-xs uppercase text-slate-500">{{ __('Solicitudes') }}</p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
                 <p class="text-3xl font-bold text-amber-500"><span x-text="display"></span></p> {{-- // [AGENTE: GPT-5.1 CODEX] --}}
             </div>
@@ -441,41 +441,4 @@
     </div>
 </div>
 
-@once
-    @push('scripts')
-        <script>
-            document.addEventListener('alpine:init', () => { // [AGENTE: GPT-5.1 CODEX] - Inicializa animatedCount cuando Alpine está listo
-                if (Alpine && Alpine.store && Alpine.store('animatedCountReady')) { // [AGENTE: GPT-5.1 CODEX] - Evita registrar múltiples veces
-                    return; // [AGENTE: GPT-5.1 CODEX] - Salida temprana si ya existe
-                }
 
-                Alpine.data('animatedCount', (targetValue = 0) => ({ // [AGENTE: GPT-5.1 CODEX] - Define el componente Alpine
-                    target: Number(targetValue) || 0, // [AGENTE: GPT-5.1 CODEX] - Valor objetivo numérico
-                    display: 0, // [AGENTE: GPT-5.1 CODEX] - Valor mostrado en UI
-                    started: false, // [AGENTE: GPT-5.1 CODEX] - Flag para evitar reinicios
-                    start() { // [AGENTE: GPT-5.1 CODEX] - Método que dispara la animación
-                        if (this.started) { // [AGENTE: GPT-5.1 CODEX] - Previene múltiples ejecuciones
-                            return; // [AGENTE: GPT-5.1 CODEX] - Salida si ya corrió
-                        }
-
-                        this.started = true; // [AGENTE: GPT-5.1 CODEX] - Marca la animación como iniciada
-                        const totalSteps = Math.max(12, Math.min(60, Math.round(this.target / 2) || 18)); // [AGENTE: GPT-5.1 CODEX] - Ajusta suavidad
-                        let current = 0; // [AGENTE: GPT-5.1 CODEX] - Contador interno
-                        const tick = () => { // [AGENTE: GPT-5.1 CODEX] - Función recursiva para `requestAnimationFrame`
-                            current += 1; // [AGENTE: GPT-5.1 CODEX] - Incrementa el paso
-                            this.display = Math.round((this.target / totalSteps) * current); // [AGENTE: GPT-5.1 CODEX] - Actualiza valor mostrado
-                            if (current < totalSteps) { // [AGENTE: GPT-5.1 CODEX] - Continua animación
-                                requestAnimationFrame(tick); // [AGENTE: GPT-5.1 CODEX] - Siguiente frame
-                            } else { // [AGENTE: GPT-5.1 CODEX] - Último paso
-                                this.display = this.target; // [AGENTE: GPT-5.1 CODEX] - Ajuste final exacto
-                            }
-                        }; // [AGENTE: GPT-5.1 CODEX] - Cierre tick
-                        requestAnimationFrame(tick); // [AGENTE: GPT-5.1 CODEX] - Lanza la animación
-                    }, // [AGENTE: GPT-5.1 CODEX] - Fin del método start
-                })); // [AGENTE: GPT-5.1 CODEX] - Cierre del componente Alpine
-
-                Alpine.store('animatedCountReady', true); // [AGENTE: GPT-5.1 CODEX] - Flag global para evitar duplicados
-            }); // [AGENTE: GPT-5.1 CODEX] - Cierre del listener
-        </script>
-    @endpush
-@endonce

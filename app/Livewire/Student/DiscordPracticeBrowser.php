@@ -25,6 +25,8 @@ class DiscordPracticeBrowser extends Component
     public SupportCollection $availableLessons;
     public SupportCollection $practices;
 
+    public array $lessonGroups = []; // [AGENTE: GPT-5.1 CODEX] - Fuente para el selector agrupado
+
     public ?int $selectedLesson = null;
 
     public array $statusMessages = [];
@@ -33,7 +35,7 @@ class DiscordPracticeBrowser extends Component
 
     public ?string $packNotificationId = null;
 
-    public string $packsUrl = '';
+    public string $packsUrl = ''; // [AGENTE: GPT-5.1 CODEX] - URL base hacia el catálogo de packs
 
     public function mount(): void
     {
@@ -48,6 +50,8 @@ class DiscordPracticeBrowser extends Component
             ->filter()
             ->unique('id')
             ->values();
+
+        $this->lessonGroups = $this->formatLessonGroups(); // [AGENTE: GPT-5.1 CODEX] - Alimenta el componente agrupado
 
         $this->loadPractices();
         $this->loadPackReminder();
@@ -67,13 +71,17 @@ class DiscordPracticeBrowser extends Component
             ->findOrFail($practiceId);
 
         if ($practice->start_at->isPast() || $practice->status !== 'scheduled') {
-            $this->addError('reservation', __('Esta práctica ya no está disponible.'));
+            $message = __('Esta práctica ya no está disponible.');
+            $this->addError('reservation', $message);
+            $this->notify($message, 'error'); // [AGENTE: GPT-5.1 CODEX] - Feedback inmediato
 
             return;
         }
 
         if ($practice->confirmed_reservations_count >= $practice->capacity) {
-            $this->addError('reservation', __('No hay cupos disponibles.'));
+            $message = __('No hay cupos disponibles.');
+            $this->addError('reservation', $message);
+            $this->notify($message, 'error'); // [AGENTE: GPT-5.1 CODEX] - Comunica el bloqueo
 
             return;
         }
@@ -83,7 +91,9 @@ class DiscordPracticeBrowser extends Component
             $order = $this->resolveEligibleOrder($user->id, $practice);
 
             if (! $order) {
-                $this->addError('reservation', __('Necesitas un pack activo para reservar.'));
+                $message = __('Necesitas un pack activo para reservar.');
+                $this->addError('reservation', $message);
+                $this->notify($message, 'error'); // [AGENTE: GPT-5.1 CODEX] - Explica el requisito
 
                 return;
             }
@@ -116,6 +126,7 @@ class DiscordPracticeBrowser extends Component
         $this->loadPractices();
         $this->dismissPackReminder();
         $this->dispatch('practice-reserved');
+        $this->notify(__('Cupo reservado correctamente'), 'success'); // [AGENTE: GPT-5.1 CODEX] - Confirma la acción
     }
 
     public function cancelReservation(int $practiceId, PracticePackageOrderService $orderService): void
@@ -129,13 +140,17 @@ class DiscordPracticeBrowser extends Component
         $reservation = $practice->reservations->first();
 
         if (! $reservation || $reservation->status === 'cancelled') {
-            $this->addError('reservation', __('No tienes una reserva activa para este slot.'));
+            $message = __('No tienes una reserva activa para este slot.');
+            $this->addError('reservation', $message);
+            $this->notify($message, 'error'); // [AGENTE: GPT-5.1 CODEX] - Aviso cuando no existe reserva
 
             return;
         }
 
         if ($practice->start_at->isPast()) {
-            $this->addError('reservation', __('No puedes cancelar una sesión que ya inició.'));
+            $message = __('No puedes cancelar una sesión que ya inició.');
+            $this->addError('reservation', $message);
+            $this->notify($message, 'error'); // [AGENTE: GPT-5.1 CODEX] - Bloqueo por horario
 
             return;
         }
@@ -152,6 +167,7 @@ class DiscordPracticeBrowser extends Component
         $this->statusMessages[$practice->id] = __('Reserva cancelada');
         $this->loadPractices();
         $this->dispatch('practice-cancelled');
+        $this->notify(__('Reserva cancelada correctamente'), 'info'); // [AGENTE: GPT-5.1 CODEX] - Confirma la cancelación
     }
 
     private function resolveEligibleOrder(int $userId, DiscordPractice $practice): ?PracticePackageOrder
@@ -176,7 +192,9 @@ class DiscordPracticeBrowser extends Component
     {
         $lesson = $lessonId ?? $this->selectedLesson;
         if (! $lesson) {
-            $this->addError('request', __('Selecciona una lección para solicitar sesión.'));
+            $message = __('Selecciona una lección para solicitar sesión.');
+            $this->addError('request', $message);
+            $this->notify($message, 'error'); // [AGENTE: GPT-5.1 CODEX] - Indica que falta elegir lección
 
             return;
         }
@@ -189,6 +207,14 @@ class DiscordPracticeBrowser extends Component
 
         $this->dispatch('practice-requested');
         $this->maybeEscalateRequests($lesson);
+        $this->notify(__('Solicitud enviada. Te avisaremos cuando se abra un cupo.'), 'success'); // [AGENTE: GPT-5.1 CODEX] - Confirma la solicitud
+    }
+
+    public function resetFilters(): void
+    {
+        $this->selectedLesson = null; // [AGENTE: GPT-5.1 CODEX] - Limpia la selección activa
+        $this->loadPractices(); // [AGENTE: GPT-5.1 CODEX] - Refresca la lista completa
+        $this->notify(__('Filtros restaurados'), 'info'); // [AGENTE: GPT-5.1 CODEX] - Comunica la acción al estudiante
     }
 
     public function dismissPackReminder(): void
@@ -370,6 +396,32 @@ class DiscordPracticeBrowser extends Component
         return $base.$query.'#practice-packs';
     }
 
+    private function formatLessonGroups(): array
+    {
+        return $this->availableLessons
+            ->filter()
+            ->groupBy(function (Lesson $lesson) {
+                return $lesson->chapter?->course?->slug ?? __('Curso sin asignar');
+            })
+            ->map(function (SupportCollection $lessons) {
+                return $lessons
+                    ->sortBy('position')
+                    ->mapWithKeys(function (Lesson $lesson) {
+                        $course = $lesson->chapter?->course?->slug ?? __('Curso');
+                        $title = data_get($lesson->config, 'title', __('Lesson'));
+
+                        return [$lesson->id => $course.' · '.$title];
+                    })
+                    ->toArray();
+            })
+            ->toArray(); // [AGENTE: GPT-5.1 CODEX] - Estructura id => label agrupada por curso
+    }
+
+    private function notify(string $message, string $style = 'success'): void
+    {
+        $this->dispatch('notify', message: $message, style: $style); // [AGENTE: GPT-5.1 CODEX] - Helper para los toasts globales
+    }
+
     public function render()
     {
         return view('livewire.student.discord-practice-browser', [
@@ -377,5 +429,7 @@ class DiscordPracticeBrowser extends Component
         ]);
     }
 }
+
+
 
 

@@ -44,7 +44,6 @@
             <p class="text-xs uppercase font-semibold text-blue-500 tracking-wide">Capítulos</p>
             <p class="mt-1 text-2xl font-bold text-blue-700"
                x-data="animatedCount({{ (int) data_get($totals, 'chapters', 0) }})"
-               x-init="start()"
                x-text="display">
                 {{ data_get($totals, 'chapters', 0) }}
             </p>
@@ -54,7 +53,6 @@
             <p class="text-xs uppercase font-semibold text-emerald-500 tracking-wide">Total lecciones</p>
             <p class="mt-1 text-2xl font-bold text-emerald-700"
                x-data="animatedCount({{ (int) data_get($totals, 'lessons', 0) }})"
-               x-init="start()"
                x-text="display">
                 {{ data_get($totals, 'lessons', 0) }}
             </p>
@@ -64,7 +62,6 @@
             <p class="text-xs uppercase font-semibold text-amber-500 tracking-wide">Bloqueos activos</p>
             <p class="mt-1 text-2xl font-bold text-amber-700"
                x-data="animatedCount({{ (int) data_get($totals, 'locked', 0) }})"
-               x-init="start()"
                x-text="display">
                 {{ data_get($totals, 'locked', 0) }}
             </p>
@@ -556,12 +553,14 @@
             $practiceMeta = $focusLesson['practice_meta'] ?? null;
             $packMeta = $focusLesson['pack_meta'] ?? null;
         @endphp
-        @php($focusTabs = [
-            'content' => 'Contenido',
-            'config' => 'Configuración',
-            'practice' => 'Práctica',
-            'gamification' => 'Gamificación',
-        ])
+        @php
+            $focusTabs = [
+                'content' => 'Contenido',
+                'config' => 'Configuración',
+                'practice' => 'Práctica',
+                'gamification' => 'Gamificación',
+            ];
+        @endphp
         <div class="fixed inset-x-4 bottom-4 sm:bottom-6 sm:right-6 sm:left-auto w-auto max-w-full sm:max-w-3xl rounded-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-500/20 backdrop-blur"
              wire:key="builder-focus-panel">
             <div class="p-5 space-y-4">
