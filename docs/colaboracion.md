@@ -141,6 +141,52 @@
 
 ---
 
+## ESTADO: Turno 17 (GPT-5.1 PCC Fixes) Completado.
+
+[LINK] Ver Detalle en 17_GPT_PCC_FIX_REPORT.md
+
+### 🛠️ Acciones Ejecutadas
+
+| Área | Acción | Resultado |
+|------|--------|-----------|
+| L10N Page Builder | 18 cadenas migradas a `page_builder.php` (ES/EN) | ✅ sin mezclas de idioma en `/en/*` |
+| Course Builder UX | Nuevo módulo Alpine `courseBuilderDnD()` + Vite build | ✅ drag & drop estable para capítulos/lecciones |
+| QA | `php artisan test --filter=PageBuilderEditorTest` | ✅ |
+
+---
+
+## ESTADO: Turno 18 (Opus L10N & Integridad) Completado.
+
+[LINK] Ver Reporte en 18_OPUS_L10N_INTEGRITY_REPORT.md
+
+### 🔧 Diagnóstico L10N
+
+| Componente | Estado |
+|------------|--------|
+| Middleware SetLocale | ✅ FUNCIONA CORRECTAMENTE |
+| Claves JSON faltantes | ✅ AGREGADAS (20 claves ES/EN) |
+| Archivos page_builder.php | ✅ DESPLEGADOS al servidor |
+
+### ✅ Traducciones Corregidas
+
+| Texto | ES | EN |
+|-------|----|----|
+| "Recordármelo después" | ✅ | "Remind me later" ✅ |
+| "Guardar sección" | ✅ | "Save section" ✅ |
+| "Completar ahora" | ✅ | "Complete now" ✅ |
+| "Ver documentación" | ✅ | "View documentation" ✅ |
+
+### 📊 Verificación de Integridad
+
+| Área | Estado |
+|------|--------|
+| Assets JS/CSS | ✅ HTTP 200 |
+| Manifest.json | ✅ Correcto |
+| Servicios (Nginx, PHP, DB, Queue) | ✅ Activos |
+| Logs Laravel | ✅ Sin errores |
+
+---
+
 # 🎯 PROYECTO EN PRODUCCIÓN
 
 ```
