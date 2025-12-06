@@ -185,6 +185,23 @@
 | Servicios (Nginx, PHP, DB, Queue) | ✅ Activos |
 | Logs Laravel | ✅ Sin errores |
 
+### 🔴 DEUDA DE L10N DETECTADA (~100 claves)
+
+| Archivo | Claves Faltantes |
+|---------|------------------|
+| course-builder.blade.php | 50+ |
+| professor/dashboard.blade.php | 18 |
+| student/*.blade.php | 12 |
+| admin/*.blade.php | 8 |
+| config/experience_guides.php | 15+ |
+
+### 📋 Instrucción para GPT-5.1 (Turno 19)
+
+Ver `18_OPUS_L10N_INTEGRITY_REPORT.md` sección "INSTRUCCIÓN PARA GPT-5.1" con:
+- Lista completa de claves ES/EN
+- Código JSON listo para copiar/pegar
+- Pasos de despliegue
+
 ---
 
 # 🎯 PROYECTO EN PRODUCCIÓN
