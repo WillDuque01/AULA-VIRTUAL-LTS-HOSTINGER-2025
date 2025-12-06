@@ -116,3 +116,37 @@ curl -sI https://app.letstalkspanish.io/build/assets/app-DFCule9_.js
 ---
 
 [PROYECTO-ESTABLE-AUDITADO]
+
+---
+
+## ESTADO: Turno 9 (Opus Roadmap Backend) Completado.
+
+[LINK] Ver Roadmap de Certificación en 09_OPUS_BACKEND_AUDIT_ROADMAP.md
+
+### 📋 Alcance del Roadmap
+
+| Área | Componentes | Casos de Prueba |
+|------|-------------|-----------------|
+| Autenticación y Roles | Fortify, Spatie, Gates | 8 casos (AUTH-*) |
+| Servicios Externos | Discord, Pagos, Make, SMTP | 8 casos (EXT-*) |
+| Lógica de Contenido | Cursos, Lecciones, Progress | 7 casos (CONT-*) |
+| Mensajería | Email, WhatsApp, Push | 6 casos (MSG-*) |
+
+### 👥 Perfiles de Prueba para Gemini
+
+| Perfil | Escenario |
+|--------|-----------|
+| `student.paid@` | Player + Checkout completo |
+| `student.pending@` | Pago pendiente + retry |
+| `student.waitlist@` | Cohorte agotada |
+| `teacher.admin.qa@` | Planner + Packs |
+
+### 📅 Cronograma Propuesto
+
+- **D+0**: Preparación (Seeds)
+- **D+1-D+4**: Ejecución por áreas
+- **D+5-D+6**: Telemetría + Reporte Final
+
+---
+
+[TURNO-OPUS-AUDIT-FINALIZADO]
