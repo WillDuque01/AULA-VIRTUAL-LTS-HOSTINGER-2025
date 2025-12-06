@@ -185,7 +185,7 @@
 | Servicios (Nginx, PHP, DB, Queue) | ✅ Activos |
 | Logs Laravel | ✅ Sin errores |
 
-### 🔴 DEUDA DE L10N DETECTADA (~100 claves)
+### 🔴 DEUDA DE L10N DETECTADA (~160 claves)
 
 | Archivo | Claves Faltantes |
 |---------|------------------|
@@ -193,7 +193,17 @@
 | professor/dashboard.blade.php | 18 |
 | student/*.blade.php | 12 |
 | admin/*.blade.php | 8 |
-| config/experience_guides.php | 15+ |
+| **config/experience_guides.php** | **70+** (CRÍTICO) |
+
+### ⚠️ GUÍAS CONTEXTUALES (Requiere Refactorización)
+
+Los textos de las guías contextuales en `config/experience_guides.php` están hardcodeados en español y aparecen en:
+- Admin Dashboard
+- Professor Dashboard  
+- Student Dashboard
+- Player (floating guides)
+- Course Builder (floating guides)
+- Setup Wizard
 
 ### 📋 Instrucción para GPT-5.1 (Turno 19)
 
