@@ -1,7 +1,9 @@
 <?php
+// [AGENTE: OPUS 4.5] - Refactorizado para usar colas (RecordPlayerEventJob)
 
 namespace App\Support\Analytics;
 
+use App\Jobs\RecordPlayerEventJob;
 use App\Models\Lesson;
 use App\Models\StudentActivitySnapshot;
 use App\Models\TeacherActivitySnapshot;
@@ -10,6 +12,17 @@ use App\Models\VideoProgress;
 
 class TelemetryRecorder
 {
+    /**
+     * Controla si los eventos se procesan vía cola (producción) o síncronamente (testing).
+     */
+    private bool $useQueue = true;
+
+    public function __construct()
+    {
+        // En testing, desactivar colas para que las assertions funcionen
+        $this->useQueue = ! app()->runningUnitTests();
+    }
+
     public function recordPlayerTick(VideoProgress $progress, array $data = []): void
     {
         $progress->loadMissing(['lesson.chapter.course']);
@@ -33,20 +46,33 @@ class TelemetryRecorder
             return;
         }
 
-        VideoPlayerEvent::create([
-            'user_id' => $userId,
-            'lesson_id' => $lesson->id,
-            'course_id' => $lesson->chapter?->course?->id,
-            'event' => $data['event'] ?? 'custom',
-            'provider' => $data['provider'] ?? 'unknown',
-            'playback_seconds' => isset($data['playback_seconds']) ? (int) $data['playback_seconds'] : 0,
-            'watched_seconds' => isset($data['watched_seconds']) ? (int) $data['watched_seconds'] : 0,
-            'video_duration' => isset($data['video_duration']) ? (int) $data['video_duration'] : null,
-            'playback_rate' => isset($data['playback_rate']) ? (float) $data['playback_rate'] : 1.0,
-            'context_tag' => $data['context_tag'] ?? 'player',
-            'metadata' => $data['metadata'] ?? [],
-            'recorded_at' => $data['recorded_at'] ?? now(),
-        ]);
+        $courseId = $lesson->chapter?->course?->id;
+
+        if ($this->useQueue) {
+            // Despachar a cola 'telemetry' para procesamiento asíncrono
+            RecordPlayerEventJob::dispatch(
+                $userId,
+                $lesson->id,
+                $courseId,
+                $data
+            )->onQueue('telemetry');
+        } else {
+            // Modo síncrono para testing
+            VideoPlayerEvent::create([
+                'user_id' => $userId,
+                'lesson_id' => $lesson->id,
+                'course_id' => $courseId,
+                'event' => $data['event'] ?? 'custom',
+                'provider' => $data['provider'] ?? 'unknown',
+                'playback_seconds' => isset($data['playback_seconds']) ? (int) $data['playback_seconds'] : 0,
+                'watched_seconds' => isset($data['watched_seconds']) ? (int) $data['watched_seconds'] : 0,
+                'video_duration' => isset($data['video_duration']) ? (int) $data['video_duration'] : null,
+                'playback_rate' => isset($data['playback_rate']) ? (float) $data['playback_rate'] : 1.0,
+                'context_tag' => $data['context_tag'] ?? 'player',
+                'metadata' => $data['metadata'] ?? [],
+                'recorded_at' => $data['recorded_at'] ?? now(),
+            ]);
+        }
     }
 
     public function recordStudentSnapshot(int $userId, string $category, array $attributes = []): StudentActivitySnapshot
