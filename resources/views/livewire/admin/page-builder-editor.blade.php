@@ -117,7 +117,11 @@
                                 $previewView = 'livewire.admin.page-builder.preview.'.($block['type'] ?? '');
                             @endphp
                             @includeFirst(
-                                [$previewView, 'page.blocks.'.($block['type'] ?? 'hero')],
+                                [
+                                    $previewView,
+                                    'page.blocks.'.($block['type'] ?? 'hero'),
+                                    'livewire.admin.page-builder.preview.default'
+                                ],
                                 [
                                     'index' => $index,
                                     'block' => $block,
