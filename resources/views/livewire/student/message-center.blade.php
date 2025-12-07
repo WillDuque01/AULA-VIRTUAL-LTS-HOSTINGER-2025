@@ -1,4 +1,5 @@
-<section class="space-y-6">
+{{-- [AGENTE: OPUS 4.5] - Márgenes corregidos --}}
+<section class="space-y-6 px-4 sm:px-6 lg:px-8 py-6">
     <header class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
             <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Mensajes con el equipo docente') }}</p>
