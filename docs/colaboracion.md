@@ -1,525 +1,75 @@
-# BITÁCORA DE EJECUCIÓN - STATUS BOARD
+# Protocolo de Colaboración - Proyecto Aula Virtual LTS
 
-**Proyecto**: Academia Virtual LTS  
-**Fase**: Estabilización de Infraestructura  
-**Inicio**: 06-dic-2025
+Este documento centraliza el estado, las señales y el roadmap de implementación entre los agentes.
 
 ---
 
-## ESTADO: Turno 1 (Opus) Completado.
-
-[LINK] Ver Reporte de Infraestructura en 01_OPUS_INFRA_PLAN.md
-
----
-
-## ESTADO: Turno 2 (Gemini) Completado.
-
-[LINK] Ver Especificación de Diseño en 02_GEMINI_DESIGN_SPEC.md
+## ESTADO DEL PROYECTO
+| Agente | Estado | Última Acción |
+| :--- | :--- | :--- |
+| Opus 4.5 | **COMPLETADO** | Auditoría de Infraestructura y Fixes Backend. |
+| Gemini 3 Pro | **EN PROGRESO** | Auditoría Visual y Plan de Unificación UI (Mensajería). |
+| GPT-5.1 | **PENDIENTE** | Esperando instrucciones para refactorización visual final. |
 
 ---
 
-## ESTADO: Turno 3 (GPT-5.1) Completado.
+## [ROADMAP DE IMPLEMENTACIÓN]
 
-[LINK] Ver Código Implementado en el repositorio.
+### Fase 1: Fundamentos Visuales (UIX 2030) ✅
+*   Configuración Tailwind (`Inter`/`Onest`).
+*   Limpieza Blade Player.
+*   Sistema Feedback (Toast).
 
----
+### Fase 2: Refactorización Estructural (Player & Builder) ✅
+*   Drawer Móvil.
+*   Microinteracciones.
+*   Tabs escritorio.
 
-## ESTADO: Turno 4 (Opus QA) Completado.
+### Fase 3: Pruebas Funcionales Obligatorias ✅
+*   Prueba e2e de CTA.
+*   Responsive Check.
+*   Toast Check.
 
-[LINK] Ver Reporte de QA en 04_OPUS_QA_REPORT.md
+### Fase 4: Dashboards y Experiencia de Profesor ✅
+*   Dashboard Profesor UIX 2030.
+*   Planner Responsivo.
+*   Optimizaciones de Carga.
 
----
-
-## ESTADO: Turno 5 (Gemini Debug) Completado.
-
-[LINK] Ver Especificación de Debugging en 05_GEMINI_DEBUG_SPEC.md
-
----
-
-## ESTADO: Turno 9 (Opus Auditoría Backend) Completado.
-
-[LINK] Ver Roadmap Backend en 09_OPUS_BACKEND_AUDIT_ROADMAP.md
-
----
-
-## ESTADO: Turno 10 (Gemini Auditoría UX) Completado.
-
-[LINK] Ver Roadmap UX/Frontend en 10_GEMINI_UX_AUDIT_ROADMAP.md
-
----
-
-## ESTADO: Turno 11 (GPT-5.1 Code Audit) Completado.
-
-[LINK] Ver Roadmap de Certificación en 11_GPT_CODE_AUDIT_ROADMAP.md
+### Fase 5: Experiencia Estudiante y Correcciones Finales (Turno Actual)
+*Objetivo: Eliminar inconsistencias visuales críticas detectadas en auditoría.*
+1.  **Unificación Mensajería**: Migrar `student/message-center` al tema claro para coincidir con `admin/message-center`.
+2.  **Validación Final**: Asegurar que no queden componentes "oscuros" fuera de lugar.
 
 ---
 
-## ESTADO: Turno 12a (GPT-5.1 Pruebas Unitarias) Completado.
+## [GEMINI] Plan de Unificación UI (Instrucciones para GPT-5.1 - Turno Final)
 
-[LINK] Ver Reportes en `docs/12a.*`
+**Contexto:** Se detectó que el Centro de Mensajes del Estudiante sigue usando un tema oscuro (`bg-slate-900`) que rompe la consistencia con el resto de la plataforma (tema claro `bg-gray-100`).
 
----
+### TAREA ÚNICA: Refactorizar `student/message-center.blade.php`
 
-## ESTADO: Turno 12b (Gemini Certificación Híbrida) Completado.
+**Archivo Objetivo:** `resources/views/livewire/student/message-center.blade.php`
 
-[LINK] Ver Reporte de Certificación y Delegación en 12b_GEMINI_CERTIFICACION_HIBRIDA.md
+**Instrucciones de Diseño:**
+Reemplazar la estructura actual "Dark Mode" por el patrón "Light Mode" (Card UI) que ya usaste en el panel de Admin.
 
-> ~~ESTADO: CERTIFICACIÓN FRONTEND LISTA (CONDICIONAL). TURNO DE OPUS PARA CIERRE.~~
+1.  **Contenedor Principal:**
+    *   Cambiar `bg-slate-900/70 border-slate-800` por `bg-white border-slate-200 shadow-sm`.
+2.  **Sidebar (Lista de Mensajes):**
+    *   Fondo: `bg-white`.
+    *   Texto: `text-slate-900` (títulos), `text-slate-500` (meta).
+    *   Hover: `hover:bg-slate-50`.
+    *   Activo: `bg-sky-50`.
+3.  **Área de Lectura/Composición:**
+    *   Fondo: `bg-white`.
+    *   Inputs/Textareas: `bg-white border-slate-200 text-slate-900 focus:ring-sky-500`.
+    *   Tipografía: Asegurar legibilidad oscura sobre claro.
 
----
-
-## ESTADO: Turno 13 (Opus Cierre Infraestructura) Completado.
-
-[LINK] Ver Reporte Final en 13_OPUS_FINAL_INFRA_REPORT.md
-
-### ✅ Tareas Delegadas Ejecutadas
-
-| Tarea | Estado | Resultado |
-|-------|--------|-----------|
-| Monitoreo Colas | ✅ | 0 jobs pendientes, supervisor RUNNING |
-| Smoke Assets | ✅ | Manifest = archivos físicos, HTTP 200 |
-| Config E2E | 🟡 | Documentado - usar CI/CD, no en producción |
-
-### 📊 Estado Final del Servidor
-
-| Servicio | Estado |
-|----------|--------|
-| Nginx | ✅ Activo |
-| PHP-FPM | ✅ Activo |
-| MariaDB | ✅ Activo |
-| Supervisor | ✅ RUNNING (40+ min) |
-| Crontab | ✅ Configurado |
+**Código de Referencia (Admin):**
+Usa `resources/views/livewire/admin/message-center.blade.php` como guía visual para mantener la paridad total entre roles.
 
 ---
 
-# 🎉 PROYECTO CERTIFICADO
+*Firmado por: Gemini 3 Pro (Arquitecto UX/UI)*
 
-```
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║    ██████╗███████╗██████╗ ████████╗██╗███████╗██╗ ██████╗     ║
-║   ██╔════╝██╔════╝██╔══██╗╚══██╔══╝██║██╔════╝██║██╔════╝     ║
-║   ██║     █████╗  ██████╔╝   ██║   ██║█████╗  ██║██║          ║
-║   ██║     ██╔══╝  ██╔══██╗   ██║   ██║██╔══╝  ██║██║          ║
-║   ╚██████╗███████╗██║  ██║   ██║   ██║██║     ██║╚██████╗     ║
-║    ╚═════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝     ╚═╝ ╚═════╝     ║
-║                                                               ║
-║   Academia Virtual LTS - PRODUCCIÓN                           ║
-║   13 Turnos Completados                                       ║
-║   Fecha: 06-dic-2025 19:45 UTC                               ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-```
-
----
-
-## ESTADO: Turno 14 (Opus Súper UAT) Completado.
-
-[LINK] Ver Reporte UAT Completo en 14_OPUS_SUPER_UAT_REPORT.md
-
-### 📊 Resumen de Auditoría 3 Fases
-
-| Fase | Área | Estado |
-|------|------|--------|
-| 1 | UI Responsive | ✅ 95% |
-| 1 | Flujos UAT | ✅ 90% |
-| 2 | Índices DB | 🟡 80% |
-| 2 | Load/Colas | ✅ 100% |
-| 3 | Cobertura L10N | 🟡 85% |
-
-### 🔧 Hallazgos Críticos
-
-| Hallazgo | Impacto | Acción |
-|----------|---------|--------|
-| Course Builder sin D&D | 🟡 MEDIA | Implementar wire:sortable |
-| Falta índice start_at | 🟡 ALTA | Agregar índice en discord_practices |
-| ~20 textos hardcodeados | 🟡 MEDIA | Migrar a __() |
-
-### ✅ Veredicto Final
-
-**APROBADO PARA PRODUCCIÓN** - Requiere índice antes de alta concurrencia.
-
----
-
-## ESTADO: Turno 17 (GPT-5.1 PCC Fixes) Completado.
-
-[LINK] Ver Detalle en 17_GPT_PCC_FIX_REPORT.md
-
-### 🛠️ Acciones Ejecutadas
-
-| Área | Acción | Resultado |
-|------|--------|-----------|
-| L10N Page Builder | 18 cadenas migradas a `page_builder.php` (ES/EN) | ✅ sin mezclas de idioma en `/en/*` |
-| Course Builder UX | Nuevo módulo Alpine `courseBuilderDnD()` + Vite build | ✅ drag & drop estable para capítulos/lecciones |
-| QA | `php artisan test --filter=PageBuilderEditorTest` | ✅ |
-
----
-
-## ESTADO: Turno 18 (Opus L10N & Integridad) Completado.
-
-[LINK] Ver Reporte en 18_OPUS_L10N_INTEGRITY_REPORT.md
-
-### 🔧 Diagnóstico L10N
-
-| Componente | Estado |
-|------------|--------|
-| Middleware SetLocale | ✅ FUNCIONA CORRECTAMENTE |
-| Claves JSON faltantes | ✅ AGREGADAS (20 claves ES/EN) |
-| Archivos page_builder.php | ✅ DESPLEGADOS al servidor |
-
-### ✅ Traducciones Corregidas
-
-| Texto | ES | EN |
-|-------|----|----|
-| "Recordármelo después" | ✅ | "Remind me later" ✅ |
-| "Guardar sección" | ✅ | "Save section" ✅ |
-| "Completar ahora" | ✅ | "Complete now" ✅ |
-| "Ver documentación" | ✅ | "View documentation" ✅ |
-
-### 📊 Verificación de Integridad
-
-| Área | Estado |
-|------|--------|
-| Assets JS/CSS | ✅ HTTP 200 |
-| Manifest.json | ✅ Correcto |
-| Servicios (Nginx, PHP, DB, Queue) | ✅ Activos |
-| Logs Laravel | ✅ Sin errores |
-
-### 🔴 DEUDA DE L10N DETECTADA (~160 claves)
-
-| Archivo | Claves Faltantes |
-|---------|------------------|
-| course-builder.blade.php | 50+ |
-| professor/dashboard.blade.php | 18 |
-| student/*.blade.php | 12 |
-| admin/*.blade.php | 8 |
-| **config/experience_guides.php** | **70+** (CRÍTICO) |
-
-### ⚠️ GUÍAS CONTEXTUALES (Requiere Refactorización)
-
-Los textos de las guías contextuales en `config/experience_guides.php` están hardcodeados en español y aparecen en:
-- Admin Dashboard
-- Professor Dashboard  
-- Student Dashboard
-- Player (floating guides)
-- Course Builder (floating guides)
-- Setup Wizard
-
-### 📋 Instrucción para GPT-5.1 (Turno 19)
-
-Ver `18_OPUS_L10N_INTEGRITY_REPORT.md` sección "INSTRUCCIÓN PARA GPT-5.1" con:
-- Lista completa de claves ES/EN
-- Código JSON listo para copiar/pegar
-- Pasos de despliegue
-
----
-
-## ESTADO: Turno 19 (GPT-5.1 L10N Total) Completado.
-
-[LINK] Ver Reporte en 19_GPT_FINAL_L10N_REPORT.md
-
-### 📌 Cobertura
-
-| Bloque | Acción | Resultado |
-|--------|--------|-----------|
-| Config / Guides | `config/experience_guides.php` → `__('guides.*')` | ✅ 72 claves migradas (setup/admin/prof/student + rutas flotantes) |
-| Builders y Dashboards | Course Builder, profesor, estudiante, browser/packs | ✅ 90+ cadenas movidas a `builder.php`, `dashboard.php`, `student.php` |
-| Auth / Checkout / Admin | Login, Register, Checkout, Page Manager, Assignments | ✅ Nuevos archivos `auth.php`, `shop.php`, `admin.php` |
-
-### 🔧 Validaciones
-
-- `php artisan view:clear`
-- `npm run build`
-
-> Resultado: deuda L10N (~160 claves) cerrada según el barrido de Opus.
-
----
-
-## ESTADO: Turno 22 (Opus QA Final) Completado.
-
-[LINK] Ver Reporte en 22_OPUS_FINAL_QA_REPORT.md
-
-### 🔍 Verificaciones Realizadas
-
-| Área | Estado |
-|------|--------|
-| Paridad archivos L10N (ES/EN) | ✅ 10/10 archivos |
-| Textos hardcodeados residuales | 🟢 2 menores |
-| Cobertura L10N en UI | 🟡 74% |
-| Centro de Ayuda | 🔴 No desplegado |
-
-### ⚠️ Pendientes para Certificación
-
-1. **Desplegar al servidor**:
-   - 20 archivos `.php` de idioma
-   - Vista `documentation.blade.php`
-   - Config `experience_guides.php`
-
-2. **Agregar 5 claves faltantes**:
-   - `Idioma`, `Cambiar a ES`, `Continuar con Google`
-   - `Integraciones`, `Mensajes`
-
----
-
-# 🎯 PROYECTO EN PRODUCCIÓN
-
-```
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║   ███████╗██╗   ██╗██████╗ ███████╗██████╗                    ║
-║   ██╔════╝██║   ██║██╔══██╗██╔════╝██╔══██╗                   ║
-║   ███████╗██║   ██║██████╔╝█████╗  ██████╔╝                   ║
-║   ╚════██║██║   ██║██╔═══╝ ██╔══╝  ██╔══██╗                   ║
-║   ███████║╚██████╔╝██║     ███████╗██║  ██║                   ║
-║   ╚══════╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝                   ║
-║                                                               ║
-║   Academia Virtual LTS - SÚPER UAT COMPLETADO                 ║
-║   Auditoría: Flujos + Rendimiento + L10N                      ║
-║   Fecha: 06-dic-2025 20:20 UTC                               ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-```
-
----
-
-[UAT-COMPLETADO-FINAL]
-
----
-
-## ESTADO: Turno 24 (Opus Certificación L10N) Completado.
-
-[LINK] Ver Reporte en 24_OPUS_L10N_CERTIFICATION_REPORT.md
-
-### 🚨 Incidente Crítico Resuelto
-
-| Problema | Causa | Solución |
-|----------|-------|----------|
-| HTTP 500 en todo el sitio | `config/experience_guides.php` usaba `__()` | Restaurada versión original |
-
-> **⚠️ REGLA DE ORO**: Los archivos `config/*.php` NO pueden usar funciones de traducción.
-
-### ✅ Verificaciones Finales
-
-| Área | Estado |
-|------|--------|
-| Login EN | ✅ 100% traducido |
-| Navegación EN | ✅ 100% traducido |
-| Centro de Ayuda | ✅ HTTP 200, funcionando |
-| Permisos servidor | ✅ deploy:www-data |
-| Servicios VPS | ✅ Todos activos |
-
-### 📁 Archivos Desplegados
-
-- 26 archivos de idioma (ES/EN)
-- 4 vistas Blade actualizadas
-- 1 archivo de rutas
-- 2 archivos de configuración
-
----
-
-# 🏆 PROYECTO L10N CERTIFICADO
-
-```
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║   ██████╗ ██████╗ ██╗     ██████╗                             ║
-║  ██╔════╝ ██╔══██╗██║     ██╔══██╗                            ║
-║  ██║  ███╗██║  ██║██║     ██║  ██║                            ║
-║  ██║   ██║██║  ██║██║     ██║  ██║                            ║
-║  ╚██████╔╝██████╔╝███████╗██████╔╝                            ║
-║   ╚═════╝ ╚═════╝ ╚══════╝╚═════╝                             ║
-║                                                               ║
-║  GOLD MASTER L10N CERTIFIED                                   ║
-║  Academia Virtual LTS                                         ║
-║  24 Turnos Completados                                        ║
-║  Fecha: 06-dic-2025 23:55 UTC                                ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-```
-
----
-
-## ESTADO: Turno 28 (Opus FAT) Completado.
-
-**Fecha**: 07-dic-2025
-
-[LINK] Ver Reporte FAT en 28_OPUS_E2E_FAT_REPORT.md
-
-### Logros:
-- ✅ L10N Cart/Checkout corregido
-- ✅ Script de backup MySQL implementado
-- ✅ Comando `academy:reset-demo` creado
-- ✅ Guía de instalación documentada
-- ✅ Page Builder verificado y corregido
-
----
-
-## ESTADO: Turno 29 (Opus → Gemini) Instrucción Generada.
-
-**Fecha**: 07-dic-2025
-
-[LINK] Ver Instrucción en 29_GEMINI_UX_INNOVATION_SPEC.md
-
-### Contenido:
-- Inventario exhaustivo de páginas por rol
-- Checklist de componentes críticos
-- Análisis de flujos de usuario
-- Propuestas de innovación UX
-- Template de especificaciones CSS/Tailwind
-- Instrucciones para GPT-5.1
-
-### Sincronización Verificada:
-| Ubicación | Hash/Estado |
-|-----------|-------------|
-| Local | `7fce58f` |
-| GitHub | `7fce58f` |
-| VPS | ✅ Sincronizado |
-
----
-
----
-
-## ESTADO: Turno 29 (Opus E2E FAT) Completado.
-
-**Fecha**: 07-dic-2025
-
-[LINK] Ver Reporte en 29_OPUS_E2E_FAT_REPORT.md
-
-### Ejecutado:
-- ✅ Despliegue rsync completo al VPS
-- ✅ Integración de cambios GPT-5.1 (Message Center tema claro)
-- ✅ Auditoría de Gemini integrada (29_GEMINI_UX_AUDIT_COMPLETE.md)
-- ✅ Sistema de backup MySQL verificado
-- ✅ Comando `academy:reset-demo` verificado
-- ✅ FAT básico completado (Admin, Teacher)
-
-### Commit de Integración
-`95c4e96` - [GPT-5.1] Turno 30: Mejoras UI/UX
-
----
-
-## ESTADO: Turno 30 (GPT-5.1 UX Implementation) Completado.
-
-**Fecha**: 07-dic-2025
-
-### Cambios Implementados:
-| Archivo | Cambio |
-|---------|--------|
-| `layouts/app.blade.php` | Onboarding no intrusivo |
-| `admin/message-center.blade.php` | Tema claro UIX 2030 |
-| `builder/course-builder.blade.php` | Estilos refinados |
-| `student/dashboard.blade.php` | Banner de perfil |
-
----
-
-# 🎉 PROYECTO CERTIFICADO PARA ROLLOUT
-
-```
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║   ██████╗  ██████╗ ██╗     ██╗      ██████╗ ██╗   ██╗████████╗║
-║   ██╔══██╗██╔═══██╗██║     ██║     ██╔═══██╗██║   ██║╚══██╔══╝║
-║   ██████╔╝██║   ██║██║     ██║     ██║   ██║██║   ██║   ██║   ║
-║   ██╔══██╗██║   ██║██║     ██║     ██║   ██║██║   ██║   ██║   ║
-║   ██║  ██║╚██████╔╝███████╗███████╗╚██████╔╝╚██████╔╝   ██║   ║
-║   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝    ╚═╝   ║
-║                                                               ║
-║   READY FOR PRODUCTION DEPLOYMENT                             ║
-║   Academia Virtual LTS                                        ║
-║   30 Turnos Completados                                       ║
-║   Fecha: 07-dic-2025 01:55 UTC                               ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-```
-
----
-
-## ESTADO: Turno 30 Extendido (Opus Notificaciones) Completado.
-
-**Fecha**: 07-dic-2025
-
-[LINK] Ver Reporte en 30_OPUS_EXTENDED_FAT_REPORT.md
-
-### Ejecutado:
-- ✅ Creada tabla `notifications` (faltaba en producción)
-- ✅ Diagnóstico completo de certificados, mensajes y notificaciones
-- ✅ Scripts de diagnóstico creados
-
----
-
-## ESTADO: Turno 31 (Opus Email Audit) Completado.
-
-**Fecha**: 07-dic-2025
-
-[LINK] Ver Reporte en 31_OPUS_EMAIL_TEMPLATES_AUDIT.md
-
-### Ejecutado:
-- ✅ Prueba completa de 7/8 notificaciones por email
-- ✅ Emails recibidos en `wilsabduque@gmail.com`
-- ⚠️ Detectado: Plantillas de email necesitan rediseño (colores)
-
-### Scripts de Prueba Creados:
-- `scripts/test_notifications.php` - Prueba 7 notificaciones
-- `scripts/test_simple_email.php` - Prueba SMTP simple
-- `scripts/list_users.php` - Diagnóstico de BD
-
----
-
-# 📚 LECTURA OBLIGATORIA PARA AGENTES
-
-## Para GPT-5.1 (Implementador Frontend)
-
-| Archivo | Contenido |
-|---------|-----------|
-| `docs/31_OPUS_EMAIL_TEMPLATES_AUDIT.md` | **CRÍTICO** - Instrucciones de rediseño de plantillas email |
-| `docs/30_OPUS_EXTENDED_FAT_REPORT.md` | Hallazgos de infraestructura y QR de certificados |
-| `docs/29_GEMINI_UX_AUDIT_COMPLETE.md` | Auditoría UX con tareas priorizadas |
-| `docs/29_OPUS_E2E_FAT_REPORT.md` | Estado del sistema FAT |
-
-## Para Gemini 3 Pro (Arquitecto UI/UX)
-
-| Archivo | Contenido |
-|---------|-----------|
-| `docs/31_OPUS_EMAIL_TEMPLATES_AUDIT.md` | Paleta de colores para emails |
-| `docs/29_GEMINI_UX_AUDIT_COMPLETE.md` | Tu propia auditoría para referencia |
-| `docs/29_GEMINI_UX_INNOVATION_SPEC.md` | Especificaciones de innovación UX |
-
-## Contexto General (Todos los Agentes)
-
-| Archivo | Contenido |
-|---------|-----------|
-| `docs/colaboracion.md` | Bitácora completa del proyecto |
-| `docs/28_OPUS_E2E_FAT_REPORT.md` | Sistema de backup y reset |
-| `docs/INSTALLATION_GUIDE.md` | Guía de instalación para rollout |
-
----
-
-# 🎯 TAREAS PENDIENTES PARA FRONTEND
-
-## PRIORIDAD ALTA
-
-### 1. Rediseño de Plantillas de Email
-**Responsable:** GPT-5.1
-**Archivos:**
-- `resources/views/emails/templates/base.blade.php`
-- `resources/views/emails/templates/*.blade.php`
-
-**Requisitos:**
-- Unificar colores con UIX 2030
-- Header con logo
-- Botones CTA estilizados
-- Footer con información de contacto
-- Responsive para móviles
-
-### 2. Fix QR de Certificados
-**Responsable:** GPT-5.1
-**Archivo:** `app/Http/Controllers/CertificateController.php`
-
-**Opción A:** Usar librería local `simplesoftwareio/simple-qrcode`
-**Opción B:** Agregar fallback si imagen externa no carga
-
----
-
-[OPUS-EMAIL-AUDIT-COMPLETED]
-[EMAIL-TEMPLATES-NEED-REDESIGN]
-[PROYECTO-ROLLOUT-READY]
+[TURNO-COMPLETADO: UI-UNIFICATION-READY]

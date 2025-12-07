@@ -1,42 +1,50 @@
 <section class="space-y-6">
-    <header class="flex items-center justify-between">
+    <header class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-            <h2 class="text-xl font-semibold text-slate-100">{{ __('Mensajes con el equipo docente') }}</h2>
-            <p class="text-sm text-slate-400">{{ __('Consulta novedades o resuelve dudas con tus profesores.') }}</p>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Mensajes con el equipo docente') }}</p>
+            <h2 class="text-2xl font-semibold text-slate-900">{{ __('Consulta novedades o resuelve dudas con tus profesores.') }}</h2>
         </div>
         <div class="flex gap-2">
-            <button wire:click="inbox" class="px-3 py-2 rounded-xl text-sm font-medium {{ $tab === 'inbox' ? 'bg-sky-500/20 text-sky-300' : 'bg-slate-800 text-slate-300' }}">{{ __('Bandeja') }}</button>
-            <button wire:click="compose" class="px-3 py-2 rounded-xl text-sm font-medium {{ $tab === 'compose' ? 'bg-sky-500/20 text-sky-300' : 'bg-slate-800 text-slate-300' }}">{{ __('Redactar') }}</button>
+            <button wire:click="inbox" @class([
+                'px-3 py-2 rounded-xl text-sm font-semibold transition border',
+                'bg-slate-900 text-white border-slate-900 shadow-sm' => $tab === 'inbox',
+                'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' => $tab !== 'inbox',
+            ])>{{ __('Bandeja') }}</button>
+            <button wire:click="compose" @class([
+                'px-3 py-2 rounded-xl text-sm font-semibold transition border',
+                'bg-slate-900 text-white border-slate-900 shadow-sm' => $tab === 'compose',
+                'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' => $tab !== 'compose',
+            ])>{{ __('Redactar') }}</button>
         </div>
     </header>
 
     <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside class="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-slate-200">{{ __('Mensajes') }}</h3>
+        <aside class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-900">{{ __('Mensajes') }}</h3>
                 <span class="text-xs text-slate-500">{{ $messages->total() }}</span>
             </div>
-            <ul class="divide-y divide-slate-800 max-h-[520px] overflow-y-auto">
+            <ul class="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
                 @forelse($messages as $message)
                     <li>
-                        <button wire:click="openMessage({{ $message->id }})" class="w-full text-left px-4 py-3 hover:bg-slate-800/60 {{ optional($message->recipients->firstWhere('user_id', auth()->id()))?->status === 'unread' ? 'bg-slate-800/30' : '' }}">
+                        <button wire:click="openMessage({{ $message->id }})" class="w-full text-left px-4 py-3 transition hover:bg-slate-50 {{ optional($message->recipients->firstWhere('user_id', auth()->id()))?->status === 'unread' ? 'bg-slate-50' : '' }}">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-semibold text-slate-100 truncate">{{ $message->sender->name }}</span>
+                                <span class="text-sm font-semibold text-slate-900 truncate">{{ $message->sender->name }}</span>
                                 <span class="text-xs text-slate-500">{{ optional($message->sent_at)->diffForHumans() }}</span>
                             </div>
-                            <p class="text-xs text-slate-400 truncate mt-1">{{ $message->subject ?? __('(Sin asunto)') }}</p>
+                            <p class="text-xs text-slate-500 truncate mt-1">{{ $message->subject ?? __('(Sin asunto)') }}</p>
                         </button>
                     </li>
                 @empty
                     <li class="px-4 py-6 text-sm text-slate-500 text-center">{{ __('Aún no hay mensajes.') }}</li>
                 @endforelse
             </ul>
-            <div class="px-4 py-3 border-t border-slate-800">
+            <div class="px-4 py-3 border-t border-slate-100 bg-slate-50">
                 {{ $messages->links() }}
             </div>
         </aside>
 
-        <main class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6">
+        <main class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
             @if(session('status'))
                 <div class="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
                     {{ session('status') }}
@@ -116,12 +124,12 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between">
-                        <label class="inline-flex items-center gap-2 text-sm text-slate-300">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <label class="inline-flex items-center gap-2 text-sm text-slate-600">
                             <input type="checkbox" wire:model="notifyEmail" class="text-sky-500 focus:ring-sky-500">
                             <span>{{ __('Recibir copia por correo') }}</span>
                         </label>
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-5 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/20">
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-700">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-9 4v9" /></svg>
                             {{ __('Enviar mensaje') }}
                         </button>
@@ -130,12 +138,20 @@
             @else
                 @if($openedMessage)
                     <article class="space-y-4">
-                        <header class="border-b border-slate-800 pb-4">
-                            <p class="text-sm text-slate-400">{{ __('De') }}</p>
-                            <h3 class="text-lg font-semibold text-slate-100">{{ $openedMessage->sender->name }}</h3>
+                        <header class="border-b border-slate-100 pb-4">
+                            <p class="text-sm text-slate-500">{{ __('De') }}</p>
+                            <h3 class="text-lg font-semibold text-slate-900">{{ $openedMessage->sender->name }}</h3>
                             <p class="text-xs text-slate-500">{{ optional($openedMessage->sent_at)->translatedFormat('d M Y H:i') }}</p>
                         </header>
-                        <div class="prose prose-invert max-w-none text-slate-200">{!! nl2br(e($openedMessage->body)) !!}</div>
+                        <div class="prose prose-slate max-w-none text-slate-700">{!! nl2br(e($openedMessage->body)) !!}</div>
+                        <footer class="border-t border-slate-100 pt-4">
+                            <p class="text-xs text-slate-500 uppercase tracking-[0.2em] mb-2">{{ __('Destinatarios') }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($openedMessage->recipients as $recipient)
+                                    <span class="px-3 py-1.5 rounded-full bg-slate-100 text-xs text-slate-700 border border-slate-200">{{ $recipient->user->name }}</span>
+                                @endforeach
+                            </div>
+                        </footer>
                     </article>
                 @else
                     <div class="flex h-full items-center justify-center text-slate-500 text-sm">

@@ -1,5 +1,23 @@
 @php
     $branding = \App\Support\Branding\Branding::info();
+    try {
+        $brandingSettings = app(\App\Settings\BrandingSettings::class);
+    } catch (\Throwable $e) {
+        $brandingSettings = null;
+    }
+    $emailPalette = [
+        'primary' => $brandingSettings->primary_color ?? '#0f172a',
+        'secondary' => $brandingSettings->secondary_color ?? '#1d4ed8',
+        'accent' => $brandingSettings->accent_color ?? '#14b8a6',
+        'background' => '#f8fafc',
+        'surface' => '#ffffff',
+        'text' => '#334155',
+        'muted' => '#64748b',
+        'border' => '#e2e8f0',
+        'panel_bg' => '#f8fafc',
+        'success' => '#0f766e',
+    ];
+    view()->share('emailPalette', $emailPalette);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
@@ -8,15 +26,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $branding['name'] }} · @yield('subject')</title>
     <style>
-        body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #0f172a; color: #e2e8f0; }
-        a { color: #38bdf8; text-decoration: none; }
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background-color: {{ $emailPalette['background'] }};
+            color: {{ $emailPalette['text'] }};
+        }
+        a { color: {{ $emailPalette['accent'] }}; text-decoration: none; }
         .wrapper { width: 100%; padding: 24px 0; }
-        .container { max-width: 620px; margin: 0 auto; background-color: #101c36; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(15,23,42,0.35); }
-        .header { padding: 32px; text-align: center; background: linear-gradient(135deg,#1e3a8a,#312e81); }
-        .header img { max-height: 60px; margin-bottom: 12px; }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: {{ $emailPalette['surface'] }};
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid {{ $emailPalette['border'] }};
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.12);
+        }
+        .header {
+            padding: 32px;
+            text-align: center;
+            background: {{ $emailPalette['primary'] }};
+        }
+        .header img { max-height: 48px; margin-bottom: 12px; }
+        .header h1 { color: #fff; }
         .content { padding: 32px; }
-        .footer { padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; }
-        .btn { display: inline-block; padding: 14px 28px; border-radius: 999px; background-color: #38bdf8; color: #0f172a; font-weight: 600; margin-top: 24px; }
+        .content p { color: {{ $emailPalette['text'] }}; }
+        .content p.muted { color: {{ $emailPalette['muted'] }}; }
+        .footer {
+            padding: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: {{ $emailPalette['muted'] }};
+            background: {{ $emailPalette['background'] }};
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            border-radius: 999px;
+            background-color: {{ $emailPalette['accent'] }};
+            color: #fff;
+            font-weight: 600;
+            margin-top: 24px;
+            box-shadow: 0 10px 20px rgba(20, 184, 166, 0.25);
+        }
         @media (max-width: 600px) {
             .container { margin: 0 16px; }
             .content { padding: 24px; }

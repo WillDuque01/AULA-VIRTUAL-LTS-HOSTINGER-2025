@@ -56,10 +56,17 @@
                             </div>
                             <p class="text-xs text-slate-500">Comparte este enlace para que cualquiera valide la autenticidad del certificado.</p>
                         </div>
-                        <div class="flex flex-col items-center gap-2">
-                            <img src="{{ $qrUrl }}" alt="QR del certificado" class="w-40 h-40 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                            <p class="text-xs text-slate-500">Escanea para abrir este certificado</p>
-                        </div>
+                        @if($qrUrl)
+                            <div class="flex flex-col items-center gap-2">
+                                <img src="{{ $qrUrl }}" alt="QR del certificado" class="w-40 h-40 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                                <p class="text-xs text-slate-500">Escanea para abrir este certificado</p>
+                            </div>
+                        @else
+                            <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 text-center text-sm text-slate-600">
+                                <p class="font-semibold text-slate-900">QR temporalmente no disponible</p>
+                                <p class="text-xs text-slate-500 mt-1">Usa el enlace compartido para validar este certificado.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @else
