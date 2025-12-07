@@ -21,17 +21,17 @@
 >
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-semibold">Builder de curso: {{ $course->slug }}</h2>
-            <p class="text-sm text-gray-500">Organiza capítulos, define lecciones y bloquea el avance según el plan de estudios.</p>
+            <h2 class="text-2xl font-semibold">{{ __('builder.heading', ['slug' => $course->slug]) }}</h2>
+            <p class="text-sm text-gray-500">{{ __('builder.description') }}</p>
         </div>
         <div class="flex items-center gap-3">
             <button type="button"
                     wire:click="addChapter"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    aria-label="Crear nuevo capítulo"
-                    title="Crear nuevo capítulo (atajo: N)">
+                    aria-label="{{ __('builder.actions.add_chapter_aria') }}"
+                    title="{{ __('builder.actions.add_chapter_title') }}">
                 <span class="text-lg">+</span>
-                Nuevo capítulo
+                {{ __('builder.actions.add_chapter') }}
             </button>
         </div>
     </div>
@@ -41,53 +41,53 @@
             $totals = data_get($metrics, 'totals', []);
         @endphp
         <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <p class="text-xs uppercase font-semibold text-blue-500 tracking-wide">Capítulos</p>
+            <p class="text-xs uppercase font-semibold text-blue-500 tracking-wide">{{ __('builder.metrics.chapters') }}</p>
             <p class="mt-1 text-2xl font-bold text-blue-700"
                x-data="animatedCount({{ (int) data_get($totals, 'chapters', 0) }})"
                x-text="display">
                 {{ data_get($totals, 'chapters', 0) }}
             </p>
-            <p class="text-xs text-blue-500/80">Drag & drop disponible</p>
+            <p class="text-xs text-blue-500/80">{{ __('builder.metrics.drag_hint') }}</p>
         </div>
         <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <p class="text-xs uppercase font-semibold text-emerald-500 tracking-wide">Total lecciones</p>
+            <p class="text-xs uppercase font-semibold text-emerald-500 tracking-wide">{{ __('builder.metrics.total_lessons') }}</p>
             <p class="mt-1 text-2xl font-bold text-emerald-700"
                x-data="animatedCount({{ (int) data_get($totals, 'lessons', 0) }})"
                x-text="display">
                 {{ data_get($totals, 'lessons', 0) }}
             </p>
-            <p class="text-xs text-emerald-500/80">Incluye videos, quizzes y más</p>
+            <p class="text-xs text-emerald-500/80">{{ __('builder.metrics.lessons_hint') }}</p>
         </div>
         <div class="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <p class="text-xs uppercase font-semibold text-amber-500 tracking-wide">Bloqueos activos</p>
+            <p class="text-xs uppercase font-semibold text-amber-500 tracking-wide">{{ __('builder.metrics.locks') }}</p>
             <p class="mt-1 text-2xl font-bold text-amber-700"
                x-data="animatedCount({{ (int) data_get($totals, 'locked', 0) }})"
                x-text="display">
                 {{ data_get($totals, 'locked', 0) }}
             </p>
             <p class="text-xs text-amber-500/80">
-                Controla el progreso · ≈ {{ number_format(data_get($totals, 'estimated_minutes', 0) / 60, 1) }} h estimadas
+                {{ __('builder.metrics.locks_hint', ['hours' => number_format(data_get($totals, 'estimated_minutes', 0) / 60, 1)]) }}
             </p>
         </div>
     </div>
 
     <div class="rounded-2xl border border-slate-200 bg-white/80 shadow-sm px-4 py-3" x-data="{ open: false }" x-on:builder-shortcuts:toggle.window="open = !open">
         <div class="flex flex-wrap items-center gap-3">
-            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Atajos y consejos</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('builder.shortcuts.title') }}</p>
             <button type="button"
                     class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-300"
                     @click="open = ! open"
                     :aria-expanded="open.toString()">
                 <span class="text-base" aria-hidden="true">⌨️</span>
-                <span x-text="open ? '{{ __('Ocultar') }}' : '{{ __('Ver atajos') }}'"></span>
+                <span x-text="open ? '{{ __('builder.shortcuts.toggle_hide') }}' : '{{ __('builder.shortcuts.toggle_show') }}'"></span>
             </button>
-            <span class="ml-auto hidden text-[11px] text-slate-400 md:inline">{{ __('Diseñado para flujos 2030 · accesible y responsivo.') }}</span>
+            <span class="ml-auto hidden text-[11px] text-slate-400 md:inline">{{ __('builder.shortcuts.tagline') }}</span>
         </div>
         <div class="mt-3 grid gap-3 text-xs text-slate-600" x-show="open" x-transition>
             <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2 flex items-center justify-between">
                 <div>
-                    <p class="font-semibold text-slate-800">Nuevo capítulo</p>
-                    <p class="text-[11px] text-slate-500">{{ __('Presiona N en cualquier parte del builder.') }}</p>
+                    <p class="font-semibold text-slate-800">{{ __('builder.shortcuts.tip_new_chapter_title') }}</p>
+                    <p class="text-[11px] text-slate-500">{{ __('builder.shortcuts.tip_new_chapter_hint') }}</p>
                 </div>
                 <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 font-semibold text-slate-700">
                     N
@@ -95,16 +95,16 @@
             </div>
             <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2 flex items-center justify-between">
                 <div>
-                    <p class="font-semibold text-slate-800">{{ __('Guardar lección enfocada') }}</p>
-                    <p class="text-[11px] text-slate-500">{{ __('Ctrl/⌘ + S sobre cualquier tarjeta abierta.') }}</p>
+                    <p class="font-semibold text-slate-800">{{ __('builder.shortcuts.tip_save_title') }}</p>
+                    <p class="text-[11px] text-slate-500">{{ __('builder.shortcuts.tip_save_hint') }}</p>
                 </div>
                 <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 font-semibold text-slate-700">
                     Ctrl/⌘ + S
                 </span>
             </div>
             <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
-                <p class="font-semibold text-slate-800">{{ __('Drag & drop accesible') }}</p>
-                <p class="text-[11px] text-slate-500">{{ __('Usa la tecla Tab para enfocar el asa y Enter/Espacio para agarrar o soltar.') }}</p>
+                <p class="font-semibold text-slate-800">{{ __('builder.shortcuts.tip_accessible_title') }}</p>
+                <p class="text-[11px] text-slate-500">{{ __('builder.shortcuts.tip_accessible_hint') }}</p>
             </div>
         </div>
     </div>
@@ -112,8 +112,8 @@
     <div class="rounded-2xl border border-indigo-100 bg-white/80 shadow-sm px-4 py-4">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">{{ __('Filtro por estado') }}</p>
-                <p class="text-sm text-slate-500">{{ __('Muestra solo capítulos o lecciones con el estado seleccionado.') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-500">{{ __('builder.filter.title') }}</p>
+                <p class="text-sm text-slate-500">{{ __('builder.filter.subtitle') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 @foreach($statusFilterOptions as $value => $label)
@@ -128,7 +128,7 @@
         </div>
     </div>
 
-    <div class="space-y-4" data-sortable-chapters>
+    <div class="space-y-4" data-sortable-chapters x-data="courseBuilderDnD()" x-init="init()">
         @forelse($state['chapters'] as $chapterIndex => $chapter)
             @php
                 $chapterMetrics = $metrics['chapters'][$chapter['id']] ?? null;
@@ -149,17 +149,17 @@
                         <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-9 h-9 cursor-move bg-white shadow-inner"
                               role="button"
                               tabindex="0"
-                              aria-label="{{ __('Arrastrar capítulo') }}"
-                              data-tooltip="{{ __('Arrastra o usa Enter/Espacio para reordenar este capítulo') }}">
+                              aria-label="{{ __('builder.drag.chapter_label') }}"
+                              data-tooltip="{{ __('builder.drag.chapter_hint') }}">
                             <span class="text-lg leading-none select-none">⋮⋮</span>
                         </span>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Título del capítulo</label>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ __('builder.chapter.title_label') }}</label>
                             <input type="text"
                                    wire:model.defer="state.chapters.{{ $chapterIndex }}.title"
                                    wire:blur="saveChapterTitle({{ $chapter['id'] }}, {{ $chapterIndex }})"
                                    class="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition"
-                                   placeholder="Capítulo sin título">
+                                   placeholder="{{ __('builder.chapter.title_placeholder') }}">
                             @error("state.chapters.$chapterIndex.title")
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
@@ -169,13 +169,13 @@
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'video')" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-md text-xs font-semibold">+ Video</button>
-                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'text')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-md text-xs font-semibold">+ Texto</button>
-                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'pdf')" class="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-md text-xs font-semibold">+ PDF</button>
-                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'quiz')" class="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-md text-xs font-semibold">+ Quiz</button>
+                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'video')" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-md text-xs font-semibold">{{ __('builder.lessons.add.video') }}</button>
+                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'text')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-md text-xs font-semibold">{{ __('builder.lessons.add.text') }}</button>
+                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'pdf')" class="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-md text-xs font-semibold">{{ __('builder.lessons.add.pdf') }}</button>
+                        <button type="button" wire:click="addLesson({{ $chapter['id'] }}, 'quiz')" class="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-md text-xs font-semibold">{{ __('builder.lessons.add.quiz') }}</button>
                         <button type="button" wire:click="removeChapter({{ $chapter['id'] }})" class="inline-flex items-center px-3 py-1.5 border border-red-200 text-red-600 rounded-md text-xs font-semibold hover:bg-red-50">
                             <span class="text-sm">✕</span>
-                            Eliminar
+                            {{ __('builder.actions.remove') }}
                         </button>
                     </div>
                 </div>
@@ -235,16 +235,16 @@
                                     <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-8 h-8 cursor-move bg-white shadow-inner"
                                           role="button"
                                           tabindex="0"
-                                          aria-label="{{ __('Arrastrar lección') }}"
-                                          data-tooltip="{{ __('Arrastra o usa Enter/Espacio para reordenar esta lección') }}">
+                                          aria-label="{{ __('builder.drag.lesson_label') }}"
+                                          data-tooltip="{{ __('builder.drag.lesson_hint') }}">
                                         <span class="text-base leading-none">⋮⋮</span>
                                     </span>
                                     <div>
-                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Título</label>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">{{ __('builder.lessons.title_label') }}</label>
                                         <input type="text"
                                                wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.title"
                                                class="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                               placeholder="Título de la lección">
+                                               placeholder="{{ __('builder.lessons.title_placeholder') }}">
                                         @error("state.chapters.$chapterIndex.lessons.$lessonIndex.title")
                                             <span class="text-xs text-red-500">{{ $message }}</span>
                                         @enderror
@@ -255,7 +255,7 @@
                                 </div>
                                 <div class="flex items-center gap-4 text-sm">
                                     <div>
-                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Tipo</label>
+                                        <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">{{ __('builder.lessons.type_label') }}</label>
                                         <select wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.type" class="mt-1 rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                                             @foreach($lessonTypes as $value => $label)
                                                 <option value="{{ $value }}">{{ $label }}</option>
@@ -264,22 +264,22 @@
                                     </div>
                                     <label class="inline-flex items-center gap-2 mt-5">
                                         <input type="checkbox" wire:model.defer="state.chapters.{{ $chapterIndex }}.lessons.{{ $lessonIndex }}.locked" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        <span class="text-xs text-gray-600">Bloquear avance</span>
+                                        <span class="text-xs text-gray-600">{{ __('builder.lessons.lock_toggle') }}</span>
                                     </label>
                                     <button type="button"
                                             wire:click="focusLesson({{ $lesson['id'] }})"
                                             class="mt-5 inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition {{ $isFocused ? 'border-indigo-200 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300' }}"
                                             aria-pressed="{{ $isFocused ? 'true' : 'false' }}"
-                                            title="{{ $isFocused ? __('Lección en foco') : __('Enfocar lección') }}">
+                                            title="{{ $isFocused ? __('builder.focus.actions.lesson_active') : __('builder.focus.actions.lesson_focus') }}">
                                         <span aria-hidden="true">{{ $isFocused ? '✨' : '👁' }}</span>
-                                        {{ $isFocused ? __('En foco') : __('Enfocar') }}
+                                        {{ $isFocused ? __('builder.focus.actions.chip_active') : __('builder.focus.actions.chip_focus') }}
                                     </button>
                                     <button type="button"
                                             wire:click="removeLesson({{ $lesson['id'] }})"
                                             class="mt-5 inline-flex items-center text-xs font-semibold text-red-600 hover:text-red-700"
-                                            title="{{ __('Quitar lección') }}">
+                                            title="{{ __('builder.lessons.remove') }}">
                                         <span class="text-sm">✕</span>
-                                        Quitar
+                                        {{ __('builder.lessons.remove') }}
                                     </button>
                                 </div>
                             </div>
@@ -296,25 +296,25 @@
                                 <div class="flex flex-wrap items-center gap-2">
                                     @if($practiceMeta)
                                         <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-3 py-1 text-indigo-700">
-                                            🎙️ {{ __('Prácticas Discord') }} · {{ $practiceMeta['total'] }}
+                                            🎙️ {{ __('builder.focus.practice.practice_label') }} · {{ $practiceMeta['total'] }}
                                             @if($nextPracticeLabel)
                                                 · {{ $nextPracticeLabel }}
                                             @endif
                                             @if($practiceMeta['requires_pack'] ?? false)
-                                                · {{ __('Pack requerido') }}
+                                                · {{ __('builder.focus.practice.pack_required') }}
                                             @endif
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-3 py-1 text-slate-400">
-                                            {{ __('Sin prácticas programadas') }}
+                                            {{ __('builder.focus.practice.none') }}
                                         </span>
                                     @endif
 
                                     @if($packMeta)
                                         <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700">
-                                            💼 {{ $packMeta['title'] ?? __('Pack asignado') }}
+                                            💼 {{ $packMeta['title'] ?? __('builder.focus.practice.pack_assigned') }}
                                             @if(!empty($packMeta['sessions']))
-                                                · {{ $packMeta['sessions'] }} {{ __('sesiones') }}
+                                                · {{ $packMeta['sessions'] }} {{ __('builder.focus.practice.sessions') }}
                                             @endif
                                             @if(!empty($packMeta['price']))
                                                 · ${{ number_format($packMeta['price'], 0) }} {{ $packMeta['currency'] }}
@@ -322,7 +322,7 @@
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-3 py-1 text-slate-400">
-                                            {{ __('Sin pack vinculado') }}
+                                            {{ __('builder.focus.practice.no_pack') }}
                                         </span>
                                     @endif
                                 </div>
@@ -332,7 +332,7 @@
                                            target="_blank"
                                            rel="noopener"
                                            class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-3 py-1 text-indigo-700 hover:border-indigo-300 hover:text-indigo-800">
-                                            {{ __('Abrir planner Discord') }} ↗
+                                            {{ __('builder.focus.practice.open_planner') }} ↗
                                         </a>
                                     @endif
                                     @if($packsManagerRoute)
@@ -340,7 +340,7 @@
                                            target="_blank"
                                            rel="noopener"
                                            class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-emerald-700 hover:border-emerald-300 hover:text-emerald-800">
-                                            {{ __('Gestionar packs') }} ↗
+                                            {{ __('builder.focus.practice.manage_packs') }} ↗
                                         </a>
                                     @endif
                                 </div>
@@ -479,8 +479,8 @@
 
                             <div x-data="{ open: false }" class="mt-3 rounded-xl border border-dashed border-slate-200 bg-white/80 px-3 py-2">
                                 <button type="button" @click="open = !open" class="flex w-full items-center justify-between text-sm font-semibold text-slate-700">
-                                    <span>Configuración avanzada</span>
-                                    <span class="text-xs text-slate-500" x-text="open ? 'Cerrar' : 'Expandir'"></span>
+                                    <span>{{ __('builder.advanced.title') }}</span>
+                                    <span class="text-xs text-slate-500" x-text="open ? '{{ __('builder.advanced.close') }}' : '{{ __('builder.advanced.open') }}'"></span>
                                 </button>
                                 <div x-show="open" x-transition.duration.200ms class="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                                     <div>
@@ -535,13 +535,13 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-sm text-gray-500 italic">No hay lecciones en este capítulo todavía.</p>
+                        <p class="text-sm text-gray-500 italic">{{ __('builder.lessons.empty') }}</p>
                     @endforelse
                 </div>
             </div>
         @empty
             <div class="border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500">
-                No hay capítulos por ahora. Usa el botón “Nuevo capítulo” para comenzar.
+                {{ __('builder.chapter.empty_state') }}
             </div>
         @endforelse
     </div>
@@ -555,10 +555,10 @@
         @endphp
         @php
             $focusTabs = [
-                'content' => 'Contenido',
-                'config' => 'Configuración',
-                'practice' => 'Práctica',
-                'gamification' => 'Gamificación',
+                'content' => __('builder.focus.tabs.content'),
+                'config' => __('builder.focus.tabs.config'),
+                'practice' => __('builder.focus.tabs.practice'),
+                'gamification' => __('builder.focus.tabs.gamification'),
             ];
         @endphp
         <div class="fixed inset-x-4 bottom-4 sm:bottom-6 sm:right-6 sm:left-auto w-auto max-w-full sm:max-w-3xl rounded-3xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-500/20 backdrop-blur"
@@ -566,9 +566,9 @@
             <div class="p-5 space-y-4">
                 <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
-                        <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-400">Panel de enfoque</p>
+                        <p class="text-[11px] uppercase font-semibold tracking-wide text-slate-400">{{ __('builder.focus.panel_label') }}</p>
                         <h3 class="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                            {{ $focusLesson['title'] ?? 'Lección seleccionada' }}
+                            {{ $focusLesson['title'] ?? __('builder.focus.default_lesson') }}
                             @if($focusLesson['badge'] ?? null)
                                 <span class="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-600">
                                     {{ $focusLesson['badge'] }}
@@ -576,7 +576,7 @@
                             @endif
                         </h3>
                         <p class="text-xs text-slate-500">
-                            {{ $focusChapter['title'] ?? __('Capítulo') }} · {{ ucfirst($focusLesson['type'] ?? 'bloque') }}
+                            {{ $focusChapter['title'] ?? __('builder.focus.chapter_fallback') }} · {{ ucfirst($focusLesson['type'] ?? 'bloque') }}
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500">
@@ -594,7 +594,7 @@
                         <button type="button"
                                 wire:click="clearFocus"
                                 class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50">
-                            ✕ {{ __('Cerrar') }}
+                            ✕ {{ __('builder.focus.actions.close') }}
                         </button>
                     </div>
                 </div>
@@ -608,10 +608,10 @@
                         </button>
 
                         <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1">
-                            <span>Mover a</span>
+                            <span>{{ __('builder.focus.actions.move_to') }}</span>
                             <select class="bg-transparent text-xs focus:outline-none"
                                     wire:change="quickMoveLesson({{ $focusLessonId }}, $event.target.value)">
-                                <option value="">{{ __('Selecciona capítulo') }}</option>
+                                <option value="">{{ __('builder.focus.actions.select_chapter_option') }}</option>
                                 @foreach($state['chapters'] as $chapterOption)
                                     <option value="{{ $chapterOption['id'] }}" @selected(($chapterOption['id'] ?? null) === ($focusChapter['id'] ?? null))>
                                         {{ $chapterOption['title'] }}
@@ -621,10 +621,10 @@
                         </label>
 
                         <label class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1">
-                            <span>{{ __('Convertir a') }}</span>
+                            <span>{{ __('builder.focus.actions.convert_to') }}</span>
                             <select class="bg-transparent text-xs focus:outline-none"
                                     wire:change="quickConvertLesson({{ $focusLessonId }}, $event.target.value)">
-                                <option value="">{{ __('Selecciona tipo') }}</option>
+                                <option value="">{{ __('builder.focus.actions.select_type_option') }}</option>
                                 @foreach($lessonTypes as $value => $label)
                                     @if($value !== ($focusLesson['type'] ?? null))
                                         <option value="{{ $value }}">{{ $label }}</option>
@@ -637,10 +637,10 @@
 
                 @php
                     $baseChips = [
-                        ['show' => $focusLesson['locked'] ?? false, 'label' => __('Bloquea avance'), 'icon' => '🔒', 'classes' => 'border-amber-200 bg-amber-50 text-amber-700'],
-                        ['show' => !empty($focusLesson['estimated_minutes']), 'label' => ($focusLesson['estimated_minutes'] ?? 0).' '. __('min estimados'), 'icon' => '⏱', 'classes' => 'border-emerald-200 bg-emerald-50 text-emerald-700'],
-                        ['show' => !empty($focusLesson['release_at']), 'label' => __('Libera el').' '.\Illuminate\Support\Carbon::parse($focusLesson['release_at'])->translatedFormat('d M H:i'), 'icon' => '📅', 'classes' => 'border-slate-200 bg-slate-50 text-slate-600'],
-                        ['show' => $focusChapter && ($focusChapter['metrics']['lessons'] ?? false), 'label' => ($focusChapter['metrics']['lessons'] ?? 0).' '. __('lecciones en el capítulo'), 'icon' => '📚', 'classes' => 'border-indigo-100 bg-indigo-50 text-indigo-700'],
+                        ['show' => $focusLesson['locked'] ?? false, 'label' => __('builder.focus.chips.blocks_progress'), 'icon' => '🔒', 'classes' => 'border-amber-200 bg-amber-50 text-amber-700'],
+                        ['show' => !empty($focusLesson['estimated_minutes']), 'label' => ($focusLesson['estimated_minutes'] ?? 0).' '. __('builder.focus.chips.minutes'), 'icon' => '⏱', 'classes' => 'border-emerald-200 bg-emerald-50 text-emerald-700'],
+                        ['show' => !empty($focusLesson['release_at']), 'label' => __('builder.focus.chips.release_on').' '.\Illuminate\Support\Carbon::parse($focusLesson['release_at'])->translatedFormat('d M H:i'), 'icon' => '📅', 'classes' => 'border-slate-200 bg-slate-50 text-slate-600'],
+                        ['show' => $focusChapter && ($focusChapter['metrics']['lessons'] ?? false), 'label' => ($focusChapter['metrics']['lessons'] ?? 0).' '. __('builder.focus.chips.lessons_in_chapter'), 'icon' => '📚', 'classes' => 'border-indigo-100 bg-indigo-50 text-indigo-700'],
                     ];
                 @endphp
                 <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
@@ -658,20 +658,20 @@
                         @case('content')
                             <div class="grid gap-3 md:grid-cols-2 text-sm text-slate-600">
                                 <div>
-                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Detalles de contenido') }}</p>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('builder.focus.content.details') }}</p>
                                     <ul class="mt-2 space-y-1">
-                                        <li>• {{ __('Tipo') }}: {{ ucfirst($focusLesson['type'] ?? 'bloque') }}</li>
-                                        <li>• {{ __('Duración declarada') }}: {{ $focusLesson['length'] ?? '—' }} {{ __('seg') }}</li>
-                                        <li>• {{ __('Prerequisito') }}: {{ $focusLesson['prerequisite_lesson_id'] ? __('Sí') : __('No') }}</li>
+                                        <li>• {{ __('builder.focus.content.type') }}: {{ ucfirst($focusLesson['type'] ?? 'bloque') }}</li>
+                                        <li>• {{ __('builder.focus.content.duration') }}: {{ $focusLesson['length'] ?? '—' }} {{ __('builder.focus.content.seconds') }}</li>
+                                        <li>• {{ __('builder.focus.content.prerequisite') }}: {{ $focusLesson['prerequisite_lesson_id'] ? __('builder.focus.content.yes') : __('builder.focus.content.no') }}</li>
                                     </ul>
                                 </div>
                                 <div>
-                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('CTA configurado') }}</p>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('builder.focus.content.cta') }}</p>
                                     @if(!empty($focusLesson['cta_label']) && !empty($focusLesson['cta_url']))
                                         <p class="mt-1 font-semibold text-slate-900">{{ $focusLesson['cta_label'] }}</p>
                                         <p class="text-xs text-slate-500 break-all">{{ $focusLesson['cta_url'] }}</p>
                                     @else
-                                        <p class="mt-1 text-xs text-slate-500">{{ __('Sin CTA activo') }}</p>
+                                        <p class="mt-1 text-xs text-slate-500">{{ __('builder.focus.content.cta_none') }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -680,18 +680,18 @@
                         @case('config')
                             <div class="grid gap-3 md:grid-cols-2 text-sm text-slate-600">
                                 <div>
-                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Bloqueos') }}</p>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('builder.focus.config_cards.locks') }}</p>
                                     <ul class="mt-2 space-y-1">
-                                        <li>• {{ __('Bloqueada') }}: {{ ($focusLesson['locked'] ?? false) ? __('Sí') : __('No') }}</li>
-                                        <li>• {{ __('Liberación programada') }}: {{ $focusLesson['release_at'] ? \Illuminate\Support\Carbon::parse($focusLesson['release_at'])->diffForHumans() : __('—') }}</li>
+                                        <li>• {{ __('builder.focus.config_cards.locked') }}: {{ ($focusLesson['locked'] ?? false) ? __('builder.focus.content.yes') : __('builder.focus.content.no') }}</li>
+                                        <li>• {{ __('builder.focus.config_cards.scheduled') }}: {{ $focusLesson['release_at'] ? \Illuminate\Support\Carbon::parse($focusLesson['release_at'])->diffForHumans() : __('builder.focus.config_cards.na') }}</li>
                                     </ul>
                                 </div>
                                 <div>
-                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('Metadatos') }}</p>
+                                    <p class="text-[11px] uppercase font-semibold text-slate-400">{{ __('builder.focus.config_cards.metadata') }}</p>
                                     <ul class="mt-2 space-y-1">
-                                        <li>• {{ __('Badge') }}: {{ $focusLesson['badge'] ?? __('N/A') }}</li>
-                                        <li>• {{ __('CTA label') }}: {{ $focusLesson['cta_label'] ?? __('N/A') }}</li>
-                                        <li>• {{ __('CTA URL') }}: {{ $focusLesson['cta_url'] ? __('Definido') : __('Pendiente') }}</li>
+                                        <li>• {{ __('builder.focus.config_cards.badge') }}: {{ $focusLesson['badge'] ?? __('builder.focus.config_cards.na') }}</li>
+                                        <li>• {{ __('builder.focus.config_cards.cta_label') }}: {{ $focusLesson['cta_label'] ?? __('builder.focus.config_cards.na') }}</li>
+                                        <li>• {{ __('builder.focus.config_cards.cta_url') }}: {{ $focusLesson['cta_url'] ? __('builder.focus.config_cards.defined') : __('builder.focus.config_cards.pending') }}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -702,30 +702,30 @@
                                 <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
                                     @if($practiceMeta)
                                         <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-indigo-700">
-                                            🎙️ {{ __('Prácticas activas') }}: {{ $practiceMeta['total'] }}
+                                            🎙️ {{ __('builder.focus.practice.active') }}: {{ $practiceMeta['total'] }}
                                         </span>
                                         @if($practiceMeta['next_start'] ?? null)
                                             <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-slate-600">
-                                                ⏭ {{ __('Próxima') }}: {{ \Illuminate\Support\Carbon::parse($practiceMeta['next_start'])->translatedFormat('d M H:i') }}
+                                                ⏭ {{ __('builder.focus.practice.next') }}: {{ \Illuminate\Support\Carbon::parse($practiceMeta['next_start'])->translatedFormat('d M H:i') }}
                                             </span>
                                         @endif
                                         @if($practiceMeta['requires_pack'] ?? false)
                                             <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">
-                                                ⚠️ {{ __('Requiere pack') }}
+                                                ⚠️ {{ __('builder.focus.practice.requires_pack') }}
                                             </span>
                                         @endif
                                     @else
-                                        <span class="text-xs text-slate-500">{{ __('No hay prácticas vinculadas a esta lección.') }}</span>
+                                        <span class="text-xs text-slate-500">{{ __('builder.focus.practice.empty_state') }}</span>
                                     @endif
                                 </div>
                                 <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
                                     @if($packMeta)
                                         <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
-                                            💼 {{ $packMeta['title'] ?? __('Pack asignado') }}
+                                            💼 {{ $packMeta['title'] ?? __('builder.focus.practice.pack_assigned') }}
                                         </span>
-                                        <span class="text-xs text-slate-500">{{ $packMeta['sessions'] ?? '—' }} {{ __('sesiones') }} · ${{ number_format($packMeta['price'] ?? 0, 0) }} {{ $packMeta['currency'] ?? '' }}</span>
+                                        <span class="text-xs text-slate-500">{{ $packMeta['sessions'] ?? '—' }} {{ __('builder.focus.practice.sessions') }} · ${{ number_format($packMeta['price'] ?? 0, 0) }} {{ $packMeta['currency'] ?? '' }}</span>
                                     @else
-                                        <span class="text-xs text-slate-500">{{ __('No hay pack publicado para esta lección.') }}</span>
+                                        <span class="text-xs text-slate-500">{{ __('builder.focus.practice.no_pack') }}</span>
                                     @endif
                                 </div>
                                 <div class="flex flex-wrap gap-2">
@@ -734,7 +734,7 @@
                                            target="_blank"
                                            rel="noopener"
                                            class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700 hover:border-indigo-300">
-                                            {{ __('Abrir planner Discord') }} ↗
+                                            {{ __('builder.focus.practice.open_planner') }} ↗
                                         </a>
                                     @endif
                                     @if($packsManagerRoute ?? false)
@@ -742,7 +742,7 @@
                                            target="_blank"
                                            rel="noopener"
                                            class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-700 hover:border-emerald-300">
-                                            {{ __('Gestionar packs') }} ↗
+                                            {{ __('builder.focus.practice.manage_packs') }} ↗
                                         </a>
                                     @endif
                                 </div>
@@ -805,7 +805,7 @@
                     window.dispatchEvent(new CustomEvent('builder:flash', {
                         detail: {
                             variant: 'success',
-                            message: '{{ __('Lección guardada') }}'
+                            message: '{{ __('builder.notifications.lesson_saved') }}'
                         }
                     }));
 
@@ -938,79 +938,6 @@
             });
 
             document.addEventListener('livewire:load', () => {
-                const builderRoot = document.querySelector('[data-builder-root]');
-                const setDragState = (state) => {
-                    if (builderRoot) {
-                        builderRoot.setAttribute('data-state', state);
-                    }
-                };
-
-                const initializeSortables = () => {
-                    const chaptersContainer = document.querySelector('[data-sortable-chapters]');
-                    if (! chaptersContainer) {
-                        return;
-                    }
-
-                    if (chaptersContainer._sortable) {
-                        chaptersContainer._sortable.destroy();
-                    }
-
-                    chaptersContainer._sortable = Sortable.create(chaptersContainer, {
-                        handle: '.drag-handle',
-                        animation: 150,
-                        ghostClass: 'opacity-50',
-                        onChoose: () => setDragState('dragging'),
-                        onUnchoose: () => setDragState('idle'),
-                        onEnd: (evt) => {
-                            setDragState('idle');
-                            dispatchOrder(evt);
-                        },
-                    });
-
-                    chaptersContainer.querySelectorAll('[data-sortable-lessons]').forEach((lessonsContainer) => {
-                        if (lessonsContainer._sortable) {
-                            lessonsContainer._sortable.destroy();
-                        }
-
-                        lessonsContainer._sortable = Sortable.create(lessonsContainer, {
-                            group: 'lessons',
-                            handle: '.drag-handle',
-                            animation: 150,
-                            ghostClass: 'opacity-50',
-                            onChoose: () => setDragState('dragging'),
-                            onUnchoose: () => setDragState('idle'),
-                            onEnd: (evt) => {
-                                setDragState('idle');
-                                dispatchOrder(evt);
-                            },
-                        });
-                    });
-                };
-
-                const dispatchOrder = () => {
-                    const chaptersContainer = document.querySelector('[data-sortable-chapters]');
-                    if (! chaptersContainer) {
-                        return;
-                    }
-
-                    const structure = Array.from(chaptersContainer.querySelectorAll('[data-chapter-item]')).map((chapterEl) => {
-                        const lessonsContainer = chapterEl.querySelector('[data-sortable-lessons]');
-                        const lessons = lessonsContainer
-                            ? Array.from(lessonsContainer.querySelectorAll('[data-lesson-item]')).map((lessonEl) => ({
-                                id: lessonEl.dataset.lessonId,
-                            }))
-                            : [];
-
-                        return {
-                            id: chapterEl.dataset.chapterId,
-                            lessons,
-                        };
-                    });
-
-                    window.Livewire.dispatch('builder-reorder', { chapters: structure });
-                };
-
-                initializeSortables();
                 let cleanupShortcuts = null;
 
                 const callShortcut = (eventName) => {
@@ -1063,7 +990,6 @@
 
                 Livewire.on('builder:refresh-sortables', () => {
                     setTimeout(() => {
-                        initializeSortables();
                         ensureShortcuts();
                     }, 60);
                 });

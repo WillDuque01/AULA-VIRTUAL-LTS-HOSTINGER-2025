@@ -1,7 +1,9 @@
-@php($title = $props['title'] ?? '')
-@php($target = $props['target_date'] ?? now()->addDay()->toDateTimeString())
-@php($ctaLabel = $props['cta_label'] ?? __('Apartar cupo'))
-@php($ctaUrl = $props['cta_url'] ?? '#')
+@php
+    $title = $props['title'] ?? '';
+    $target = $props['target_date'] ?? now()->addDay()->toDateTimeString();
+    $ctaLabel = $props['cta_label'] ?? __('Apartar cupo');
+    $ctaUrl = $props['cta_url'] ?? '#';
+@endphp
 
 <section class="py-16 bg-slate-900 text-white">
     <div class="mx-auto max-w-4xl text-center space-y-6 px-6"

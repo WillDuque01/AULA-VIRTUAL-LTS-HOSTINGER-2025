@@ -1,6 +1,8 @@
-@php($layout = $blocks ?? [])
-@php($settings = $settings ?? [])
-@php($theme = $settings['theme'] ?? [])
+@php
+    $layout = $blocks ?? [];
+    $settings = $settings ?? [];
+    $theme = $settings['theme'] ?? [];
+@endphp
 <x-app-layout>
     <div class="bg-slate-50" style="
         --page-primary: {{ $theme['primary'] ?? '#0f172a' }};

@@ -1,15 +1,21 @@
-@php($title = $props['title'] ?? '')
-@php($max = (int) ($props['max_items'] ?? 3))
-@php($showBadges = $props['show_badges'] ?? true)
 @php
+    $title = $props['title'] ?? '';
+    $max = (int) ($props['max_items'] ?? 3);
+    $showBadges = $props['show_badges'] ?? true;
+
     $query = \App\Models\Product::query()->published();
+
     if (!empty($props['product_ids'])) {
         $ids = $props['product_ids'];
-        $products = $query->whereIn('id', $ids)->get()->sortBy(fn($p) => array_search($p->id, $ids))->values();
+        $products = $query->whereIn('id', $ids)
+            ->get()
+            ->sortBy(fn ($p) => array_search($p->id, $ids))
+            ->values();
     } else {
         if (!empty($props['category'])) {
             $query->where('category', $props['category']);
         }
+
         $products = $query->featured()->limit($max)->get();
     }
 @endphp
@@ -26,7 +32,9 @@
             </div>
             <div class="grid gap-4 md:grid-cols-3">
                 @foreach($products as $product)
-                    @php($isSoldOut = $product->isSoldOut())
+                    @php
+                        $isSoldOut = $product->isSoldOut();
+                    @endphp
                     <article class="rounded-3xl border border-slate-100 p-5 shadow-sm {{ $isSoldOut ? 'opacity-80' : '' }}">
                         <div class="flex items-center justify-between">
                             <p class="text-sm font-semibold text-slate-500">{{ $product->category }}</p>
@@ -36,7 +44,9 @@
                         </div>
                         <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ $product->title }}</h3>
                         <p class="text-sm text-slate-500">{{ $product->excerpt }}</p>
-                        @php($resource = $product->productable)
+                        @php
+                            $resource = $product->productable;
+                        @endphp
                         @if($resource instanceof \App\Models\CohortTemplate)
                             <div class="mt-2 space-y-1 text-xs">
                                 <p class="text-slate-500">

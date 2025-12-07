@@ -1,9 +1,11 @@
 import './bootstrap';
 import registerCelebrations from './modules/celebrations.js';
 import { animatedCount } from './animations.js'; // [AGENTE: GPT-5.1 CODEX] - Extraemos la lógica compartida de contadores
+import { courseBuilderDnD } from './modules/course-builder-dnd.js'; // [AGENTE: GPT-5.1 CODEX] - Drag & drop centralizado para el Course Builder
 
 document.addEventListener('alpine:init', () => { // [AGENTE: GPT-5.1 CODEX] - Usa la instancia Alpine que provee Livewire
     window.Alpine?.data('animatedCount', animatedCount);
+    window.Alpine?.data('courseBuilderDnD', courseBuilderDnD);
     registerCelebrations();
 });
 

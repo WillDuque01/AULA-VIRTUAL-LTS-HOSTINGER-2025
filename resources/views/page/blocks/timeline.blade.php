@@ -1,5 +1,7 @@
-@php($title = $props['title'] ?? '')
-@php($steps = $props['steps'] ?? [])
+@php
+    $title = $props['title'] ?? '';
+    $steps = $props['steps'] ?? [];
+@endphp
 
 @if(!empty($steps))
     <section class="bg-slate-50 py-16">

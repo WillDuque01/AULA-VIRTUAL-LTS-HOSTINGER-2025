@@ -19,7 +19,11 @@
             </div>
             <div class="mt-8 grid gap-4 lg:grid-cols-3">
                 @foreach($packages as $package)
-                    @php($pricePerSession = $package->sessions_count > 0 ? $package->price_amount / $package->sessions_count : $package->price_amount)
+                    @php
+                        $pricePerSession = $package->sessions_count > 0
+                            ? $package->price_amount / $package->sessions_count
+                            : $package->price_amount;
+                    @endphp
                     <div class="rounded-3xl bg-white/5 p-5 border border-white/10 backdrop-blur text-left flex flex-col gap-3">
                         <p class="text-xs uppercase tracking-wide text-emerald-300">{{ $package->is_global ? 'Teacher Admin' : 'Coach asignado' }}</p>
                         <h3 class="text-xl font-semibold">{{ $package->title }}</h3>

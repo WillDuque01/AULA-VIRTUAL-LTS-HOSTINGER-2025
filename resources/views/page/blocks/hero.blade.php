@@ -1,8 +1,10 @@
-@php($headline = $props['headline'] ?? '')
-@php($subheadline = $props['subheadline'] ?? '')
-@php($ctaLabel = $props['cta_label'] ?? null)
-@php($ctaUrl = $props['cta_url'] ?? '#')
-@php($image = $props['image'] ?? null)
+@php
+    $headline = $props['headline'] ?? '';
+    $subheadline = $props['subheadline'] ?? '';
+    $ctaLabel = $props['cta_label'] ?? null;
+    $ctaUrl = $props['cta_url'] ?? '#';
+    $image = $props['image'] ?? null;
+@endphp
 
 <section class="relative overflow-hidden bg-white py-16">
     <div class="mx-auto flex max-w-6xl flex-col gap-10 px-6 lg:flex-row lg:items-center">

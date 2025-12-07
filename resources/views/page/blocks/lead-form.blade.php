@@ -1,7 +1,9 @@
-@php($title = $props['title'] ?? '')
-@php($description = $props['description'] ?? '')
-@php($fields = $props['fields'] ?? [])
-@php($ctaLabel = $props['cta_label'] ?? __('Enviar'))
+@php
+    $title = $props['title'] ?? '';
+    $description = $props['description'] ?? '';
+    $fields = $props['fields'] ?? [];
+    $ctaLabel = $props['cta_label'] ?? __('Enviar');
+@endphp
 
 <section class="py-16 bg-white">
     <div class="mx-auto max-w-4xl rounded-3xl border border-slate-100 bg-slate-50/70 p-8 shadow-sm">

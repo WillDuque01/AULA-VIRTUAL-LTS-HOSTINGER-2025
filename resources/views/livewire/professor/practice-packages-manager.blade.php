@@ -2,40 +2,40 @@
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Paquetes premium</p>
-                <h3 class="text-lg font-semibold text-slate-900">Crea packs de prácticas</h3>
-                <p class="text-xs text-slate-500">Define sesiones en vivo, precio y plataforma (Discord por defecto).</p>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('Premium packages') }}</p>
+                <h3 class="text-lg font-semibold text-slate-900">{{ __('Create practice packs') }}</h3>
+                <p class="text-xs text-slate-500">{{ __('Define live sessions, price and platform (Discord by default).') }}</p>
             </div>
         </div>
         <form wire:submit.prevent="savePackage" class="mt-4 grid gap-4 md:grid-cols-2">
             <label class="space-y-1 text-sm text-slate-600">
-                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Título</span>
+                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Title') }}</span>
                 <input type="text" wire:model.defer="form.title" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Pack Conversación B2">
             </label>
             <label class="space-y-1 text-sm text-slate-600">
-                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Subtítulo</span>
+                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Subtitle') }}</span>
                 <input type="text" wire:model.defer="form.subtitle" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="3 sesiones enfocadas en pronunciación">
             </label>
             <label class="space-y-1 text-sm text-slate-600 md:col-span-2">
-                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Descripción</span>
+                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Description') }}</span>
                 <textarea wire:model.defer="form.description" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Incluye feedback 1:1, guía personalizada y resumen descargable."></textarea>
             </label>
             <div class="grid gap-4 sm:grid-cols-3 md:col-span-2">
                 <label class="space-y-1 text-sm text-slate-600">
-                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Sesiones</span>
+                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Sessions') }}</span>
                     <input type="number" min="1" wire:model.defer="form.sessions_count" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </label>
                 <label class="space-y-1 text-sm text-slate-600">
-                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Precio</span>
+                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Price') }}</span>
                     <input type="number" min="0" step="0.01" wire:model.defer="form.price_amount" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </label>
                 <label class="space-y-1 text-sm text-slate-600">
-                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Moneda</span>
+                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Currency') }}</span>
                     <input type="text" wire:model.defer="form.price_currency" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="USD">
                 </label>
             </div>
             <label class="space-y-1 text-sm text-slate-600">
-                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Lección objetivo</span>
+                <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Target lesson') }}</span>
                 <select wire:model.defer="form.lesson_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">{{ __('Opcional') }}</option>
                     @foreach($lessons as $lesson)
@@ -47,7 +47,7 @@
             </label>
             <div class="grid gap-4 sm:grid-cols-2">
                 <label class="space-y-1 text-sm text-slate-600">
-                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">Plataforma</span>
+                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('Platform') }}</span>
                     <select wire:model.defer="form.delivery_platform" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="discord">Discord (recomendado)</option>
                         <option value="zoom">Zoom</option>
@@ -56,7 +56,7 @@
                     </select>
                 </label>
                 <label class="space-y-1 text-sm text-slate-600">
-                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">URL / Canal</span>
+                    <span class="text-xs uppercase font-semibold tracking-wide text-slate-400">{{ __('URL / Channel') }}</span>
                     <input type="url" wire:model.defer="form.delivery_url" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://discord.gg/...">
                 </label>
             </div>
@@ -64,12 +64,12 @@
                 <div class="flex items-center gap-4 text-sm text-slate-600 md:col-span-2">
                     <label class="inline-flex items-center gap-2">
                         <input type="checkbox" wire:model.defer="form.is_global" class="rounded border-slate-300 text-slate-600 focus:ring-slate-500">
-                        <span>Visible para todos los visitantes</span>
+                        <span>{{ __('Visible to all visitors') }}</span>
                     </label>
                     <label class="inline-flex items-center gap-2">
-                        <span>Visibilidad</span>
+                        <span>{{ __('Visibility') }}</span>
                         <select wire:model.defer="form.visibility" class="rounded border border-slate-300 px-3 py-1 text-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="private">Solo mis estudiantes</option>
+                            <option value="private">{{ __('Only my students') }}</option>
                             <option value="public">Público</option>
                         </select>
                     </label>
@@ -77,7 +77,7 @@
             @endif
             <div class="md:col-span-2 flex items-center justify-end">
                 <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
-                    Guardar paquete
+                    {{ __('Save package') }}
                 </button>
             </div>
         </form>
@@ -85,7 +85,7 @@
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-slate-100">
-            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Mis paquetes</p>
+            <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('My packages') }}</p>
         </div>
         <div class="divide-y divide-slate-100">
             @forelse($packages as $package)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Support\Redirects\DashboardRedirector;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,39 +54,10 @@ class AuthenticatedSessionController extends Controller
 
     protected function resolveDashboardRedirect(Request $request): string
     {
-        $user = $request->user();
-        $targetRole = $request->string('target_role')->lower()->value();
-        $locale = $request->route('locale') ?? app()->getLocale();
-
-        $map = [
-            'admin' => [
-                'roles' => ['Admin'],
-                'route' => 'dashboard.admin',
-            ],
-            'teacher_admin' => [
-                'roles' => ['teacher_admin', 'Profesor'],
-                'route' => 'dashboard',
-            ],
-            'teacher' => [
-                'roles' => ['teacher'],
-                'route' => 'dashboard.teacher',
-            ],
-            'student' => [
-                'roles' => ['student_free', 'student_paid', 'student_vip'],
-                'route' => 'dashboard.student',
-            ],
-        ];
-
-        if ($targetRole && isset($map[$targetRole]) && $user?->hasAnyRole($map[$targetRole]['roles'])) {
-            return route($map[$targetRole]['route'], ['locale' => $locale], false);
-        }
-
-        foreach ($map as $entry) {
-            if ($user?->hasAnyRole($entry['roles'])) {
-                return route($entry['route'], ['locale' => $locale], false);
-            }
-        }
-
-        return route('dashboard', ['locale' => $locale], false);
+        return DashboardRedirector::resolve(
+            $request->user(),
+            $request->route('locale') ?? app()->getLocale(),
+            $request->string('target_role')->lower()->value()
+        );
     }
 }

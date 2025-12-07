@@ -16,34 +16,34 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        {{ __('navigation.dashboard') }}
                     </x-nav-link>
                     @can('manage-settings')
                         <x-nav-link :href="route('admin.branding')" :active="request()->routeIs('admin.branding')">
-                            Branding
+                            {{ __('navigation.branding') }}
                         </x-nav-link>
                         <x-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
-                            Integraciones
+                            {{ __('navigation.integrations') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.integrations.outbox')" :active="request()->routeIs('admin.integrations.outbox')">
-                            {{ __('Outbox') }}
+                            {{ __('navigation.outbox') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.payments.simulator')" :active="request()->routeIs('admin.payments.simulator')">
-                            {{ __('Pagos') }}
+                            {{ __('navigation.payments') }}
                         </x-nav-link>
                     @endcan
                     @if($currentUser?->can('manage-settings') || $currentUser?->hasRole('teacher_admin'))
                         <x-nav-link :href="route('admin.data-porter')" :active="request()->routeIs('admin.data-porter')">
-                            DataPorter
+                            {{ __('navigation.data_porter') }}
                         </x-nav-link>
                     @endif
                     @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
                         <x-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
-                            {{ __('Mensajes') }}
+                            {{ __('navigation.messages') }}
                         </x-nav-link>
                     @elseif($currentUser?->hasAnyRole(['student_free','student_paid','student_vip']))
                         <x-nav-link :href="route('student.messages')" :active="request()->routeIs('student.messages')">
-                            {{ __('Mensajes') }}
+                            {{ __('navigation.messages') }}
                         </x-nav-link>
                     @endif
                     <x-locale-switcher />
@@ -101,34 +101,34 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('navigation.dashboard') }}
             </x-responsive-nav-link>
             @can('manage-settings')
                 <x-responsive-nav-link :href="route('admin.branding')" :active="request()->routeIs('admin.branding')">
-                    Branding
+                    {{ __('navigation.branding') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('provisioner')" :active="request()->routeIs('provisioner')">
-                    Integraciones
+                    {{ __('navigation.integrations') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.integrations.outbox')" :active="request()->routeIs('admin.integrations.outbox')">
-                    {{ __('Outbox') }}
+                    {{ __('navigation.outbox') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.payments.simulator')" :active="request()->routeIs('admin.payments.simulator')">
-                    {{ __('Pagos') }}
+                    {{ __('navigation.payments') }}
                 </x-responsive-nav-link>
             @endcan
             @if($currentUser?->can('manage-settings') || $currentUser?->hasRole('teacher_admin'))
                 <x-responsive-nav-link :href="route('admin.data-porter')" :active="request()->routeIs('admin.data-porter')">
-                    DataPorter
+                    {{ __('navigation.data_porter') }}
                 </x-responsive-nav-link>
             @endif
             @if($currentUser?->hasAnyRole(['teacher_admin','teacher']))
                 <x-responsive-nav-link :href="route('admin.messages')" :active="request()->routeIs('admin.messages')">
-                    {{ __('Mensajes') }}
+                    {{ __('navigation.messages') }}
                 </x-responsive-nav-link>
             @elseif($currentUser?->hasAnyRole(['student_free','student_paid','student_vip']))
                 <x-responsive-nav-link :href="route('student.messages')" :active="request()->routeIs('student.messages')">
-                    {{ __('Mensajes') }}
+                    {{ __('navigation.messages') }}
                 </x-responsive-nav-link>
             @endif
             <div class="px-4">

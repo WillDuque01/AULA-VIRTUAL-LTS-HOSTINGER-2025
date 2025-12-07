@@ -25,9 +25,9 @@
     <header class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Page Builder') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('page_builder.header.label') }}</p>
                 <h1 class="text-2xl font-semibold text-slate-900">{{ $page->title }}</h1>
-                <p class="text-sm text-slate-500">{{ __('Arrastra bloques o usa los botones para construir la landing.') }}</p>
+                <p class="text-sm text-slate-500">{{ __('page_builder.header.subtitle') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500">
@@ -50,7 +50,7 @@
                 <button type="button"
                         wire:click="saveDraft"
                         class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-400">
-                    {{ __('Guardar borrador') }}
+                    {{ __('page_builder.actions.save_draft') }}
                 </button>
                 <button type="button"
                         wire:click="publish"
@@ -58,7 +58,7 @@
                         wire:loading.attr="disabled"
                         wire:target="publish">
                     <span wire:loading wire:target="publish" class="animate-spin">⏳</span>
-                    {{ __('Publicar página') }}
+                    {{ __('page_builder.actions.publish') }}
                 </button>
             </div>
         </div>
@@ -75,15 +75,15 @@
     <section class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Canvas interactivo') }}</p>
-                <p class="text-sm text-slate-500">{{ __('Arrastra los bloques directamente en el canvas y edita el contenido inline.') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('page_builder.canvas.title') }}</p>
+                <p class="text-sm text-slate-500">{{ __('page_builder.canvas.description') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-500">
                 <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1">
-                    ⇅ {{ __('Arrastra para reordenar') }}
+                    ⇅ {{ __('page_builder.canvas.reorder_hint') }}
                 </span>
                 <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1">
-                    ✎ {{ __('Haz clic para editar texto') }}
+                    ✎ {{ __('page_builder.canvas.edit_hint') }}
                 </span>
             </div>
         </div>
@@ -107,7 +107,7 @@
                         data-canvas-block
                         data-block-uid="{{ $blockUid }}">
                         <div class="absolute left-5 top-5 z-10 flex items-center gap-2 text-[11px] font-semibold text-slate-500 opacity-0 transition group-hover:opacity-100">
-                            <span class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1" data-canvas-handle aria-label="{{ __('Arrastrar bloque') }}">
+                            <span class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1" data-canvas-handle aria-label="{{ __('page_builder.canvas.drag_label') }}">
                                 ⇅
                             </span>
                             <span class="rounded-full border border-slate-100 bg-white px-3 py-1">{{ \Illuminate\Support\Str::headline($block['type']) }}</span>
@@ -129,7 +129,7 @@
                     </article>
                 @empty
                     <div class="rounded-[2rem] border border-dashed border-slate-200 bg-white/80 p-8 text-center text-sm text-slate-500">
-                        {{ __('Agrega bloques con los kits de la derecha para comenzar.') }}
+                        {{ __('page_builder.canvas.empty_state') }}
                     </div>
                 @endforelse
             </div>
@@ -139,7 +139,7 @@
     <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
         <aside class="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-6">
             <div class="space-y-3">
-                <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Tema') }}</h2>
+                <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('page_builder.theme.title') }}</h2>
                 @if(!empty($presets))
                     <div class="flex flex-wrap gap-2">
                         @foreach($presets as $key => $preset)
@@ -152,19 +152,19 @@
                     </div>
                 @endif
                 <label class="block text-xs font-semibold text-slate-600">
-                    {{ __('Color primario') }}
+                    {{ __('page_builder.theme.primary') }}
                     <input type="color" wire:model.defer="settings.theme.primary" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
                 </label>
                 <label class="block text-xs font-semibold text-slate-600">
-                    {{ __('Color secundario') }}
+                    {{ __('page_builder.theme.secondary') }}
                     <input type="color" wire:model.defer="settings.theme.secondary" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
                 </label>
                 <label class="block text-xs font-semibold text-slate-600">
-                    {{ __('Fondo') }}
+                    {{ __('page_builder.theme.background') }}
                     <input type="color" wire:model.defer="settings.theme.background" class="mt-1 h-10 w-full rounded-2xl border border-slate-200">
                 </label>
                 <label class="block text-xs font-semibold text-slate-600">
-                    {{ __('Tipografía (CSS)') }}
+                    {{ __('page_builder.theme.font') }}
                     <input type="text"
                            wire:model.defer="settings.theme.font_family"
                            class="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm">
@@ -172,7 +172,7 @@
             </div>
 
             <div>
-                <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Kits disponibles') }}</h2>
+                <h2 class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('page_builder.kits.title') }}</h2>
                 <div class="mt-3 space-y-2">
                     @foreach($kits as $key => $kit)
                         <button type="button"
@@ -203,7 +203,7 @@
                             <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
                                 {{ \Illuminate\Support\Str::headline($block['type']) }}
                             </p>
-                            <p class="text-sm text-slate-500">{{ __('Kit: :kit', ['kit' => $block['kit'] ?? __('Custom')]) }}</p>
+                            <p class="text-sm text-slate-500">{{ __('page_builder.blocks.kit_label', ['kit' => $block['kit'] ?? __('page_builder.blocks.custom_label')]) }}</p>
                         </div>
                         <div class="flex items-center gap-2 text-xs font-semibold">
                             <button type="button" wire:click="moveBlock({{ $index }}, 'up')" class="rounded-full border border-slate-200 px-2 py-1 text-slate-500 hover:border-slate-400">↑</button>
@@ -229,7 +229,7 @@
                 </article>
             @empty
                 <div class="rounded-3xl border border-dashed border-slate-200 bg-white/50 p-6 text-center text-sm text-slate-500">
-                    {{ __('Aún no has agregado bloques. Selecciona uno de los kits para comenzar.') }}
+                    {{ __('page_builder.blocks.empty_state') }}
                 </div>
             @endforelse
         </section>

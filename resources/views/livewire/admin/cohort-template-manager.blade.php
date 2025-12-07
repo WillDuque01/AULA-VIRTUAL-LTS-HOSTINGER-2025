@@ -36,7 +36,9 @@
                             </button>
                         </div>
                     </div>
-                    @php($availableSlots = $template->remainingSlots())
+                    @php
+                        $availableSlots = $template->remainingSlots();
+                    @endphp
                     <div class="flex flex-wrap gap-2 text-[11px] text-slate-500">
                         <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">⌛ {{ $template->duration_minutes }} min</span>
                         <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5">👥 {{ $template->capacity }} {{ __('cupos') }}</span>
@@ -70,7 +72,9 @@
                                 ⭐ {{ __('Destacado') }}
                             </span>
                         @endif
-                        @php($productMeta = $connectedProducts[$template->id] ?? null)
+                        @php
+                            $productMeta = $connectedProducts[$template->id] ?? null;
+                        @endphp
                         @if($productMeta && !empty($productMeta['product_id']))
                             <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-slate-600">
                                 🛒 {{ __('Producto') }} #{{ $productMeta['product_id'] }}
@@ -89,7 +93,20 @@
                     </div>
                     @php
                         $slotSummary = collect($template->slots ?? [])
-                            ->map(fn($slot) => ucfirst($weekdayOptions[$slot['weekday']] ?? $slot['weekday']).' · '.$slot['time'])
+                            ->map(function ($slot) use ($weekdayOptions) {
+                                $weekdayKey = strtolower((string) ($slot['weekday'] ?? ''));
+                                $weekdayLabel = $weekdayKey
+                                    ? ucfirst($weekdayOptions[$weekdayKey] ?? $weekdayKey)
+                                    : __('Sin día');
+                                $timeLabel = $slot['time'] ?? '--:--';
+
+                                if (! $weekdayKey && $timeLabel === '--:--') {
+                                    return null;
+                                }
+
+                                return "{$weekdayLabel} · {$timeLabel}";
+                            })
+                            ->filter()
                             ->implode(' | ');
                     @endphp
                     @if(! empty($slotSummary))

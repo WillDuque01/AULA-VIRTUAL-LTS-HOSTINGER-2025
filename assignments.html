@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="yFBd3zMT6hkV5olB0117QKrnbDkBdd39FoB5QYQh">
+
+        <title>LetsTalkSpanish Academy</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Scripts -->
+        <link rel="preload" as="style" href="https://app.letstalkspanish.io/build/assets/app-B8zbhRGl.css" /><link rel="modulepreload" as="script" href="https://app.letstalkspanish.io/build/assets/app-BLoHMBTY.js" /><link rel="stylesheet" href="https://app.letstalkspanish.io/build/assets/app-B8zbhRGl.css" data-navigate-track="reload" /><script type="module" src="https://app.letstalkspanish.io/build/assets/app-BLoHMBTY.js" data-navigate-track="reload"></script>        <!-- Livewire Styles --><style >[wire\:loading][wire\:loading], [wire\:loading\.delay][wire\:loading\.delay], [wire\:loading\.inline-block][wire\:loading\.inline-block], [wire\:loading\.inline][wire\:loading\.inline], [wire\:loading\.block][wire\:loading\.block], [wire\:loading\.flex][wire\:loading\.flex], [wire\:loading\.table][wire\:loading\.table], [wire\:loading\.grid][wire\:loading\.grid], [wire\:loading\.inline-flex][wire\:loading\.inline-flex] {display: none;}[wire\:loading\.delay\.none][wire\:loading\.delay\.none], [wire\:loading\.delay\.shortest][wire\:loading\.delay\.shortest], [wire\:loading\.delay\.shorter][wire\:loading\.delay\.shorter], [wire\:loading\.delay\.short][wire\:loading\.delay\.short], [wire\:loading\.delay\.default][wire\:loading\.delay\.default], [wire\:loading\.delay\.long][wire\:loading\.delay\.long], [wire\:loading\.delay\.longer][wire\:loading\.delay\.longer], [wire\:loading\.delay\.longest][wire\:loading\.delay\.longest] {display: none;}[wire\:offline][wire\:offline] {display: none;}[wire\:dirty]:not(textarea):not(input):not(select) {display: none;}:root {--livewire-progress-bar-color: #2299dd;}[x-cloak] {display: none !important;}[wire\:cloak] {display: none !important;}</style>
+        <style>
+            :root {
+                --brand-primary: #0f172a;
+                --brand-secondary: #1d4ed8;
+                --brand-accent: #f97316;
+                --brand-neutral: #cbd5f5;
+                --brand-radius: 0.75rem;
+                --brand-font: Clash Display, &quot;Space Grotesk&quot;, &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+                --brand-heading-font: Clash Display, &quot;Space Grotesk&quot;, &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+                --brand-body-font: Inter, &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+                --brand-type-scale: 1.125;
+                --brand-base-font-size: 1rem;
+                --brand-line-height: 1.6;
+                --brand-letter-spacing: 0em;
+                --brand-spacing-unit: 0.5rem;
+                --brand-shadow-soft: 0 24px 48px rgba(15,23,42,0.16);
+                --brand-shadow-bold: 0 35px 65px rgba(15,23,42,0.28);
+                --brand-container-width: 1200px;
+            }
+            body {
+                font-family: var(--brand-body-font, var(--brand-font)), 'Figtree', sans-serif;
+                font-size: var(--brand-base-font-size, 1rem);
+                line-height: var(--brand-line-height, 1.5);
+                letter-spacing: var(--brand-letter-spacing, 0);
+            }
+            h1, h2, h3, h4, h5, h6 {
+                font-family: var(--brand-heading-font, var(--brand-font)), 'Figtree', sans-serif;
+                letter-spacing: calc(var(--brand-letter-spacing, 0) * 0.75);
+            }
+        </style>
+                                                            <link rel="alternate" hreflang="es" href="https://app.letstalkspanish.io/es/admin/assignments">
+                                            <link rel="alternate" hreflang="en" href="https://app.letstalkspanish.io/en/admin/assignments">
+                        <link rel="canonical" href="https://app.letstalkspanish.io/es/admin/assignments">
+            </head>
+    <body class="font-sans antialiased ">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
+            <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+        <!-- Primary Navigation Menu -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <!-- Logo -->
+                <div class="shrink-0 flex items-center">
+                    <a href="https://app.letstalkspanish.io/es/dashboard">
+                        <img src="https://app.letstalkspanish.io/images/logo.png" alt="LetsTalkSpanish Academy" class="block h-9 w-auto fill-current text-gray-800">
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
+                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/dashboard">
+    Panel
+</a>
+                                            <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/branding">
+    Branding
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/provisioner">
+    Integraciones
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/integrations/outbox">
+    Outbox
+</a>
+                        <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/payments/simulator">
+    Pagos
+</a>
+                                                                <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/data-porter">
+    DataPorter
+</a>
+                                                                <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/messages">
+    Mensajes
+</a>
+                                        <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                                <a href="https://app.letstalkspanish.io/es/admin/assignments"
+               class="px-2 py-1 rounded-md border border-blue-500 text-blue-600 bg-blue-50">
+                ES
+            </a>
+                                <a href="https://app.letstalkspanish.io/en/admin/assignments"
+               class="px-2 py-1 rounded-md border border-transparent hover:border-slate-300">
+                EN
+            </a>
+            </div>
+
+                </div>
+            </div>
+
+            <!-- Settings Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
+    <div @click="open = ! open">
+        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                            <div>LTS Academy Admin</div>
+
+                            <div class="ms-1">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </button>
+    </div>
+
+    <div x-show="open"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ltr:origin-top-right rtl:origin-top-left end-0"
+            style="display: none;"
+            @click="open = false">
+        <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white">
+            <a class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/profile">Perfil</a>
+
+                        <!-- Authentication -->
+                        <form method="POST" action="https://app.letstalkspanish.io/es/logout">
+                            <input type="hidden" name="_token" value="yFBd3zMT6hkV5olB0117QKrnbDkBdd39FoB5QYQh" autocomplete="off">
+                            <a class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/logout" onclick="event.preventDefault();
+                                                this.closest('form').submit();">Cerrar sesión</a>
+                        </form>
+        </div>
+    </div>
+</div>
+            </div>
+
+            <!-- Hamburger -->
+            <div class="-me-2 flex items-center sm:hidden">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Navigation Menu -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+            <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/dashboard">
+    Panel
+</a>
+                            <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/branding">
+    Branding
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/provisioner">
+    Integraciones
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/integrations/outbox">
+    Outbox
+</a>
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/payments/simulator">
+    Pagos
+</a>
+                                        <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/data-porter">
+    DataPorter
+</a>
+                                        <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/admin/messages">
+    Mensajes
+</a>
+                        <div class="px-4">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                                <a href="https://app.letstalkspanish.io/es/admin/assignments"
+               class="px-2 py-1 rounded-md border border-blue-500 text-blue-600 bg-blue-50">
+                ES
+            </a>
+                                <a href="https://app.letstalkspanish.io/en/admin/assignments"
+               class="px-2 py-1 rounded-md border border-transparent hover:border-slate-300">
+                EN
+            </a>
+            </div>
+
+            </div>
+        </div>
+
+        <!-- Responsive Settings Options -->
+        <div class="pt-4 pb-1 border-t border-gray-200">
+            <div class="px-4">
+                <div class="font-medium text-base text-gray-800">LTS Academy Admin</div>
+                <div class="font-medium text-sm text-gray-500">academy@letstalkspanish.io</div>
+            </div>
+
+            <div class="mt-3 space-y-1">
+                <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/profile">
+    Perfil
+</a>
+
+                <!-- Authentication -->
+                <form method="POST" action="https://app.letstalkspanish.io/es/logout">
+                    <input type="hidden" name="_token" value="yFBd3zMT6hkV5olB0117QKrnbDkBdd39FoB5QYQh" autocomplete="off">
+                    <a class="block w-full ps-3 pe-4 py-2 border-l-4 border-transparent text-start text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out" href="https://app.letstalkspanish.io/es/logout" onclick="event.preventDefault();
+                                        this.closest('form').submit();">
+    Cerrar sesión
+</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+                                                                <span class="sr-only" aria-hidden="true">Completa tu perfil</span>
+                                                    <!-- Teacher profile -->
+                                <div wire:snapshot="{&quot;data&quot;:{&quot;summary&quot;:[{&quot;percent&quot;:0,&quot;steps&quot;:[[[{&quot;key&quot;:&quot;basic&quot;,&quot;label&quot;:&quot;Datos b\u00e1sicos&quot;,&quot;description&quot;:&quot;Nombres y apellidos tal como aparecer\u00e1n en certificados.&quot;,&quot;fields&quot;:[[&quot;first_name&quot;,&quot;last_name&quot;],{&quot;s&quot;:&quot;arr&quot;}],&quot;completed&quot;:false,&quot;missing&quot;:[[&quot;first_name&quot;,&quot;last_name&quot;],{&quot;s&quot;:&quot;arr&quot;}]},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;key&quot;:&quot;contact&quot;,&quot;label&quot;:&quot;Contacto&quot;,&quot;description&quot;:&quot;Tel\u00e9fono o WhatsApp para coordinaciones r\u00e1pidas.&quot;,&quot;fields&quot;:[[&quot;phone&quot;],{&quot;s&quot;:&quot;arr&quot;}],&quot;completed&quot;:false,&quot;missing&quot;:[[&quot;phone&quot;],{&quot;s&quot;:&quot;arr&quot;}]},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;key&quot;:&quot;location&quot;,&quot;label&quot;:&quot;Ubicaci\u00f3n&quot;,&quot;description&quot;:&quot;Pa\u00eds, regi\u00f3n y ciudad para personalizar tu plan.&quot;,&quot;fields&quot;:[[&quot;country&quot;,&quot;state&quot;,&quot;city&quot;],{&quot;s&quot;:&quot;arr&quot;}],&quot;completed&quot;:false,&quot;missing&quot;:[[&quot;country&quot;,&quot;state&quot;,&quot;city&quot;],{&quot;s&quot;:&quot;arr&quot;}]},{&quot;s&quot;:&quot;arr&quot;}],[{&quot;key&quot;:&quot;teacher&quot;,&quot;label&quot;:&quot;Perfil docente&quot;,&quot;description&quot;:&quot;Experiencia, idiomas y especialidades mostradas a los alumnos.&quot;,&quot;fields&quot;:[[&quot;headline&quot;,&quot;bio&quot;,&quot;teaching_since&quot;,&quot;specialties&quot;,&quot;languages&quot;],{&quot;s&quot;:&quot;arr&quot;}],&quot;completed&quot;:false,&quot;missing&quot;:[[&quot;headline&quot;,&quot;bio&quot;,&quot;teaching_since&quot;,&quot;specialties&quot;,&quot;languages&quot;],{&quot;s&quot;:&quot;arr&quot;}]},{&quot;s&quot;:&quot;arr&quot;}]],{&quot;s&quot;:&quot;arr&quot;}],&quot;missing_fields&quot;:[[&quot;first_name&quot;,&quot;last_name&quot;,&quot;phone&quot;,&quot;country&quot;,&quot;state&quot;,&quot;city&quot;,&quot;headline&quot;,&quot;bio&quot;,&quot;teaching_since&quot;,&quot;specialties&quot;,&quot;languages&quot;],{&quot;s&quot;:&quot;arr&quot;}],&quot;is_complete&quot;:false},{&quot;s&quot;:&quot;arr&quot;}],&quot;form&quot;:[{&quot;first_name&quot;:null,&quot;last_name&quot;:null,&quot;phone&quot;:null,&quot;country&quot;:null,&quot;state&quot;:null,&quot;city&quot;:null,&quot;headline&quot;:null,&quot;bio&quot;:null,&quot;teaching_since&quot;:null,&quot;specialties_input&quot;:&quot;&quot;,&quot;languages_input&quot;:&quot;&quot;,&quot;certifications_input&quot;:&quot;&quot;,&quot;linkedin_url&quot;:null,&quot;teacher_notes&quot;:null},{&quot;s&quot;:&quot;arr&quot;}],&quot;expanded&quot;:&quot;basic&quot;,&quot;isTeacher&quot;:true},&quot;memo&quot;:{&quot;id&quot;:&quot;YSwaBTYNz4nGOdgjE6Tu&quot;,&quot;name&quot;:&quot;profile.completion-banner&quot;,&quot;path&quot;:&quot;es\/admin\/assignments&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;es&quot;},&quot;checksum&quot;:&quot;77aacf06f1de642d2ff700d2d0f995a5d98496ed8553c93f8614437c58314cac&quot;}" wire:effects="[]" wire:id="YSwaBTYNz4nGOdgjE6Tu">
+<!--[if BLOCK]><![endif]-->    <section class="bg-amber-50/80 border border-amber-100 py-5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-500">Completa tu perfil</p>
+                    <h3 class="text-lg font-semibold text-amber-900">
+                        Tu perfil está completado al 0%
+                    </h3>
+                    <p class="text-sm text-amber-800/80">
+                        Añade tus datos para personalizar recomendaciones, certificados y recordatorios.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-32 h-2 rounded-full bg-amber-100">
+                        <div class="h-full rounded-full bg-amber-500" style="width: 0%"></div>
+                    </div>
+                    <button type="button"
+                            wire:click="dismiss"
+                            class="text-xs font-semibold uppercase tracking-wide text-amber-600 hover:text-amber-700">
+                        Recordármelo después
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 grid gap-4 lg:grid-cols-3">
+                <!--[if BLOCK]><![endif]-->                    <div class="rounded-2xl border px-4 py-3 border-amber-100 bg-white/90">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">Datos básicos</p>
+                                <p class="text-xs text-slate-500">Nombres y apellidos tal como aparecerán en certificados.</p>
+                            </div>
+                            <span class="text-lg">
+                                📝
+                            </span>
+                        </div>
+                        <!--[if BLOCK]><![endif]-->                            <div class="mt-4 space-y-3">
+                                <!--[if BLOCK]><![endif]-->                                    <!--[if BLOCK]><![endif]-->                                        <div>
+                                            <label class="text-xs font-semibold text-slate-600" for="banner-first_name">
+                                                First Name
+                                            </label>
+                                            <input type="text"
+                                                   id="banner-first_name"
+                                                   wire:model.defer="form.first_name"
+                                                   class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-amber-500 focus:ring-amber-500" />
+                                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                                        </div>
+                                                                            <div>
+                                            <label class="text-xs font-semibold text-slate-600" for="banner-last_name">
+                                                Last Name
+                                            </label>
+                                            <input type="text"
+                                                   id="banner-last_name"
+                                                   wire:model.defer="form.last_name"
+                                                   class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-amber-500 focus:ring-amber-500" />
+                                            <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                                        </div>
+                                    <!--[if ENDBLOCK]><![endif]-->
+                                <!--[if ENDBLOCK]><![endif]-->
+                                <button type="button"
+                                        wire:click="saveSection('basic')"
+                                        wire:loading.attr="disabled"
+                                        class="inline-flex w-full items-center justify-center rounded-xl bg-amber-600 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow hover:bg-amber-700 disabled:opacity-60">
+                                    <span wire:loading.remove>Guardar sección</span>
+                                    <span wire:loading>Guardando...</span>
+                                </button>
+                            </div>
+                        <!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                                    <div class="rounded-2xl border px-4 py-3 border-amber-100 bg-white/90">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">Contacto</p>
+                                <p class="text-xs text-slate-500">Teléfono o WhatsApp para coordinaciones rápidas.</p>
+                            </div>
+                            <span class="text-lg">
+                                📝
+                            </span>
+                        </div>
+                        <!--[if BLOCK]><![endif]-->                            <!--[if BLOCK]><![endif]-->                                <button type="button"
+                                        wire:click="$set('expanded', 'contact')"
+                                        class="mt-3 text-xs font-semibold text-amber-600 hover:text-amber-700">
+                                    Completar ahora
+                                </button>
+                            <!--[if ENDBLOCK]><![endif]-->
+                        <!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                                    <div class="rounded-2xl border px-4 py-3 border-amber-100 bg-white/90">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">Ubicación</p>
+                                <p class="text-xs text-slate-500">País, región y ciudad para personalizar tu plan.</p>
+                            </div>
+                            <span class="text-lg">
+                                📝
+                            </span>
+                        </div>
+                        <!--[if BLOCK]><![endif]-->                            <!--[if BLOCK]><![endif]-->                                <button type="button"
+                                        wire:click="$set('expanded', 'location')"
+                                        class="mt-3 text-xs font-semibold text-amber-600 hover:text-amber-700">
+                                    Completar ahora
+                                </button>
+                            <!--[if ENDBLOCK]><![endif]-->
+                        <!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                                    <div class="rounded-2xl border px-4 py-3 border-amber-100 bg-white/90">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">Perfil docente</p>
+                                <p class="text-xs text-slate-500">Experiencia, idiomas y especialidades mostradas a los alumnos.</p>
+                            </div>
+                            <span class="text-lg">
+                                📝
+                            </span>
+                        </div>
+                        <!--[if BLOCK]><![endif]-->                            <!--[if BLOCK]><![endif]-->                                <button type="button"
+                                        wire:click="$set('expanded', 'teacher')"
+                                        class="mt-3 text-xs font-semibold text-amber-600 hover:text-amber-700">
+                                    Completar ahora
+                                </button>
+                            <!--[if ENDBLOCK]><![endif]-->
+                        <!--[if ENDBLOCK]><![endif]-->
+                    </div>
+                <!--[if ENDBLOCK]><![endif]-->
+            </div>
+        </div>
+    </section>
+<!--[if ENDBLOCK]><![endif]-->
+</div>
+
+            
+            <!-- Page Heading -->
+            
+            <!-- Page Content -->
+            <main>
+                <div wire:snapshot="{&quot;data&quot;:{&quot;assignments&quot;:[[[{&quot;id&quot;:3,&quot;title&quot;:&quot;Tarea&quot;,&quot;course&quot;:&quot;espanol-a1&quot;},{&quot;s&quot;:&quot;arr&quot;}]],{&quot;s&quot;:&quot;arr&quot;}],&quot;selectedAssignmentId&quot;:3,&quot;submissions&quot;:[[[{&quot;id&quot;:3,&quot;student&quot;:&quot;LTS Academy Admin&quot;,&quot;status&quot;:&quot;submitted&quot;,&quot;score&quot;:0,&quot;submitted_at&quot;:&quot;hace 2 minutos&quot;,&quot;body&quot;:&quot;Subida QA automatica: enlace a Loom y checklist.&quot;,&quot;attachment_url&quot;:&quot;https:\/\/loom.com\/share\/qa-assignment-demo&quot;,&quot;assignment_title&quot;:&quot;Tarea&quot;},{&quot;s&quot;:&quot;arr&quot;}]],{&quot;s&quot;:&quot;arr&quot;}],&quot;editingSubmissionId&quot;:null,&quot;score&quot;:null,&quot;feedback&quot;:null,&quot;rejectionReasons&quot;:[{&quot;incomplete&quot;:&quot;Entrega incompleta&quot;,&quot;plagiarism&quot;:&quot;Posible plagio&quot;,&quot;quality&quot;:&quot;Calidad insuficiente&quot;,&quot;other&quot;:&quot;Otro (usar feedback)&quot;},{&quot;s&quot;:&quot;arr&quot;}],&quot;selectedRejectionReason&quot;:null},&quot;memo&quot;:{&quot;id&quot;:&quot;tnLbzYW9CuwVI8EIdQWu&quot;,&quot;name&quot;:&quot;admin.assignments-manager&quot;,&quot;path&quot;:&quot;es\/admin\/assignments&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;es&quot;},&quot;checksum&quot;:&quot;eb619df2d60228146dbaeb0f53abf3a7cf7f6f1697ef99e0d31a5818ed26c1b2&quot;}" wire:effects="[]" wire:id="tnLbzYW9CuwVI8EIdQWu" class="space-y-6">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Tareas</p>
+            <h2 class="text-2xl font-semibold text-slate-900">Gestión de entregas</h2>
+        </div>
+        <div>
+            <select wire:model="selectedAssignmentId" class="rounded-full border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                <!--[if BLOCK]><![endif]-->                    <option value="3">Tarea · espanol-a1</option>
+                <!--[if ENDBLOCK]><![endif]-->
+            </select>
+        </div>
+    </div>
+
+    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">Submissions</p>
+                <h4 class="text-lg font-semibold text-slate-900">1 entregas</h4>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100">
+            <!--[if BLOCK]><![endif]-->                <div class="px-6 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">LTS Academy Admin</p>
+                        <p class="text-xs text-slate-500">Submitted · hace 2 minutos</p>
+                        <p class="text-sm text-slate-700 mt-2 line-clamp-2">Subida QA automatica: enlace a Loom y checklist.</p>
+                        <div class="flex flex-wrap items-center gap-2 mt-2">
+                            <!--[if BLOCK]><![endif]-->                                <a href="https://loom.com/share/qa-assignment-demo" target="_blank" class="text-xs text-blue-600">Ver adjunto ↗</a>
+                            <!--[if ENDBLOCK]><![endif]-->
+                                                        <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-slate-900">Sin puntuar</span>
+                        <button wire:click="editSubmission(3)" class="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-blue-300 hover:text-blue-700">Evaluar</button>
+                    </div>
+                </div>
+            <!--[if ENDBLOCK]><![endif]-->
+        </div>
+    </div>
+
+    <!--[if BLOCK]><![endif]--><!--[if ENDBLOCK]><![endif]-->
+</div>
+            </main>
+        </div>
+                        <script src="/livewire/livewire.min.js?id=df3a17f2"   data-csrf="yFBd3zMT6hkV5olB0117QKrnbDkBdd39FoB5QYQh" data-update-uri="/livewire/update" data-navigate-once="true"></script>
+    </body>
+</html>
+

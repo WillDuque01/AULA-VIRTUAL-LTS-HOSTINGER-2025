@@ -1,9 +1,11 @@
-@php($title = $props['title'] ?? '')
-@php($description = $props['description'] ?? '')
-@php($primaryLabel = $props['primary_label'] ?? null)
-@php($primaryUrl = $props['primary_url'] ?? '#')
-@php($secondaryLabel = $props['secondary_label'] ?? null)
-@php($secondaryUrl = $props['secondary_url'] ?? '#')
+@php
+    $title = $props['title'] ?? '';
+    $description = $props['description'] ?? '';
+    $primaryLabel = $props['primary_label'] ?? null;
+    $primaryUrl = $props['primary_url'] ?? '#';
+    $secondaryLabel = $props['secondary_label'] ?? null;
+    $secondaryUrl = $props['secondary_url'] ?? '#';
+@endphp
 
 <section class="bg-slate-900 py-16 text-white">
     <div class="mx-auto flex max-w-4xl flex-col items-center gap-4 px-6 text-center">

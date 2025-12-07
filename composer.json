@@ -17,8 +17,10 @@
         "laravel/telescope": "^5.11",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6",
+        "sentry/sentry-laravel": "^4.8",
         "spatie/laravel-permission": "^6.21",
-        "spatie/laravel-settings": "^3.4"
+        "spatie/laravel-settings": "^3.4",
+        "symfony/options-resolver": "^7.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

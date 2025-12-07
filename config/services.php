@@ -83,6 +83,12 @@ return [
         'thread_id' => env('DISCORD_WEBHOOK_THREAD_ID'),
     ],
 
+    'paypal' => [
+        'client_id' => env('PAYPAL_CLIENT_ID'),
+        'client_secret' => env('PAYPAL_CLIENT_SECRET'),
+        'mode' => env('PAYPAL_MODE', 'sandbox'),
+    ],
+
     'mailerlite' => [
         'api_key' => env('MAILERLITE_API_KEY'),
         'group_id' => env('MAILERLITE_GROUP_ID'),

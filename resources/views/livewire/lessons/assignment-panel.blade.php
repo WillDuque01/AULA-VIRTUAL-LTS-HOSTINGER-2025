@@ -31,11 +31,11 @@
                 {!! \Illuminate\Support\Str::markdown($assignment->instructions) !!}
             </div>
         @else
-            <p class="text-sm text-slate-500">El profesor aún no ha añadido instrucciones.</p>
+            <p class="text-sm text-slate-500">{{ __('The teacher has not added instructions yet.') }}</p>
         @endif
         @if(!empty($assignment->rubric))
             <div class="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-                <p class="text-xs uppercase text-slate-500 font-semibold">Criterios de evaluación</p>
+                <p class="text-xs uppercase text-slate-500 font-semibold">{{ __('Evaluation criteria') }}</p>
                 <ul class="mt-2 text-sm text-slate-700 space-y-1 list-disc list-inside">
                     @foreach($assignment->rubric as $criterion)
                         <li>{{ $criterion }}</li>
@@ -43,14 +43,16 @@
                 </ul>
             </div>
         @endif
-        @php($link = \App\Support\Integrations\WhatsAppLink::assignment(
-            [
-                'title' => data_get($lesson->config, 'title', 'Tarea'),
-                'status' => $submission?->status ?? 'pending',
-            ],
-            'lesson.assignment-panel',
-            ['lesson_id' => $lesson->id]
-        ))
+        @php
+            $link = \App\Support\Integrations\WhatsAppLink::assignment(
+                [
+                    'title' => data_get($lesson->config, 'title', 'Tarea'),
+                    'status' => $submission?->status ?? 'pending',
+                ],
+                'lesson.assignment-panel',
+                ['lesson_id' => $lesson->id]
+            );
+        @endphp
         @if($link)
             <div>
                 <a href="{{ $link }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:border-slate-300">

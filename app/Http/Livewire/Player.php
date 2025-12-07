@@ -50,7 +50,7 @@ class Player extends Component
     {
         $this->lesson = $lesson;
         $user = Auth::user();
-        if ($lesson->status !== 'published' && ! $user?->hasAnyRole(['Admin', 'teacher_admin', 'teacher'])) {
+        if ($lesson->status !== 'published' && ! $user?->hasAnyRole(['Admin', 'teacher_admin', 'teacher', 'Profesor'])) {
             abort(403, __('Esta lección está pendiente de publicación.'));
         }
         $this->lesson->loadMissing([

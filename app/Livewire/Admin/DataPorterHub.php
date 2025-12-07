@@ -9,6 +9,7 @@ use App\Support\Telemetry\TelemetrySyncService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -54,11 +55,13 @@ class DataPorterHub extends Component
 
         abort_unless($user && ($user->can('manage-settings') || $user->hasRole('teacher_admin')), 403);
 
-        $this->datasets = $porter->datasetsFor($user);
-        $this->dataset = array_key_first($this->datasets) ?? $this->dataset;
+        $exportDefinitions = $porter->datasetsFor($user);
+        $this->datasets = $this->summarizeDatasets($exportDefinitions);
+        $this->dataset = array_key_first($exportDefinitions) ?? $this->dataset;
 
-        $this->importDatasets = $porter->datasetsFor($user, intent: 'import');
-        $this->importDataset = array_key_first($this->importDatasets) ?? $this->importDataset;
+        $importDefinitions = $porter->datasetsFor($user, intent: 'import');
+        $this->importDatasets = $this->summarizeDatasets($importDefinitions);
+        $this->importDataset = array_key_first($importDefinitions) ?? $this->importDataset;
 
         $this->telemetryStatus = $this->resolveTelemetryStatus();
     }
@@ -219,6 +222,30 @@ class DataPorterHub extends Component
                 ->limit(5)
                 ->get(),
         ];
+    }
+
+    private function summarizeDatasets(array $definitions): array
+    {
+        $summary = [];
+
+        foreach ($definitions as $key => $definition) {
+            $filters = [];
+
+            foreach ($definition['filters'] ?? [] as $filterKey => $filter) {
+                $filters[$filterKey] = [
+                    'label' => $filter['label'] ?? Str::headline($filterKey),
+                    'type' => $filter['type'] ?? 'text',
+                ];
+            }
+
+            $summary[$key] = [
+                'label' => $definition['label'] ?? Str::headline($key),
+                'description' => $definition['description'] ?? null,
+                'filters' => $filters,
+            ];
+        }
+
+        return $summary;
     }
 }
 

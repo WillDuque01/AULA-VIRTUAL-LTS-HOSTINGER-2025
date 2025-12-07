@@ -19,7 +19,9 @@
     @endif
 
     @foreach($categories as $category)
-        @php($providers = $category['providers'] ?? [])
+        @php
+            $providers = $category['providers'] ?? [];
+        @endphp
         <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 space-y-6">
             <div>
                 <p class="text-xs uppercase font-semibold tracking-[0.35em] text-slate-500">{{ data_get($category, 'title') }}</p>
@@ -27,7 +29,9 @@
             </div>
 
             @foreach($providers as $provider)
-                @php($fields = $provider['fields'] ?? [])
+                @php
+                    $fields = $provider['fields'] ?? [];
+                @endphp
                 <article class="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-5 space-y-4">
                     <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div>
@@ -55,11 +59,15 @@
                     @if(!empty($fields))
                         <div class="grid gap-4 md:grid-cols-2">
                             @foreach($fields as $field)
-                                @php($binding = $field['binding'] ?? null)
+                                @php
+                                    $binding = $field['binding'] ?? null;
+                                @endphp
                                 @if(! $binding)
                                     @continue
                                 @endif
-                                @php($type = $field['type'] ?? 'text')
+                                @php
+                                    $type = $field['type'] ?? 'text';
+                                @endphp
                                 @if($type === 'toggle')
                                     <label class="flex items-center gap-3 rounded-xl border border-slate-800/80 bg-slate-950/40 px-3 py-2 text-xs uppercase font-semibold text-slate-300">
                                         <input type="checkbox" wire:model.defer="{{ $binding }}"

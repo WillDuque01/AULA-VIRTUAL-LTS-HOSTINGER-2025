@@ -102,7 +102,9 @@ class CredentialProvisioner
         }
 
         $content = file_get_contents($path) ?: '';
-        $safeValue = str_replace(['\\', '"'], ['\\\\', '\"'], $value);
+        $escapedValue = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
+        $needsQuotes = preg_match('/\s|#|=/', $escapedValue) === 1;
+        $safeValue = $needsQuotes ? '"'.$escapedValue.'"' : $escapedValue;
         $line = sprintf('%s=%s', $key, $safeValue);
         $pattern = sprintf('/^%s=.*$/m', preg_quote($key, '/'));
 

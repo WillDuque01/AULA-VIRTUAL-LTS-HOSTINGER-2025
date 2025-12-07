@@ -1,4 +1,6 @@
-@php($branding = \App\Support\Branding\Branding::info())
+@php
+    $branding = \App\Support\Branding\Branding::info();
+@endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
 <head>

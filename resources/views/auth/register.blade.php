@@ -1,5 +1,20 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    @php
+        $currentLocale = request()->route('locale') ?? app()->getLocale();
+        $hasGoogle = filled(config('services.google.client_id')) && filled(config('services.google.client_secret'));
+    @endphp
+
+    @if($hasGoogle)
+        <div class="mb-6">
+            <a href="{{ route('google.redirect', ['locale' => $currentLocale]) }}"
+               class="flex items-center justify-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                <x-icons.google class="h-5 w-5"/>
+                {{ __('auth.register_google') }}
+            </a>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('register', ['locale' => $currentLocale]) }}">
         @csrf
 
         <!-- Name -->
@@ -40,12 +55,12 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
+            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login', ['locale' => $currentLocale]) }}">
+                {{ __('auth.already_registered') }}
             </a>
 
             <x-primary-button class="ms-4">
-                {{ __('Register') }}
+                {{ __('auth.register') }}
             </x-primary-button>
         </div>
     </form>

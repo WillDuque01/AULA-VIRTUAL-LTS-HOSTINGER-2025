@@ -19,7 +19,11 @@
         {{ __('Mostrar badges de estado/precio') }}
     </label>
     @if(!empty($productsCatalog))
-        @php($selectedProducts = collect($productsCatalog)->whereIn('id', $block['props']['product_ids'] ?? [])->values())
+        @php
+            $selectedProducts = collect($productsCatalog)
+                ->whereIn('id', $block['props']['product_ids'] ?? [])
+                ->values();
+        @endphp
         <div class="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
             <p class="text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">{{ __('Catálogo conectado') }}</p>
             <label class="block text-xs font-semibold text-slate-600">

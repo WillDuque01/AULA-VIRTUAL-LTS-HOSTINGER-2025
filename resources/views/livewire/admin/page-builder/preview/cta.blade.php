@@ -1,4 +1,6 @@
-@php($props = $block['props'] ?? [])
+@php
+    $props = $block['props'] ?? [];
+@endphp
 
 <section class="rounded-[2rem] border border-slate-100 bg-gradient-to-br from-indigo-50 via-white to-slate-50 px-6 py-8 shadow-inner">
     <div class="space-y-4 text-slate-900">

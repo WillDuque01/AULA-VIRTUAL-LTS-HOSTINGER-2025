@@ -1,5 +1,7 @@
-@php($props = $block['props'] ?? [])
-@php($items = $props['items'] ?? [])
+@php
+    $props = $block['props'] ?? [];
+    $items = $props['items'] ?? [];
+@endphp
 
 <section class="rounded-[2rem] border border-slate-100 bg-white px-6 py-8 shadow-sm">
     <div
@@ -12,7 +14,9 @@
     </div>
     <div class="mt-5 grid gap-4 md:grid-cols-3">
         @foreach($items as $itemIndex => $item)
-            @php($featuresText = $item['features_text'] ?? implode(PHP_EOL, $item['features'] ?? []))
+            @php
+                $featuresText = $item['features_text'] ?? implode(PHP_EOL, $item['features'] ?? []);
+            @endphp
             <article class="rounded-2xl border {{ ($item['highlight'] ?? false) ? 'border-indigo-200 bg-indigo-50/70 shadow-md' : 'border-slate-100 bg-white shadow-sm' }} p-4 space-y-3">
                 <div
                     contenteditable="true"

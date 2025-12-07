@@ -5,6 +5,27 @@
 
     RewriteEngine On
 
+    # Obliga a LiteSpeed/AccelerateWP a saltarse el caché de todo el LMS
+    <IfModule LiteSpeed>
+        RewriteRule .* - [E=Cache-Control:no-cache,E=CacheDrop:1]
+    </IfModule>
+
+    # Impide que proxies intermedios almacenen respuestas HTML del dashboard
+    <IfModule mod_headers.c>
+        Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header always set Pragma "no-cache"
+        Header always set Expires "Fri, 01 Jan 1990 00:00:00 GMT"
+    </IfModule>
+
+    # Bloquea accesos directos a carpetas internas
+    RewriteRule ^(storage|bootstrap|resources|vendor)/(.*)$ - [F,L,NC]
+
+    # Evita que LiteSpeed/AccelerateWP cachee rutas dinámicas del LMS
+    <IfModule LiteSpeed>
+        RewriteCond %{REQUEST_URI} ^/(en|es)(/.*)?$
+        RewriteRule .* - [E=Cache-Control:no-cache]
+    </IfModule>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

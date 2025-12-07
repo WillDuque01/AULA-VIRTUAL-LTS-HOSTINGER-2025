@@ -10,8 +10,11 @@ use App\Console\Commands\SyncTelemetryCommand;
 use App\Console\Commands\SyncPracticeAttendanceSnapshotsCommand;
 use App\Console\Commands\StorageMigrate;
 use App\Http\Middleware\EnsureSetupIsComplete;
+use App\Http\Middleware\PreventResponseCaching;
 use App\Http\Middleware\SecurityHeaders;
 use App\Providers\EventServiceProvider;
+use Sentry\Laravel\ServiceProvider as SentryServiceProvider;
+use Sentry\Laravel\Tracing\ServiceProvider as SentryTracingServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -58,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web([
             \App\Http\Middleware\SetLocale::class,
             EnsureSetupIsComplete::class,
+            PreventResponseCaching::class,
         ]);
 
         $middleware->replace(
@@ -68,6 +72,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'csrf' => \App\Http\Middleware\VerifyCsrfToken::class,
             'append.outbox.events' => \App\Http\Middleware\AppendOutboxEvents::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
         $middleware->removeFromGroup('web', [
@@ -80,6 +87,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withProviders([
         EventServiceProvider::class,
+        SentryServiceProvider::class,
+        SentryTracingServiceProvider::class,
     ])
     ->withExceptions(function (Exceptions $exceptions): void {
         //

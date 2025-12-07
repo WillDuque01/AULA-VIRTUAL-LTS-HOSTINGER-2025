@@ -1,8 +1,10 @@
-@php($title = $props['title'] ?? '')
-@php($videoUrl = $props['video_url'] ?? '')
-@php($quote = $props['quote'] ?? '')
-@php($author = $props['author'] ?? '')
-@php($role = $props['role'] ?? '')
+@php
+    $title = $props['title'] ?? '';
+    $videoUrl = $props['video_url'] ?? '';
+    $quote = $props['quote'] ?? '';
+    $author = $props['author'] ?? '';
+    $role = $props['role'] ?? '';
+@endphp
 
 <section class="py-16 bg-slate-50">
     <div class="mx-auto max-w-5xl grid gap-8 lg:grid-cols-2 items-center px-6">

@@ -38,6 +38,7 @@ use App\Livewire\Admin\TeacherManager;
 use App\Livewire\Admin\TeacherSubmissionsHub;
 use App\Livewire\Admin\TeacherPerformanceReport;
 use App\Models\Page;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,12 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/'.config('app.locale', 'es'));
 Route::redirect('/login', '/'.config('app.locale', 'es').'/login')->name('login.fallback');
 Route::redirect('/register', '/'.config('app.locale', 'es').'/register')->name('register.fallback');
+Route::get('/auth/google/callback', function (Request $request) {
+    $locale = config('app.locale', 'es');
+    $query = $request->query();
+
+    return redirect()->route('google.callback', array_merge(['locale' => $locale], $query));
+})->name('google.callback.fallback');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/certificates/verify/{code}', [CertificateController::class, 'verify'])->name('certificates.verify');
 Route::middleware('auth')->get('/whatsapp/redirect', WhatsAppRedirectController::class)->name('whatsapp.redirect');
@@ -75,6 +82,7 @@ Route::prefix('{locale}')
 
         Route::get('/setup', SetupController::class)->name('setup');
         Route::get('/catalog', CourseCatalog::class)->name('catalog');
+        Route::view('/documentation', 'pages.documentation')->name('documentation.index');
 
         Route::get('/dashboard', function () {
             return view('dashboard');
@@ -225,7 +233,9 @@ Route::prefix('{locale}')
                 ->name('professor.practice-packs');
 
             Route::post('/api/video/progress', [VideoProgressController::class, 'store'])->name('api.video.progress');
-            Route::post('/api/player/events', PlayerEventController::class)->name('api.player.events');
+            Route::post('/api/player/events', PlayerEventController::class)
+                ->middleware('throttle:player-events')
+                ->name('api.player.events');
         });
 
         require __DIR__.'/auth.php';

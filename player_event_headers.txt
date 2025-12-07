@@ -1,0 +1,23 @@
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: application/json
+Transfer-Encoding: chunked
+Connection: keep-alive
+Vary: Accept-Encoding
+Cache-Control: max-age=0, must-revalidate, no-cache, no-store, private
+Date: Sun, 30 Nov 2025 09:22:59 GMT
+Pragma: no-cache
+Expires: Fri, 01 Jan 1990 00:00:00 GMT
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; img-src 'self' data: https://images.unsplash.com https://i.vimeocdn.com https://img.youtube.com; font-src 'self' https://fonts.bunny.net; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; script-src 'self' 'unsafe-inline'; frame-src 'self' https://player.vimeo.com https://www.youtube-nocookie.com https://iframe.mediadelivery.net https://stream.cloudflare.com https://*.cloudflarestream.com; connect-src 'self' https://fonts.bunny.net https://player.vimeo.com https://*.pusher.com wss://*.pusher.com https://stream.cloudflare.com https://*.cloudflarestream.com; media-src 'self' https://stream.cloudflare.com https://*.cloudflarestream.com;
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Set-Cookie: XSRF-TOKEN=eyJpdiI6IkFIY3Q3bmFIaG5zZ3o4TEVHUFU1N3c9PSIsInZhbHVlIjoid3d5YnRYMmpONWRNT3pxeXhjVUQxd3orTk53YitFd1pPbmdpbUxNVWNwN3YxQnorTGhMMHd4bndSWXlQTkNUM1UwdkhGVGN2MjdSZEx6bk5hYTNnMm5nQXh4SnlEc05NSXZTM0tXcDRCQzhBR1NpQmd0QXhCcGF6Z01YUkF0VVYiLCJtYWMiOiJkYmI5ZmI0MGRhMGI3ZjE0YzU1N2Q4NTBkZTZlZTJlMmEwNjUyMDkzNmJlMzI0NTk0ZjU0Yjg5ODAzNWM0YzkzIiwidGFnIjoiIn0%3D; expires=Sun, 30 Nov 2025 11:22:59 GMT; Max-Age=7200; path=/; domain=.letstalkspanish.io; secure; samesite=lax
+Set-Cookie: letstalkspanish-academy-session=eyJpdiI6ImlPd1VJVFFucHZvWHJiTVNiV1p5UVE9PSIsInZhbHVlIjoiUVg3c2NBSTlEODdiZGQ3VnZPL3lUM0cwNUNwU1ZMTTN6UFFubEt0am1QNjVMcE1KMUtEc08vQ2c4RE5Ka0lHNVhOV3RKQ1A5S2NlY3piY1FNdkJKUEU5cytQVHNOSm5iTGRwaysyRXhKRmN0OUJsNnlUUFl4RitZdGFJdURoUVoiLCJtYWMiOiIzNmVjODc4ZjI0YzM4ZDlkNDQwZGRkZDRiMWRkYTBjYzE5MWU4MDhlNGQ3MmNmMWU0ZDllZjY0NTNiNzhhNGE0IiwidGFnIjoiIn0%3D; expires=Sun, 30 Nov 2025 11:22:59 GMT; Max-Age=7200; path=/; domain=.letstalkspanish.io; secure; httponly; samesite=lax
+Set-Cookie: locale=eyJpdiI6IlV2Z2FYTi9XT2tDam9tM3hpdlRMbUE9PSIsInZhbHVlIjoiWEgzUEJpdVUxeU5LQ2FqZC84THBaZTB6a1IxWmo3Vk1nc0srdEU2QXJzRWZXZmhReXVHOXNIeFVuQy81d3pFUyIsIm1hYyI6ImUyNmEyN2ZiYzM5MzEwOWZkZmJkNjI3MDg3ZTNlNzRlMDliNTBmYjBlNWFmYzJjMmVmNTZmNDg0MmI1YTdjMzYiLCJ0YWciOiIifQ%3D%3D; expires=Tue, 30 Dec 2025 09:22:59 GMT; Max-Age=2592000; path=/; domain=.letstalkspanish.io; secure; httponly; samesite=lax
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+X-LTS-Server: app-vps
+

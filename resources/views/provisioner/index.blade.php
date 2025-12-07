@@ -2,26 +2,31 @@
 <html>
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Provisioner</title>
+  <title>{{ __('provisioner.title') }}</title>
   <style>label{display:block;margin:.5rem 0 .25rem}input,select{width:100%;padding:.5rem} .grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))} .card{border:1px solid #ddd;padding:1rem;border-radius:12px}</style>
   <meta name="csrf-token" content="{{ csrf_token() }}">
   @vite(['resources/css/app.css'])
 </head>
 <body class="p-6">
-  <h1 class="text-2xl font-semibold mb-4">Provisionar Integraciones</h1>
+  @php
+      $prov = fn (string $key, array $replace = []) => __('provisioner.'.$key, $replace);
+  @endphp
+  <h1 class="text-2xl font-semibold mb-4">{{ $prov('title') }}</h1>
 
-  @php($integrationStatus = config('integrations.status', []))
+  @php
+      $integrationStatus = config('integrations.status', []);
+  @endphp
   @if(!empty($integrationStatus))
     <section class="grid mb-6">
       @foreach($integrationStatus as $block)
         <article class="card bg-slate-50">
           <h3 class="font-semibold text-lg mb-2">{{ $block['label'] }}</h3>
-          <p class="text-sm mb-1"><strong>Estado:</strong> {{ $block['status'] }}</p>
+          <p class="text-sm mb-1"><strong>{{ $prov('status.driver') }}:</strong> {{ $block['status'] }}</p>
           <p class="text-xs text-gray-500">Driver: <code>{{ $block['driver'] }}</code></p>
           @if($block['forced'])
-            <p class="text-xs text-amber-600 font-semibold mt-2">Modo forzado</p>
+            <p class="text-xs text-amber-600 font-semibold mt-2">{{ $prov('status.forced') }}</p>
           @elseif(!$block['has_credentials'])
-            <p class="text-xs text-gray-500 mt-2">Sin credenciales detectadas (usando fallback)</p>
+            <p class="text-xs text-gray-500 mt-2">{{ $prov('status.missing_credentials') }}</p>
           @endif
         </article>
       @endforeach
@@ -70,35 +75,39 @@
       <label>DISCORD_WEBHOOK_URL</label><input name="DISCORD_WEBHOOK_URL" value="{{ config('services.discord.webhook_url') }}">
       <label>DISCORD_WEBHOOK_USERNAME</label><input name="DISCORD_WEBHOOK_USERNAME" placeholder="LMS Alerts" value="{{ config('services.discord.username') }}">
       <label>DISCORD_WEBHOOK_AVATAR</label><input name="DISCORD_WEBHOOK_AVATAR" placeholder="https://cdn..." value="{{ config('services.discord.avatar') }}">
-      <label>DISCORD_WEBHOOK_THREAD_ID</label><input name="DISCORD_WEBHOOK_THREAD_ID" placeholder="Opcional: ID de hilo" value="{{ config('services.discord.thread_id') }}">
+      <label>DISCORD_WEBHOOK_THREAD_ID</label><input name="DISCORD_WEBHOOK_THREAD_ID" placeholder="{{ $prov('sections.make_discord.thread_placeholder') }}" value="{{ config('services.discord.thread_id') }}">
       <label>GOOGLE_SERVICE_ACCOUNT_JSON_PATH</label><input name="GOOGLE_SERVICE_ACCOUNT_JSON_PATH" value="{{ config('services.google.service_account_json', 'storage/app/keys/google.json') }}">
       <label>SHEET_ID</label><input name="SHEET_ID" value="{{ config('services.google.sheet_id') }}">
-      <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="GOOGLE_SHEETS_ENABLED" value="1" {{ config('services.google.enabled') ? 'checked' : '' }}> Habilitar Google Sheets</label>
+      <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="GOOGLE_SHEETS_ENABLED" value="1" {{ config('services.google.enabled') ? 'checked' : '' }}> {{ $prov('sections.make_discord.sheets_toggle') }}</label>
       <label class="mt-3 text-xs text-slate-500 uppercase font-semibold">CERTIFICATES_VERIFY_SECRET</label>
       <div class="flex items-center gap-2">
         <input name="CERTIFICATES_VERIFY_SECRET" value="{{ config('services.certificates.verify_secret') }}" class="flex-1" type="password">
-        <button type="button" id="generate-certificate-secret" class="px-3 py-2 text-xs font-semibold rounded bg-slate-900 text-white">Rotar</button>
+        <button type="button" id="generate-certificate-secret" class="px-3 py-2 text-xs font-semibold rounded bg-slate-900 text-white">{{ $prov('buttons.rotate') }}</button>
       </div>
-      <p class="text-[11px] text-slate-500 mt-1">Se usa para firmar el endpoint `/api/certificates/verify`.</p>
+      <p class="text-[11px] text-slate-500 mt-1">{{ $prov('sections.make_discord.cert_hint') }}</p>
     </div>
     <div class="card"><h3 class="font-medium mb-2">WhatsApp / Alertas</h3>
-      <label class="flex items-center gap-2"><input type="checkbox" name="WHATSAPP_ENABLED" value="1" {{ config('services.whatsapp.enabled') ? 'checked' : '' }}> Activar Cloud API</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="WHATSAPP_ENABLED" value="1" {{ config('services.whatsapp.enabled') ? 'checked' : '' }}> {{ $prov('sections.whatsapp.toggle') }}</label>
       <label>WHATSAPP_TOKEN</label><input name="WHATSAPP_TOKEN" type="password" value="{{ config('services.whatsapp.token') }}">
       <label>WHATSAPP_PHONE_ID</label><input name="WHATSAPP_PHONE_ID" value="{{ config('services.whatsapp.phone_number_id') }}">
       <label>WHATSAPP_DEFAULT_TO</label><input name="WHATSAPP_DEFAULT_TO" placeholder="+57300..." value="{{ config('services.whatsapp.default_to') }}">
       <label>WHATSAPP_DEEPLINK</label><input name="WHATSAPP_DEEPLINK" placeholder="https://wa.me/57..." value="{{ config('services.whatsapp.deeplink') }}">
-      <p class="text-[11px] text-slate-500 mt-1">Usa el deeplink si solo necesitas compartir un enlace de contacto rápido. Con token y phone ID se habilitan alertas automáticas.</p>
+      <p class="text-[11px] text-slate-500 mt-1">{{ $prov('sections.make_discord.deeplink_hint') }}</p>
     </div>
     <div class="card"><h3 class="font-medium mb-2">Modos gratuitos</h3>
-      <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_STORAGE" value="1" {{ config('integrations.force_free_storage') ? 'checked' : '' }}> Forzar almacenamiento local</label>
-      <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_REALTIME" value="1" {{ config('integrations.force_free_realtime') ? 'checked' : '' }}> Forzar realtime local</label>
-      <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_YOUTUBE_ONLY" value="1" {{ config('integrations.force_youtube_only') ? 'checked' : '' }}> Forzar modo YouTube</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_STORAGE" value="1" {{ config('integrations.force_free_storage') ? 'checked' : '' }}> {{ $prov('sections.free_modes.storage') }}</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_FREE_REALTIME" value="1" {{ config('integrations.force_free_realtime') ? 'checked' : '' }}> {{ $prov('sections.free_modes.realtime') }}</label>
+      <label class="flex items-center gap-2"><input type="checkbox" name="FORCE_YOUTUBE_ONLY" value="1" {{ config('integrations.force_youtube_only') ? 'checked' : '' }}> {{ $prov('sections.free_modes.youtube') }}</label>
     </div>
     <div>
-      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button>
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">{{ $prov('buttons.save') }}</button>
     </div>
   </form>
   <script>
+    const provMessages = {
+        saved: @json(__('provisioner.notifications.saved')),
+        error: @json(__('provisioner.notifications.error')),
+    };
     const secretInput = document.querySelector('input[name="CERTIFICATES_VERIFY_SECRET"]');
     const generateSecret = () => {
       const random = crypto.getRandomValues(new Uint8Array(32));
@@ -117,7 +126,7 @@
         params.append(key, value);
       }
       const res = await fetch('{{ url('/provisioner/save') }}',{method:'POST', headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]')?.content}, body:params});
-      let message = res.ok ? 'Guardado' : 'Error';
+      let message = res.ok ? provMessages.saved : provMessages.error;
       try {
         const json = await res.json();
         if (json?.message) {

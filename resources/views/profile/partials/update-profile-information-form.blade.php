@@ -80,7 +80,9 @@
             </div>
         </div>
 
-        @php($canEditTeacherFields = $user->hasAnyRole(['teacher','teacher_admin','Profesor']))
+        @php
+            $canEditTeacherFields = $user->hasAnyRole(['teacher','teacher_admin','Profesor']);
+        @endphp
         <div class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 space-y-4">
             <div class="flex items-center justify-between">
                 <p class="text-sm font-semibold text-slate-800">Teacher profile</p>

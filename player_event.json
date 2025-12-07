@@ -1,0 +1,13 @@
+{
+  "lesson_id": 1,
+  "event": "play",
+  "provider": "manual",
+  "playback_seconds": 15,
+  "watched_seconds": 15,
+  "video_duration": 120,
+  "context_tag": "qa-smoke",
+  "metadata": {
+    "notes": "QA smoke test",
+    "timestamp": "2025-11-30T08:55:00Z"
+  }
+}

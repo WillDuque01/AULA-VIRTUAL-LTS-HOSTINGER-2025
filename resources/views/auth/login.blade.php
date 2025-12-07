@@ -7,37 +7,40 @@
     $alternateRoute = route(Route::currentRouteName(), array_merge($routeParameters, ['locale' => $alternateLocale]));
 
     $roleMessages = [
-        'admin' => __('Accede al panel administrativo para gestionar integraciones, DataPorter y branding.'),
-        'teacher_admin' => __('Administra cohortes, aprueba contenido y coordina a tu equipo docente.'),
-        'teacher' => __('Inicia sesión para enviar propuestas y gestionar tus módulos asignados.'),
-        'student' => __('Ingresa para continuar tu progreso, prácticas y packs recomendados.'),
+        'admin' => __('auth.roles.admin'),
+        'teacher_admin' => __('auth.roles.teacher_admin'),
+        'teacher' => __('auth.roles.teacher'),
+        'student' => __('auth.roles.student'),
     ];
     $roleLabels = [
-        'admin' => 'Admin',
-        'teacher_admin' => 'Teacher Admin',
-        'teacher' => 'Teacher Admin',
-        'student' => 'Student',
+        'admin' => __('auth.role_labels.admin'),
+        'teacher_admin' => __('auth.role_labels.teacher_admin'),
+        'teacher' => __('auth.role_labels.teacher'),
+        'student' => __('auth.role_labels.student'),
     ];
 @endphp
 
 <x-guest-layout>
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('Idioma') }}</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{{ __('auth.language_label') }}</p>
             <div class="mt-2 flex items-center gap-2 text-sm">
                 <span class="inline-flex rounded-full bg-slate-900/10 px-3 py-1 font-semibold text-slate-700">
                     {{ strtoupper($currentLocale) }}
                 </span>
+                @php
+                    $switchKey = $alternateLocale === 'es' ? 'auth.switch_to_es' : 'auth.switch_to_en';
+                @endphp
                 <a href="{{ $alternateRoute }}"
                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 hover:border-slate-400 hover:text-slate-700">
-                    {{ __('Cambiar a :locale', ['locale' => strtoupper($alternateLocale)]) }}
+                    {{ __($switchKey) }}
                 </a>
             </div>
         </div>
 
         @if(!empty($targetRole) && isset($roleMessages[$targetRole]))
             <div class="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-900 max-w-md">
-                <p class="font-semibold">{{ __('Modo :role', ['role' => $roleLabels[$targetRole] ?? ucfirst($targetRole)]) }}</p>
+                <p class="font-semibold">{{ __('auth.mode', ['role' => $roleLabels[$targetRole] ?? ucfirst($targetRole)]) }}</p>
                 <p class="mt-1 text-indigo-800">{{ $roleMessages[$targetRole] }}</p>
             </div>
         @endif
@@ -45,6 +48,20 @@
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
+
+    @php
+        $hasGoogle = filled(config('services.google.client_id')) && filled(config('services.google.client_secret'));
+    @endphp
+
+    @if($hasGoogle)
+        <div class="mb-6">
+            <a href="{{ route('google.redirect', ['locale' => $currentLocale]) }}"
+               class="flex items-center justify-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                <x-icons.google class="h-5 w-5"/>
+                {{ __('auth.continue_with_google') }}
+            </a>
+        </div>
+    @endif
 
     <form method="POST" action="{{ route('login', array_merge($routeParameters, ['locale' => $currentLocale])) }}">
         @csrf
@@ -73,19 +90,19 @@
         <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                <span class="ms-2 text-sm text-gray-600">{{ __('auth.remember_me') }}</span>
             </label>
         </div>
 
         <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                    {{ __('auth.forgot_password') }}
                 </a>
             @endif
 
             <x-primary-button class="ms-3">
-                {{ __('Log in') }}
+                {{ __('auth.login') }}
             </x-primary-button>
         </div>
     </form>

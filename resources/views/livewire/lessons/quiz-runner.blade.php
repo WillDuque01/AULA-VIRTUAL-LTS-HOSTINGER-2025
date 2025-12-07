@@ -1,8 +1,8 @@
 <div class="space-y-6">
     @if(! $quiz)
         <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-6">
-            <p class="text-sm font-semibold">Todavía no se ha configurado el contenido de este quiz.</p>
-            <p class="text-xs text-amber-700 mt-1">Informa a tu profesor para que habilite las preguntas.</p>
+            <p class="text-sm font-semibold">{{ __('Quiz content has not been configured yet.') }}</p>
+            <p class="text-xs text-amber-700 mt-1">{{ __('Let your teacher know to enable the questions.') }}</p>
         </div>
         @return
     @endif
@@ -10,17 +10,17 @@
     <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-3">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
-                <p class="text-xs uppercase tracking-wide text-slate-500">Evaluación</p>
+                <p class="text-xs uppercase tracking-wide text-slate-500">{{ __('Evaluation') }}</p>
                 <h3 class="text-xl font-semibold text-slate-900">{{ data_get($lesson->config, 'title', 'Quiz interactivo') }}</h3>
             </div>
             @if($lastAttempt)
                 <div class="text-sm text-slate-500">
-                    Último intento: <span class="font-semibold text-slate-900">{{ optional($lastAttempt->created_at)->diffForHumans() }}</span>
+                    {{ __('Last attempt:') }} <span class="font-semibold text-slate-900">{{ optional($lastAttempt->created_at)->diffForHumans() }}</span>
                     · <span class="text-emerald-600 font-semibold">{{ $lastAttempt->score }}/{{ $lastAttempt->max_score }}</span>
                 </div>
             @endif
         </div>
-        <p class="text-sm text-slate-500">Responde todas las preguntas. El sistema califica automáticamente y registra tu intento.</p>
+        <p class="text-sm text-slate-500">{{ __('Answer all questions. The system grades automatically and records your attempt.') }}</p>
     </div>
 
     <form wire:submit.prevent="submit" class="space-y-6">
@@ -59,7 +59,7 @@
         @endforeach
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-sm text-slate-500">Tu envío se guarda automáticamente y puedes repetirlo para mejorar tu puntuación.</p>
+            <p class="text-sm text-slate-500">{{ __('Your submission is saved automatically and you can repeat it to improve your score.') }}</p>
             <button type="submit" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700">
                 Calificar intento
             </button>

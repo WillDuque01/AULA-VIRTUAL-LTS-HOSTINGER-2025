@@ -1,5 +1,7 @@
-@php($title = $props['title'] ?? '')
-@php($items = $props['items'] ?? [])
+@php
+    $title = $props['title'] ?? '';
+    $items = $props['items'] ?? [];
+@endphp
 
 <section class="bg-slate-50 py-16">
     <div class="mx-auto max-w-5xl space-y-8 px-6">

@@ -25,7 +25,9 @@
     <div class="grid gap-8 lg:grid-cols-[1.6fr,1fr]">
         <section class="space-y-4">
             @forelse ($tiers as $tier)
-                @php($color = data_get($tier->metadata, 'color', '#1d4ed8'))
+                @php
+                    $color = data_get($tier->metadata, 'color', '#1d4ed8');
+                @endphp
                 <article class="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
                     <div class="flex items-start justify-between gap-4">
                         <div class="space-y-1">

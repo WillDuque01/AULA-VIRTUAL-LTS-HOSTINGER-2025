@@ -12,6 +12,8 @@ Este playbook documenta los patrones visuales e interactivos que ya están imple
 | **Estados explícitos** | Cada recurso (capítulo, lección, pack) expone su estado (`pending`, `published`, `rejected`) mediante chips con contraste suficiente. | Chips verdes/ámbar/rosas en cards de capítulo/lección y dashboard docente. |
 | **Microinteracciones accesibles** | Animaciones < 240 ms, siempre respetando `prefers-reduced-motion`. Tooltips y atajos deben poder replicarse vía clic. | Botones del builder tienen `hover`, `focus`, `aria-label` y atajos documentados. |
 | **Contexto accionable** | Cada dato crítico acompaña accesos directos (planner, packs, DataPorter). | Chips de prácticas en lecciones muestran CTA “Abrir planner” y “Gestionar packs”. |
+| **Navegación Móvil No-Intrusiva** | En pantallas pequeñas, los paneles laterales deben comportarse como *Drawers* (deslizantes) y no apilarse infinitamente. | *Nuevo:* Sidebar del Player como Drawer con backdrop en móvil. |
+| **Feedback No-Bloqueante** | Preferir Toasts/Snackbars sobre `alert()` o modales para confirmaciones simples. | *Nuevo:* `dispatch('notify')` para "Guardado correctamente". |
 
 ---
 
@@ -118,4 +120,6 @@ Cumplir estos puntos garantiza que nuevos módulos mantengan la UIX 2030 estable
   - Cohortes muestran etiqueta (`cohort_label`), duración y cupos recomendados.
 - **Acciones**: botón `Añadir` ocupa todo el ancho (`rounded-full bg-slate-900`) y reacciona con notificación Livewire. El enlace al carrito mantiene contador mediante `PracticeCart::count()`.
 
+---
 
+*Firmado por: Gemini 3 Pro (Arquitecto UX/UI)*

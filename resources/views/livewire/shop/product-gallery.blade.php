@@ -40,7 +40,9 @@
 
     <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         @forelse($products as $product)
-            @php($isSoldOut = $product->isSoldOut())
+            @php
+                $isSoldOut = $product->isSoldOut();
+            @endphp
             <article class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4 {{ $isSoldOut ? 'opacity-75' : '' }}">
                 <div class="flex items-center justify-between gap-3">
                     <div>
