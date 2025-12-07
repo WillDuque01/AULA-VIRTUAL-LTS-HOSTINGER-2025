@@ -209,15 +209,57 @@ $emails = [
 
 ---
 
+---
+
+## 🔧 HOTFIXES APLICADOS (Post-Reporte)
+
+### Fix 1: CertificateController - Error 500
+
+**Problema:** `/es/certificates/1` devolvía error 500 porque Route Model Binding no funcionaba con locale prefix.
+
+**Solución:** Cambiar el tipo de parámetro de `Certificate $certificate` a `int|string $certificate` y hacer la búsqueda manualmente:
+
+```php
+// [AGENTE: OPUS 4.5] - Fix Route Model Binding con locale prefix
+public function show(Request $request, int|string $certificate)
+{
+    $cert = Certificate::findOrFail($certificate);
+    // ...
+}
+```
+
+**Estado:** ✅ Desplegado
+
+### Fix 2: Student Message Center - Tema Claro Incompleto
+
+**Problema:** GPT-5.1 no completó la migración a tema claro. Los campos de texto y radio buttons tenían estilos oscuros (`bg-slate-950/60`, `text-slate-100`, `border-slate-800`).
+
+**Solución:** Migración completa de todos los estilos del formulario de composición:
+
+| Elemento | Antes (Oscuro) | Después (Claro) |
+|----------|----------------|-----------------|
+| Radio cards | `border-slate-800 bg-transparent` | `border-slate-200 bg-white` |
+| Texto títulos | `text-slate-100` | `text-slate-900` |
+| Texto descripciones | `text-slate-400` | `text-slate-500` |
+| Labels | `text-slate-300` | `text-slate-700` |
+| Inputs | `bg-slate-950/60 border-slate-800` | `bg-white border-slate-200` |
+| Chips seleccionados | `bg-slate-800 text-slate-200` | `bg-slate-100 text-slate-700` |
+
+**Estado:** ✅ Desplegado
+
+---
+
 ## 🚦 SEÑAL DE ESTADO
 
 ```
 [DEPLOYMENT-COMPLETE-AUTH-PENDING]
+[CERTIFICATE-500-FIXED]
+[MESSAGE-CENTER-LIGHT-THEME-COMPLETE]
 ```
 
-> ⚠️ No se puede declarar [PROJECT-L10N-GOLD-MASTER-CERTIFIED] hasta que se resuelva el problema de autenticación.
+> ⚠️ No se puede declarar [PROJECT-L10N-GOLD-MASTER-CERTIFIED] hasta que se resuelva el problema de autenticación en el navegador.
 
 ---
 
-*Documento generado por Opus 4.5 - Turno 33*
+*Documento generado por Opus 4.5 - Turno 33 (Actualizado con hotfixes)*
 

@@ -12,17 +12,20 @@ use Illuminate\Support\Facades\Storage;
 
 class CertificateController extends Controller
 {
-    public function show(Request $request, Certificate $certificate)
+    // [AGENTE: OPUS 4.5] - Fix Route Model Binding con locale prefix
+    public function show(Request $request, int|string $certificate)
     {
-        abort_unless(Auth::id() === $certificate->user_id, 403);
+        $cert = Certificate::findOrFail($certificate);
 
-        if (! Storage::disk('local')->exists($certificate->file_path)) {
+        abort_unless(Auth::id() === $cert->user_id, 403);
+
+        if (! Storage::disk('local')->exists($cert->file_path)) {
             abort(404);
         }
 
-        return response()->file(storage_path('app/'.$certificate->file_path), [
+        return response()->file(storage_path('app/'.$cert->file_path), [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="certificate-'.$certificate->code.'.pdf"',
+            'Content-Disposition' => 'inline; filename="certificate-'.$cert->code.'.pdf"',
         ]);
     }
 
