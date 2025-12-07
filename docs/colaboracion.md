@@ -434,5 +434,92 @@ Ver `18_OPUS_L10N_INTEGRITY_REPORT.md` sección "INSTRUCCIÓN PARA GPT-5.1" con:
 
 ---
 
-[OPUS-E2E-FAT-COMPLETED]
+## ESTADO: Turno 30 Extendido (Opus Notificaciones) Completado.
+
+**Fecha**: 07-dic-2025
+
+[LINK] Ver Reporte en 30_OPUS_EXTENDED_FAT_REPORT.md
+
+### Ejecutado:
+- ✅ Creada tabla `notifications` (faltaba en producción)
+- ✅ Diagnóstico completo de certificados, mensajes y notificaciones
+- ✅ Scripts de diagnóstico creados
+
+---
+
+## ESTADO: Turno 31 (Opus Email Audit) Completado.
+
+**Fecha**: 07-dic-2025
+
+[LINK] Ver Reporte en 31_OPUS_EMAIL_TEMPLATES_AUDIT.md
+
+### Ejecutado:
+- ✅ Prueba completa de 7/8 notificaciones por email
+- ✅ Emails recibidos en `wilsabduque@gmail.com`
+- ⚠️ Detectado: Plantillas de email necesitan rediseño (colores)
+
+### Scripts de Prueba Creados:
+- `scripts/test_notifications.php` - Prueba 7 notificaciones
+- `scripts/test_simple_email.php` - Prueba SMTP simple
+- `scripts/list_users.php` - Diagnóstico de BD
+
+---
+
+# 📚 LECTURA OBLIGATORIA PARA AGENTES
+
+## Para GPT-5.1 (Implementador Frontend)
+
+| Archivo | Contenido |
+|---------|-----------|
+| `docs/31_OPUS_EMAIL_TEMPLATES_AUDIT.md` | **CRÍTICO** - Instrucciones de rediseño de plantillas email |
+| `docs/30_OPUS_EXTENDED_FAT_REPORT.md` | Hallazgos de infraestructura y QR de certificados |
+| `docs/29_GEMINI_UX_AUDIT_COMPLETE.md` | Auditoría UX con tareas priorizadas |
+| `docs/29_OPUS_E2E_FAT_REPORT.md` | Estado del sistema FAT |
+
+## Para Gemini 3 Pro (Arquitecto UI/UX)
+
+| Archivo | Contenido |
+|---------|-----------|
+| `docs/31_OPUS_EMAIL_TEMPLATES_AUDIT.md` | Paleta de colores para emails |
+| `docs/29_GEMINI_UX_AUDIT_COMPLETE.md` | Tu propia auditoría para referencia |
+| `docs/29_GEMINI_UX_INNOVATION_SPEC.md` | Especificaciones de innovación UX |
+
+## Contexto General (Todos los Agentes)
+
+| Archivo | Contenido |
+|---------|-----------|
+| `docs/colaboracion.md` | Bitácora completa del proyecto |
+| `docs/28_OPUS_E2E_FAT_REPORT.md` | Sistema de backup y reset |
+| `docs/INSTALLATION_GUIDE.md` | Guía de instalación para rollout |
+
+---
+
+# 🎯 TAREAS PENDIENTES PARA FRONTEND
+
+## PRIORIDAD ALTA
+
+### 1. Rediseño de Plantillas de Email
+**Responsable:** GPT-5.1
+**Archivos:**
+- `resources/views/emails/templates/base.blade.php`
+- `resources/views/emails/templates/*.blade.php`
+
+**Requisitos:**
+- Unificar colores con UIX 2030
+- Header con logo
+- Botones CTA estilizados
+- Footer con información de contacto
+- Responsive para móviles
+
+### 2. Fix QR de Certificados
+**Responsable:** GPT-5.1
+**Archivo:** `app/Http/Controllers/CertificateController.php`
+
+**Opción A:** Usar librería local `simplesoftwareio/simple-qrcode`
+**Opción B:** Agregar fallback si imagen externa no carga
+
+---
+
+[OPUS-EMAIL-AUDIT-COMPLETED]
+[EMAIL-TEMPLATES-NEED-REDESIGN]
 [PROYECTO-ROLLOUT-READY]
