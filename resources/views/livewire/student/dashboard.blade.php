@@ -8,6 +8,9 @@
             :title="$guideContext['title'] ?? __('dashboard.student.guide_title')"
             :subtitle="$guideContext['subtitle'] ?? null" />
     @endif
+    @auth
+        <livewire:profile.completion-banner />
+    @endauth
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
             <p class="text-xs uppercase font-semibold text-slate-500 tracking-wide">{{ __('dashboard.student.metrics.progress') }}</p>

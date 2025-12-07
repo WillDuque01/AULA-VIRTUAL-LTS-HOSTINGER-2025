@@ -143,7 +143,7 @@
                     collect($chapter['lessons'])->contains(fn ($lesson) => ($lesson['status'] ?? 'published') === $statusFilter);
             @endphp
             @continue(! $showChapter)
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-lg shadow-slate-100/60 p-4 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-5 space-y-4 transition hover:border-blue-100" data-chapter-item data-chapter-id="{{ $chapter['id'] }}" wire:key="chapter-{{ $chapter['id'] }}">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
                     <div class="flex items-center gap-3 w-full sm:w-auto">
                         <span class="drag-handle inline-flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 w-9 h-9 cursor-move bg-white shadow-inner"
@@ -199,7 +199,7 @@
                     </div>
                 @endif
 
-                <div class="space-y-3" data-sortable-lessons>
+                <div class="space-y-4 sm:space-y-5" data-sortable-lessons>
                     @forelse($chapter['lessons'] as $lessonIndex => $lesson)
                         @php
                             $isFocused = $focus && data_get($focus, 'lesson.id') === $lesson['id'];
@@ -213,9 +213,8 @@
                         @endphp
                         @continue($statusFilter !== 'all' && $lessonStatus !== $statusFilter)
                         <div @class([
-                                'relative border rounded-2xl p-4 bg-gradient-to-br from-slate-50 to-white shadow-sm ring-1 ring-transparent transition data-[state=saving]:opacity-80',
-                                'border-indigo-200 ring-2 ring-indigo-200/80 bg-white shadow-lg shadow-indigo-100/60' => $isFocused,
-                                'border-gray-200' => ! $isFocused,
+                                'relative border border-slate-200 rounded-2xl p-4 bg-white shadow-sm transition data-[state=saving]:opacity-80',
+                                'border-indigo-200 ring-2 ring-indigo-200/80 shadow-md shadow-indigo-100/60' => $isFocused,
                             ])
                              data-lesson-item
                              data-lesson-id="{{ $lesson['id'] }}"
@@ -292,7 +291,7 @@
                                     : null;
                             @endphp
 
-                            <div class="mt-3 rounded-2xl border border-slate-100 bg-slate-50/60 px-4 py-3 text-[11px] font-semibold text-slate-600">
+                            <div class="mt-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-[11px] font-semibold text-slate-600">
                                 <div class="flex flex-wrap items-center gap-2">
                                     @if($practiceMeta)
                                         <span class="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-3 py-1 text-indigo-700">

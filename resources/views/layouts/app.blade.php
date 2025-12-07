@@ -67,19 +67,6 @@
     <body class="font-sans antialiased {{ $branding->dark_mode ? 'dark' : '' }}">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
             @include('layouts.navigation')
-            @auth
-                @php
-                    $__profileSummary = auth()->user()->profileSummary();
-                @endphp
-                @if(!($__profileSummary['is_complete'] ?? false))
-                    <span class="sr-only" aria-hidden="true">{{ __('Completa tu perfil') }}</span>
-                @endif
-                @if(auth()->user()->hasAnyRole(['teacher','teacher_admin','Profesor']))
-                    <!-- Teacher profile -->
-                @endif
-                <livewire:profile.completion-banner />
-            @endauth
-
             <!-- Page Heading -->
             @isset($header)
                 <header class="bg-white shadow">
